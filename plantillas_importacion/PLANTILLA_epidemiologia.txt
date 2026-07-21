@@ -1,0 +1,3 @@
+Informacion del paciente	ID del paciente	Fecha nacimiento	Sexo	Codigo paciente (HC)	Tipo y zona (muestra)	N de acceso	ID cliente muestra (Sede)	Servicio	Fecha toma muestra	Organismo	Cultivo	Sensibles	Intermedios	Resistentes	Marcadores
+ANGULO REINA LUIS ANGEL (16474122 - 26/11/1955)	16474122	26/11/1955	Masculino	167402	HEMOCULTIVO	R-12345	LAB CENTRAL	UCI 5	15/03/2025	Escherichia coli	1	Meropenem; Amikacina	Ciprofloxacina	Ampicilina	BLEE
+ANGULO REINA LUIS ANGEL (16474122 - 26/11/1955)	16474122	26/11/1955	Masculino	167402	UROCULTIVO	R-12346	LAB CENTRAL	UCI 5	18/03/2025	Klebsiella pneumoniae	1	Colistina	Tigeciclina	Meropenem; Cefepime	KPC

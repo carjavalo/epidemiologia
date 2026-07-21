@@ -1,0 +1,433 @@
+ROLES PROAHUV:
+AUXILIARES Y ENFERMERAS
+MEDICOS Y ESPECIALISTAS
+
+
+HISTORIAL DE ACTIVIDAD DE USUARIOS
+(AUXILIAR 1 -10, ENEFERMERO 1-10, MEDICO 1-10
+
+
+
+
+    CAMPOS MICROBIOLOGIA
+    TIPO ID (antes de ID) - lista select
+ 
+PESTAÑA DATOS COMPLEMENTARIOS
+- Procedencia
+- Diagnostico de ingreso
+- Asegurador
+-Peso (kg)
+- Fecha de ingreso
+- Microorganismo 2
+- Microorganismo 3
+- Fecha quirurjica previa a la infección
+- DIAS ENTRE Qx. PREVIA E INFECCIÓN (fecha automática FECHA DE INGRESO - FECHA DE DIÁGNOSTICO DE INFECCIÓN )
+- CATEGORÍA Quirurjica (
+
+CATEGORÍA Qx.
+Amputacion de extremidades
+Apendicetomia
+Cesarea
+Cirugia de cabeza y cuello
+Cirugia de colon
+Cirugia gastrica
+Cirugia intestino delgado
+Cirugia toraxica
+Cirugia vascular
+Colecistectomia
+Conducto biliar, higado, cirugia pancreatica
+Craneotomia
+Derivacion
+Esplenectomia
+Instumentacion
+Herniorrafia
+Histerectomia abdominal
+Histerectomia vaginal
+Injerto de piel
+Injerto derivacion arteria coronaria
+laparotomia
+Lavados ( abdomen)
+Mastectomia
+Nefrectomia
+Otras sistema cardiovascular
+Otras sistema respiratorio
+Otras, oido, nariz, boca, faringe
+Otros procedimientos obstetricos-gineco
+Otros sistema digestivo
+Otros sistema endocrino
+Otros sistema genito-urinario
+Otros sistema hematico y linfatico
+Otros sistema integumentario
+Otros sistema musculo esqueletico
+Otros sistema nervioso
+Otros visual
+Prostatectomia
+Protesis de articulacion
+Reduccion abierta por fractura
+Trasplante de organos
+Quemados
+Ventriculostomia
+Eventorrafia
+Endometritis post parto
+Revascularizacion miocardica
+
+
+)
+- Egreso - lista select (VIVO/MUERTO/ N/A)
+- Sitio - lista select desplegable info pendiente (
+SITIO
+1. Absceso Espinal sin Meningitis
+2. Absceso Mamariomastitis
+3. Conjuntivitis
+4. Cicuncision en Recien Nacidos
+5. Endocarditis
+6. Endometritis
+7. Enterocolitis Necrotizante
+8. Gastroenteritis
+9. Herida Quirúrgica Incisional Superficial
+10. Herida Quirúrgica Incisional Superficial Secundaria
+11. Herida Quirúrgica Incisional Profunda
+12. Herida Quirurgica Organo/Espacio
+13. Infeccion de Cavidad (Boca, Lengua, Encias)
+14. Infección de la Articulacion o Bursa
+15. Infeccion de la Cúpula Vaginal
+15. Infección de la Episiotomia
+16. Infección de Tracto Respiratorio Superior
+17. Infección del Espacio Intervertebral
+18. Infección del Oido/mastoides
+19. Infeccion del Torrente Sanguineo Linea Vascular - CVC
+19. Infeccion del otros Torrente Sanguineo Linea Vascular  - PICC
+19. Infeccion del Torrente Sanguineo - Cateter implantable
+19. Infeccion del Torrente Sanguineo - Cateter Mahurkar
+19. Infeccion del Torrente Sanguineo - Cateter umbilical
+20. Infeccion del Torrente Sanguineo Linea Vascular con otro foco
+21. Infeccion del Tracto Gastrointestinal
+22. Infeccion Intraabdominal
+23. Infeccion Intracraneal
+24. Infeccion Sintomática del Tracto Urinario
+25. Infeccion Sintomática del Tracto Urinario con Sonda
+26. Infeccion Sistémica/Disemiada
+27. Infección Venosa o Arterial
+27. Infección arte
+28. Mediastinitis
+29. Meningitis o Ventriculitis
+30. Miocarditis o Pericarditis
+31. Neumonia 1 - 2 - 3
+32. Neumonia Asociada Intubación 1 - 2 - 3
+33. Neumonia Asociada a Ventilador 1 - 2 - 3
+34. Ojo Exepto Conjuntivitis
+35. Onfalitis
+36. Osteomielitis
+37. Otras Infecciones del Tracto Reproductivo
+38. Otras Infecciones del Tracto Respiratorio Inferior
+39. Otras Infecciones del Tracto Urinario
+40. Otros
+41. Piel
+41. Piel - Flebitis
+42. Pustulosis Infantil
+43. Quemadura
+44. Sepsis Clinica
+45. Sinusitis
+46. Tejidos Blandos
+47. Traquea-Bronquios-Bronquiolos (Sin neumonia)
+48. Ulcera por Decúbito
+49. Bacteriuria Asintomatica Bacteremica
+50. No aplica
+50. No aplica
+51. Infeccion Previa
+52. No cumple criterios
+52. No cumple criterios
+53. LA - Infeccion del Torrente Sanguineo sin Linea Vascular - Arterial
+54. Herida Quirúrgica Incisional Profunda Primaria
+55. Herida Quirúrgica Incisional Profunda Secundaria
+56. Herida Quirúrgica Incisional Superficial Primaria
+57. Covid-19
+
+)
+- TIPO
+- CLASIFICACIÓN
+- CLASIFICACIÓN EN TEXTO (  VA LIGADO CON COLUMNA T, U, V
+- Especialidad que realizo cirugia lista select opciones SACAR DE EXCEL (
+
+ESPECIALIDAD QUE REALIZO LA Qx.
+CIRUGIA CARDIOVASCULAR
+CIRUGIA DE CABEZA Y CUELLO
+CIRUGIA DE MAMA
+CIRUGIA DE TORAX
+CIRUGIA GASTRO ONCOLOGICA
+CIRUGIA GASTROINTESTINAL-HEPATOBILIAR
+CIRUGIA GENERAL
+CIRUGIA ONCOLOGICA
+CIRUGIA MAXILOFACIAL
+CIRUGIA PEDIATRICA
+CIRUGIA PLASTICA
+GINECOLOGIA ONCOLOGICA
+GINECOLOGIA Y OBSTETRICIA
+NEUROCIRUGIA
+ODONTOLOGIA GRAL.
+OFTALMOLOGIA
+ORTOPEDIA
+OTORRINOLARINGOLOGIA
+CIRUGIA QUEMADOS
+UROLOGIA
+CIRUGIA TRAUMA Y EMERGENCIA
+CIRUGIA TRASPLANTE Y ORGANO ABDOMINAL
+CIRUGIA LAPAROSCOPIA
+RADIOLOGIA INTERVENCIONISTA
+GASTROENTEROLOGÍA
+
+
+
+
+
+)
+- Procedimiento quirurjico- Baño quirurjico (SI/NO)
+
+- ASEPSIA QUIRURJICA (SI/NO)
+- PROFILAXIS (SI/NO)
+- ANTIBIÓTICOS USADOS (
+
+ANTIBIÓTICOS USADOS
+Amikacina
+Amoxicilina/ A.Clavulamico
+Ampicilina
+Ampicilina/ Sulbactam
+Anfotericina
+Anidulofungina
+Aztreonam
+Caspofungina
+Cefazolina
+Cefepime
+Cefoperazona / Sulbactam
+Cefotaxime
+Cefoxitin
+Ceftriaxone
+Cefuroxime
+Ciprofloxacina
+Claritromicina
+Clindamicina
+Colistina
+Daptomicina
+Ertapenem
+Fluconazol
+Gentamicina
+Imipenem
+Linezolid
+Meropenem
+Metronidazol
+Oxacilina
+Penicilina
+Piperacilina / Tazobactam
+Polimixina
+Rifampicina
+Tigeciclina
+Trimetoprim / Sulfametoxazol
+Vancomicina
+Ceftazidima
+NO APLICA
+
+)
+- ASA PREOPERATORIA (
+
+1, 2, 3, 4, 5, 6 , Sin registro
+
+
+
+)
+- TIEMPO QUIRURJICO
+- TIPO CIRUGÍA (LISTA SELECT ELECTIVA/URGENCIA
+- CLASIFICACIÓN CIRUGIA (L (1), LC (2), C (3) , S (4))
+- puntaje NNIS - LISTA SELECT (0,1,2,3,SD)
+
+
+=SI((ESBLANCO(U3:U2666) + ESBLANCO(V3:V2666)) > 0; "";
+  SI((U3:U2666 = 1) * (V3:V2666 = 1); "Colonización Intrahospitalaria";
+  SI((U3:U2666 = 1) * (V3:V2666 = 2); "Contaminado Intrahospitalaria";
+  SI((U3:U2666 = 1) * (V3:V2666 = 3); "Infección";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4) * (T3:T2666 = "51. Infeccion Previa"); "Infección Previa";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4) * (T3:T2666 = "52. No cumple criterios"); "No Cumple Criterios";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4); "No aplica";
+  SI((U3:U2666 = 1) * (V3:V2666 = 5); "Infección sin Mios";
+  SI((U3:U2666 = 2) * (V3:V2666 = 1); "Colonización Extrahospitalaria";
+  SI((U3:U2666 = 2) * (V3:V2666 = 2); "Contaminado Extrahospitalaria";
+  SI((U3:U2666 = 2) * (V3:V2666 = 3); "Infección Extrahospitalaria";
+SI((U3:U2666 = 1) * (V3:V2666 = 6); "Infección Polimicrobiano";
+SI((U3:U2666 = 1) * (V3:V2666 = 7); "Complicación";
+  "No aplica")))))))))))
+))
+
+
+)
+- REVISIÓN CON EQUIPO (opciones: requiere apoyo / no requiere apoyo) - requiere apoyo -> campos:
+
+-duda (si/no)
+-estado (aprobado / descartado)
+-modificado (si/no)
+-revisado por (enfermera 1 - 10)
+-fecha de reporte HS
+-comentarios enfermeros
+
+
+
+- INTERCONSULTA CON INFECTOLOGÍA (si/no)
+- COMENTARIOS
+- FECHA DE INSERCIÓN
+. FECHA DE RETIRO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+apuntes UI
+despeus dedigilenciar formulario epidemiologia y datos complementarios mostrar n badge de diligeniado epidemoloua y lo mismo cuand este diligeciado proa. un badge  en el bloque delacient
+aplickar
+
+
+filtro de fecha año y mes en registros por servicios
+
+
+
+
+
+
+
+campos que no cambian.iguales para todos los microoganismos
+procedencia
+diagnostico ingreso
+asegurador
+peso
+fecha de ingreso.
+
+
+Campos desde tipo de muestra -> modulo/formulario DATOS COMPLEMENTARIOS (información adicional del microorganismo x)
+
+
+PACIENTES CON PROA:
+BANGUERO AGUILAR IAN DAVID - PEDIATRIA CLINICA URGENCIAS 
+SAAVEDRA SAAVEDRA DENINSON - EXTENSION DOMICILIARIA 
+
+
+
+PROA HUV:
+filtrar repetidos en base de datos. 
+
+
+
+
+
+ROLES PROAHUV:
+AUXILIARES Y ENFERMERAS
+MEDICOS Y ESPECIALISTAS
+
+
+HISTORIAL DE ACTIVIDAD DE USUARIOS
+(AUXILIAR 1 -10, ENEFERMERO 1-10, MEDICO 1-10
+
+
+
+
+    CAMPOS MICROBIOLOGIA
+    TIPO ID (antes de ID) - lista select 
+    
+PESTAÑA DATOS COMPLEMENTARIOS
+- Procedencia
+- Diagnostico de ingreso
+- Asegurador
+-Peso (kg)
+- Fecha de ingreso
+- Microorganismo 2
+- Microorganismo 3
+- Fecha quirurjica previa a la infección
+
+
+
+- DIAS ENTRE Qx. PREVIA E INFECCIÓN (fecha automatica CALCULLO FECHA TOMA MUESTRA - FECHA QX PREVIA )
+
+
+
+
+
+
+- CATEGORÍA Quirurjica 
+- Egreso - lista select (VIVO/MUERTO/ N/A)
+- Sitio - lista select desplegable info pendiente
+- TIPO
+- CLASIFICACIÓN
+- CLASIFICACIÓN EN TEXTO (  VA LIGADO CON COLUMNA T, U, V 
+- Especialidad que realizo cirugia lista select opciones SACAR DE EXCEL
+- Procedimiento quirurjico
+- Baño quirurjico (SI/NO)
+- ASEPSIA QUIRURJICA (SI/NO)
+- PROFILAXIS (SI/NO)
+- ANTIBIÓTICOS USADOS (SI/NO)
+- ASA PREOPERATORIA (SI/NO)
+- TIEMPO QUIRURJICO
+- TIPO CIRUGÍA (LISTA SELECT ELECTIVA/URGENCIA
+- CLASIFICACIÓN CIRUGIA (L (1), LC (2), C (3) , S (4))
+- puntaje NNIS - LISTA SELECT (0,1,2,3,SD)
+
+
+=SI((ESBLANCO(U3:U2666) + ESBLANCO(V3:V2666)) > 0; "";
+  SI((U3:U2666 = 1) * (V3:V2666 = 1); "Colonización Intrahospitalaria";
+  SI((U3:U2666 = 1) * (V3:V2666 = 2); "Contaminado Intrahospitalaria";
+  SI((U3:U2666 = 1) * (V3:V2666 = 3); "Infección";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4) * (T3:T2666 = "51. Infeccion Previa"); "Infección Previa";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4) * (T3:T2666 = "52. No cumple criterios"); "No Cumple Criterios";
+  SI((U3:U2666 = 1) * (V3:V2666 = 4); "No aplica";
+  SI((U3:U2666 = 1) * (V3:V2666 = 5); "Infección sin Mios";
+  SI((U3:U2666 = 2) * (V3:V2666 = 1); "Colonización Extrahospitalaria";
+  SI((U3:U2666 = 2) * (V3:V2666 = 2); "Contaminado Extrahospitalaria";
+  SI((U3:U2666 = 2) * (V3:V2666 = 3); "Infección Extrahospitalaria";
+SI((U3:U2666 = 1) * (V3:V2666 = 6); "Infección Polimicrobiano";
+SI((U3:U2666 = 1) * (V3:V2666 = 7); "Complicación";
+  "No aplica")))))))))))
+))
+
+
+)
+- REVISIÓN CON EQUIPO (opciones: requiere apoyo / no requiere apoyo
+- INTERCONSULTA CON INFECTOLOGÍA (si/no)
+- COMENTARIOS
+- FECHA DE INSERCIÓN
+. FECHA DE RETIRO
+
+
+
+CAMPO CATEGORIA QX EXTRAER OPCIONES
+  CAMPO PROCEDENCIA -> NACIONALIDAD DEL PACIENTE DESPLEGABLE CON PAISES (DANE)
+
+
+
+- Sección 
+
+
+Auxiliar 1 - 10
+
+Enfermero 1 - 5
+
+Medico 1 - 5
+
+coordinador PROA (admin)
+
+coordinador EPIDEMIOLOGIA (admin)
+
+Epimediologo 
+
+
+ 

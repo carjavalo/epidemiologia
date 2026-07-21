@@ -1,0 +1,25 @@
+/* Estilos personalizados para el menú de usuario */
+.navbar-nav.ml-auto {
+    margin-right: 40px !important;
+}
+
+.nav-item.dropdown.user-menu {
+    margin-right: 30px !important;
+}
+
+/* Otros ajustes para el menú desplegable */
+.dropdown-menu-right {
+    right: 20px !important;
+    left: auto !important;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+    .navbar-nav.ml-auto {
+        margin-right: 15px !important;
+    }
+    
+    .nav-item.dropdown.user-menu {
+        margin-right: 10px !important;
+    }
+} 

@@ -1,0 +1,3 @@
+Cod_Episodio|Cod_Sala|Nom_Sala|Num_Cama|F_Ingreso|Cod_Eps|Nom_Eps|Hist_Clinica|Tipo_Ident|Num_Ident|Nombre|Apellido1|Apellido2|Sexo|Fec_Nacimiento|CIE10|Diagnostico|Antimicrobiano|Instrucciones|Fecha_hora_suministro
+12453|75|UCI 5|2503|2025-03-15 13:19:00|901021565|EMSSANAR EPS|167402|CC|16474122|LUIS ANGEL|ANGULO|REINA|M|1955/11/26|A419|SEPSIS|Piperacilina / tazobactam vial x 4.5 gr|1400 MILIGRAMOS, ENDOVENOSA, Cada 8 horas, por 24 HORAS|2025-03-16 00:02:56
+12453|75|UCI 5|2503|2025-03-15 13:19:00|901021565|EMSSANAR EPS|167402|CC|16474122|LUIS ANGEL|ANGULO|REINA|M|1955/11/26|A419|SEPSIS|Meropenem vial x 1 gr|1000 MILIGRAMOS, ENDOVENOSA, Cada 8 horas, por 7 DIAS|2025-03-19 08:00:00

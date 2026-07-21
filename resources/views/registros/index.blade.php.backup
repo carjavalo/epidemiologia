@@ -1,0 +1,873 @@
+﻿@extends('adminlte::page')
+
+@section('title', 'Registros por Servicio')
+
+@section('content_header')
+    <div class="d-flex justify-content-between align-items-center">
+        <h1><i class="fas fa-hospital mr-2"></i>Registros por Servicio</h1>
+        <span class="badge badge-info" style="font-size:1rem">
+            {{ $serviciosPaginados->total() }} servicio(s)
+        </span>
+    </div>
+@stop
+
+@section('content')
+
+    {{-- Botón volver si hay servicio seleccionado --}}
+    @if($servicioSeleccionado)
+        <div class="mb-3">
+            <a href="{{ route('registros.index') }}" class="btn btn-outline-primary btn-lg">
+                <i class="fas fa-arrow-left mr-2"></i>Volver a Servicios
+            </a>
+        </div>
+    @endif
+
+    {{-- Buscador --}}
+    <div class="card card-outline card-primary mb-3">
+        <div class="card-body py-3">
+            <form method="GET" action="{{ route('registros.index') }}">
+                @if($servicioSeleccionado)
+                    <input type="hidden" name="servicio" value="{{ $servicioSeleccionado }}">
+                @endif
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-primary text-white">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                    <input type="text"
+                           name="search"
+                           class="form-control form-control-lg"
+                           placeholder="Buscar por servicio, paciente o documento..."
+                           value="{{ $search }}"
+                           autofocus>
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary btn-lg">Buscar</button>
+                        @if($search)
+                            <a href="{{ route('registros.index') }}{{ $servicioSeleccionado ? '?servicio='.$servicioSeleccionado : '' }}" class="btn btn-outline-secondary btn-lg" title="Limpiar búsqueda">
+                                <i class="fas fa-times"></i>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Grid de Servicios o Pacientes --}}
+    <div class="row">
+        @forelse($serviciosPaginados as $servicio)
+            @php
+                $servicioNombre = $servicio->Nom_Sala;
+                $pacientesPorServicio = $registrosPorServicio[$servicioNombre] ?? collect();
+                $totalPacientes = $pacientesPorServicio->count();
+                $servicioKey = 'servicio-' . md5($servicioNombre);
+            @endphp
+
+            @if(!$servicioSeleccionado)
+                {{-- Tarjeta de Servicio (vista grid) --}}
+                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                    <div class="card card-outline card-primary service-card shadow-sm h-100">
+                        <a href="{{ route('registros.index', ['servicio' => $servicioNombre]) }}" 
+                           class="card-header service-header text-decoration-none">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center flex-grow-1">
+                                    <div class="service-icon mr-3">
+                                        <i class="fas fa-hospital-alt"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h6 class="mb-0 font-weight-bold text-truncate" title="{{ $servicioNombre }}">
+                                            {{ Str::limit($servicioNombre, 35) }}
+                                        </h6>
+                                        <small class="text-light-muted">
+                                            <i class="fas fa-users mr-1"></i>{{ $totalPacientes }} paciente(s)
+                                        </small>
+                                    </div>
+                                </div>
+                                <i class="fas fa-chevron-right text-white-50 ml-2"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            @else
+                {{-- Pacientes en grid expandido --}}
+                @foreach($pacientesPorServicio as $pacienteId => $medicamentosPorPaciente)
+                    @php
+                        $primerRegistro = $medicamentosPorPaciente->first()?->first();
+                        $pacienteKey = $servicioKey . '-pac-' . md5($pacienteId);
+                    @endphp
+
+                    <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
+                            @foreach($pacientesPorServicio as $pacienteId => $medicamentosPorPaciente)
+                                @php
+                                    $primerRegistro = $medicamentosPorPaciente->first()?->first();
+                                    $pacienteKey = $servicioKey . '-pac-' . md5($pacienteId);
+                                @endphp
+
+                                {{-- Tarjeta de paciente --}}
+                                <div class="card patient-card mb-2">
+                                    <div class="card-header patient-header"
+                                         data-toggle="collapse"
+                                         data-target="#{{ $pacienteKey }}"
+                                         aria-expanded="false"
+                                         role="button">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="d-flex align-items-center">
+                                                <span class="patient-avatar mr-2">
+                                                    <i class="fas fa-user-injured text-primary"></i>
+                                                </span>
+                                                <div>
+                                                    <strong class="text-dark">{{ $primerRegistro->Medico_Trata ?? 'Sin nombre' }}</strong>
+                                                    <small class="d-block text-muted">
+                                                        {{ $primerRegistro->Tipo_Ident }} {{ $primerRegistro->Num_Ident }}
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <span class="badge badge-info mr-2">
+                                                    {{ $medicamentosPorPaciente->count() }} med.
+                                                </span>
+                                                <i class="fas fa-chevron-down collapse-icon text-muted"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Medicamentos del paciente --}}
+                                    <div id="{{ $pacienteKey }}" class="collapse">
+                                        <div class="card-body p-2">
+                                            @foreach($medicamentosPorPaciente as $medicamento => $registros)
+                                                @php
+                                                    $medKey = $pacienteKey . '-med-' . md5($medicamento);
+                                                    $totalDosis = $registros->count();
+                                                @endphp
+
+                                                {{-- Tarjeta de medicamento --}}
+                                                <div class="card med-card mb-2">
+                                                    <div class="card-header med-header"
+                                                         data-toggle="collapse"
+                                                         data-target="#{{ $medKey }}"
+                                                         aria-expanded="false"
+                                                         role="button">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <i class="fas fa-pills text-success mr-1"></i>
+                                                                <strong>{{ $medicamento }}</strong>
+                                                            </div>
+                                                            <div class="d-flex align-items-center">
+                                                                <span class="badge badge-secondary badge-sm mr-2">
+                                                                    {{ $totalDosis }} dosis
+                                                                </span>
+                                                                <i class="fas fa-chevron-down collapse-icon text-muted"></i>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Registros individuales del medicamento --}}
+                                                    <div id="{{ $medKey }}" class="collapse">
+                                                        <div class="card-body p-2 bg-white">
+                                                            @foreach($registros as $registro)
+                                                                @php $regKey = $medKey . '-reg-' . $registro->id; @endphp
+
+                                                                {{-- Tarjeta de registro individual --}}
+                                                                <div class="card reg-card mb-2">
+                                                                    <div class="card-header reg-header"
+                                                                         data-toggle="collapse"
+                                                                         data-target="#{{ $regKey }}"
+                                                                         aria-expanded="false"
+                                                                         role="button">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <div>
+                                                                                <i class="fas fa-file-medical text-info mr-1"></i>
+                                                                                <strong>{{ \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('d/m/Y') }}</strong>
+                                                                                <span class="text-muted ml-2">{{ $registro->Ho_Sumisnistro }}</span>
+                                                                            </div>
+                                                                            <i class="fas fa-chevron-down collapse-icon text-muted"></i>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {{-- Formulario PROA --}}
+                                                                    <div id="{{ $regKey }}" class="collapse">
+                                                                        <div class="card-body bg-white p-3">
+                                                                        @php $interv = $intervenciones[$registro->id] ?? null; @endphp
+
+                                                                        <form class="proa-form" data-id="{{ $registro->id }}">
+                                                                        @csrf
+
+                                                                        <input type="hidden" name="id_deta_procedimiento" value="{{ $registro->id }}">
+
+                                                                        {{-- SECCIÓN: Datos del paciente (solo lectura, automáticos) --}}
+                                                                        <div class="section-title bg-primary text-white px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-user mr-1"></i> Datos del Paciente
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">MES</label>
+                                                                                <input type="text" class="form-control form-control-sm"
+                                                                                       name="mes" value="{{ $interv?->mes ?? ($registro->Fec_Sumistro ? \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('m') : '') }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA DE INTERVENCIÓN</label>
+                                                                                <input type="date" class="form-control form-control-sm"
+                                                                                       name="fecha_intervencion" value="{{ $interv?->fecha_intervencion?->format('Y-m-d') ?? date('Y-m-d') }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">SALA</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Nom_Sala ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-1">
+                                                                                <label class="proa-label">CAMA</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Num_Cama ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA DE INGRESO</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->F_Ingreso ? \Carbon\Carbon::parse($registro->F_Ingreso)->format('d/m/Y') : '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-1">
+                                                                                <label class="proa-label">ID EPS</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Cod_Eps ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">EPS</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Nom_Eps ?? '' }}">
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">HC</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Hist_Clinica ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-1">
+                                                                                <label class="proa-label">TIPO ID</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Tipo_Ident ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">ID</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Num_Ident ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">NOMBRE</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Medico_Trata ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-1">
+                                                                                <label class="proa-label">GÉNERO</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Sexo ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">CIE-10</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->CIE10 ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">DIAGNÓSTICOS</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       title="{{ $registro->Diagnostico }}"
+                                                                                       value="{{ Str::limit($registro->Diagnostico, 30) ?? '' }}">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- SECCIÓN: Antimicrobiano (automático) --}}
+                                                                        <div class="section-title bg-info text-white px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-pills mr-1"></i> Antimicrobiano
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA DE INICIO</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Fec_Sumistro ? \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('d/m/Y') : '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">ANTIMICROBIANOS</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Antimicrobiano ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">VÍA DE ADMINISTRACIÓN</label>
+                                                                                <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                       value="{{ $registro->Via_Aplicacion ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">DOSIS SUMINISTRADA</label>
+                                                                                <input type="text" class="form-control form-control-sm"
+                                                                                       name="dosis_suministrada"
+                                                                                       value="{{ $interv?->dosis_suministrada ?? $registro->Cantidad ?? '' }}"
+                                                                                       placeholder="Ej: 500 mg">
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">SISTEMA INTERNACIONAL DE UNIDADES</label>
+                                                                                <select class="form-control form-control-sm" name="id_sis_internacional">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['sisInternacional'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_sis_internacional ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">FRECUENCIA</label>
+                                                                                <select class="form-control form-control-sm" name="id_frecuencia">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['frecuencias'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_frecuencia ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">PERFIL ANTIMICROBIANO</label>
+                                                                                <select class="form-control form-control-sm" name="id_perfil_antimicrobiano">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['perfiles'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_perfil_antimicrobiano ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">ESPECIALIDAD TRATANTE</label>
+                                                                                <select class="form-control form-control-sm" name="id_esp_tratante">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['espTratantes'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_esp_tratante ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">DIAGNÓSTICO INFECCIOSO</label>
+                                                                                <select class="form-control form-control-sm" name="id_diag_infeccioso">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['diagInfecciosos'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_diag_infeccioso ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- SECCIÓN: Adecuación --}}
+                                                                        <div class="section-title bg-warning text-dark px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-check-circle mr-1"></i> Adecuación del Tratamiento
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">¿DOSIS ADECUADA?</label>
+                                                                                <select class="form-control form-control-sm" name="dosis_adecuada">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','No aplica'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->dosis_adecuada ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA FIN ANTIBIÓTICO</label>
+                                                                                <input type="date" class="form-control form-control-sm"
+                                                                                       name="fecha_fin_antibiotico"
+                                                                                       value="{{ $interv?->fecha_fin_antibiotico?->format('Y-m-d') ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">TIEMPO DE TRATAMIENTO</label>
+                                                                                <input type="text" class="form-control form-control-sm"
+                                                                                       name="tiempo_tratamiento"
+                                                                                       value="{{ $interv?->tiempo_tratamiento ?? '' }}"
+                                                                                       placeholder="Ej: 7 días">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">¿DURACIÓN ADECUADA?</label>
+                                                                                <select class="form-control form-control-sm" name="duracion_adecuada">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','No aplica'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->duracion_adecuada ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">INDICACIÓN DE LA TERAPIA</label>
+                                                                                <select class="form-control form-control-sm" name="id_indicacion_terapia">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['indicacionesTerapia'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_indicacion_terapia ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">TRATAMIENTO</label>
+                                                                                <select class="form-control form-control-sm" name="id_tratamiento">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['tratamientos'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_tratamiento ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- SECCIÓN: Cultivo --}}
+                                                                        <div class="section-title bg-secondary text-white px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-flask mr-1"></i> Cultivo y Microbiología
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">¿CULTIVO PREVIO?</label>
+                                                                                <select class="form-control form-control-sm" name="cultivo_previo">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->cultivo_previo ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA DE MUESTRA</label>
+                                                                                <input type="date" class="form-control form-control-sm"
+                                                                                       name="fecha_muestra"
+                                                                                       value="{{ $interv?->fecha_muestra?->format('Y-m-d') ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">TIPO DE MUESTRA</label>
+                                                                                <select class="form-control form-control-sm" name="id_tipo_muestra">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['tiposMuestra'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_tipo_muestra ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">RESULTADOS</label>
+                                                                                <select class="form-control form-control-sm" name="id_resultado">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['resultados'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_resultado ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">MICROORGANISMO</label>
+                                                                                <select class="form-control form-control-sm" name="id_microorganismo">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['microorganismos'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_microorganismo ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">PERFIL</label>
+                                                                                <select class="form-control form-control-sm" name="id_pantimicrobiano">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach($catalogos['pantimicrobianos'] as $item)
+                                                                                        <option value="{{ $item->id }}" {{ ($interv?->id_pantimicrobiano ?? '') == $item->id ? 'selected' : '' }}>
+                                                                                            {{ $item->descripcion }}
+                                                                                        </option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-6">
+                                                                                <label class="proa-label">SOLICITUDES DE PRUEBAS ESPECIALES Y TEST RÁPIDOS</label>
+                                                                                <textarea class="form-control form-control-sm" name="solicitudes_pruebas" rows="2"
+                                                                                          placeholder="Describa las pruebas especiales solicitadas...">{{ $interv?->solicitudes_pruebas ?? '' }}</textarea>
+                                                                            </div>
+                                                                            <div class="col-md-6">
+                                                                                <label class="proa-label">OPORTUNIDAD DEL REPORTE</label>
+                                                                                <input type="text" class="form-control form-control-sm"
+                                                                                       name="oportunidad_reporte"
+                                                                                       value="{{ $interv?->oportunidad_reporte ?? '' }}"
+                                                                                       placeholder="Ej: 24 horas">
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- SECCIÓN: Valoración infectología --}}
+                                                                        <div class="section-title bg-danger text-white px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-user-md mr-1"></i> Valoración por Infectología
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">VALORACIÓN INFECTOLOGÍA GRUPO 1</label>
+                                                                                <select class="form-control form-control-sm" name="valoracion_grupo1">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','No aplica'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->valoracion_grupo1 ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-3">
+                                                                                <label class="proa-label">VALORACIÓN INFECTOLOGÍA UCI/UCIN/NEUTROPENIA</label>
+                                                                                <select class="form-control form-control-sm" name="valoracion_uci">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','No aplica'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->valoracion_uci ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">FECHA DE LA VALORACIÓN</label>
+                                                                                <input type="date" class="form-control form-control-sm"
+                                                                                       name="fecha_valoracion"
+                                                                                       value="{{ $interv?->fecha_valoracion?->format('Y-m-d') ?? '' }}">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">AJUSTE DE PRESCRIPCIÓN</label>
+                                                                                <select class="form-control form-control-sm" name="ajuste_prescripcion">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','No aplica'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->ajuste_prescripcion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- SECCIÓN: Seguimiento PROA --}}
+                                                                        <div class="section-title bg-success text-white px-3 py-1 mb-2 rounded">
+                                                                            <i class="fas fa-clipboard-check mr-1"></i> Seguimiento PROA
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">ADHERENCIA AL PROA</label>
+                                                                                <select class="form-control form-control-sm" name="adherencia_proa">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No','Parcial'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->adherencia_proa ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">¿ADHERENCIA A GUÍAS?</label>
+                                                                                <select class="form-control form-control-sm" name="adherencia_guias">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->adherencia_guias ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-4">
+                                                                                <label class="proa-label">¿POR QUÉ NO ES ADHERENTE?</label>
+                                                                                <input type="text" class="form-control form-control-sm"
+                                                                                       name="razon_no_adherencia"
+                                                                                       value="{{ $interv?->razon_no_adherencia ?? '' }}"
+                                                                                       placeholder="Razón de no adherencia...">
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">CASO CERRADO</label>
+                                                                                <select class="form-control form-control-sm" name="caso_cerrado">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->caso_cerrado ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-2">
+                                                                                <label class="proa-label">MORTALIDAD</label>
+                                                                                <select class="form-control form-control-sm" name="mortalidad">
+                                                                                    <option value="">— Seleccionar —</option>
+                                                                                    @foreach(['Si','No'] as $op)
+                                                                                        <option value="{{ $op }}" {{ ($interv?->mortalidad ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="row mb-3">
+                                                                            <div class="col-md-12">
+                                                                                <label class="proa-label">OBSERVACIÓN</label>
+                                                                                <textarea class="form-control form-control-sm" name="observacion" rows="2"
+                                                                                          placeholder="Observaciones generales...">{{ $interv?->observacion ?? '' }}</textarea>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        {{-- Botón guardar --}}
+                                                                        <div class="d-flex justify-content-end align-items-center">
+                                                                            <span class="save-msg text-success mr-3 d-none">
+                                                                                <i class="fas fa-check-circle mr-1"></i> Guardado correctamente
+                                                                            </span>
+                                                                            <button type="button" class="btn btn-success btn-sm btn-guardar-proa">
+                                                                                <i class="fas fa-save mr-1"></i> Guardar Intervención
+                                                                            </button>
+                                                                        </div>
+
+                                                                        </form>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                {{-- /registro individual --}}
+
+                                                            @endforeach
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {{-- /medicamento --}}
+
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                                {{-- /paciente --}}
+
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+            </div>
+            {{-- /servicio --}}
+
+        @empty
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    No se encontraron servicios.
+                </div>
+            </div>
+        @endforelse
+    </div>
+
+    {{-- Paginación --}}
+    @if($serviciosPaginados->hasPages())
+        <div class="d-flex justify-content-center mt-4">
+            {{ $serviciosPaginados->links('pagination::bootstrap-4') }}
+        </div>
+    @endif
+
+@stop
+
+@section('css')
+    <style>
+        /* Tarjetas de servicio en grid */
+        .service-card {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        .service-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+        }
+        .service-header {
+            cursor: pointer;
+            background: linear-gradient(135deg, #6e9eff 0%, #4c7bd9 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.2s ease;
+        }
+        .service-header:hover {
+            background: linear-gradient(135deg, #5c8edb 0%, #3a6bc7 100%);
+            text-decoration: none !important;
+        }
+        .service-icon {
+            font-size: 2rem;
+            color: rgba(255,255,255,0.9);
+        }
+        .service-info h6 {
+            font-size: 0.95rem;
+            color: white;
+            margin-bottom: 3px;
+        }
+        .service-info small {
+            color: rgba(255,255,255,0.85);
+            font-size: 0.8rem;
+        }
+        .text-light-muted {
+            color: rgba(255,255,255,0.85) !important;
+        }
+
+        /* Tarjetas de paciente */
+        .patient-card {
+            margin-bottom: 8px !important;
+            border-radius: 6px;
+        }
+        .patient-card > .card-header {
+            border-left: 4px solid #007bff;
+            padding: 8px 12px !important;
+            background-color: #fff;
+        }
+        .patient-avatar {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #e8f0fe;
+            border-radius: 50%;
+        }
+        .patient-avatar i {
+            font-size: 0.9rem;
+        }
+        .patient-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .patient-header:hover {
+            background-color: #f0f4ff !important;
+        }
+
+        /* Tarjetas de medicamento */
+        .med-card {
+            margin-bottom: 8px;
+            border-radius: 4px;
+        }
+        .med-card > .card-header {
+            border-left: 3px solid #28a745;
+            padding: 6px 10px !important;
+            font-size: 0.85rem;
+            background-color: #f8f9fa;
+        }
+        .med-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .med-header:hover {
+            background-color: #e9f7ec !important;
+        }
+
+        /* Tarjetas de registro */
+        .reg-card {
+            margin-bottom: 6px;
+            border: 1px solid #e3e6f0;
+        }
+        .reg-card > .card-header {
+            border-left: 3px solid #6c757d;
+            padding: 5px 10px !important;
+            font-size: 0.8rem;
+            background-color: #fafbfc;
+        }
+        .reg-header {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .reg-header:hover {
+            background-color: #f1f3f5 !important;
+        }
+
+        /* Iconos de colapso */
+        .collapse-icon {
+            transition: transform 0.25s ease;
+            font-size: 0.85rem;
+        }
+        [aria-expanded="true"] .collapse-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Badges */
+        .badge-sm {
+            font-size: 0.7rem;
+            padding: 3px 7px;
+        }
+
+        /* Formulario PROA */
+        .section-title {
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+        }
+        .proa-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #495057;
+            display: block;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .proa-form .form-control-sm {
+            font-size: 0.78rem;
+            height: calc(1.5em + 0.5rem + 2px);
+        }
+        .proa-form .row {
+            margin-bottom: 0;
+        }
+        .proa-form .col-md-1,
+        .proa-form .col-md-2,
+        .proa-form .col-md-3,
+        .proa-form .col-md-4,
+        .proa-form .col-md-6,
+        .proa-form .col-md-12 {
+            padding-left: 6px;
+            padding-right: 6px;
+            margin-bottom: 8px;
+        }
+
+        /* Utilidades */
+        .text-sm {
+            font-size: 0.82rem;
+        }
+    </style>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function () {
+            // Rotar ícono de flecha al abrir/cerrar
+            $('.collapse').on('show.bs.collapse', function () {
+                var header = $('[data-target="#' + $(this).attr('id') + '"]');
+                header.attr('aria-expanded', 'true');
+            }).on('hide.bs.collapse', function () {
+                var header = $('[data-target="#' + $(this).attr('id') + '"]');
+                header.attr('aria-expanded', 'false');
+            });
+
+            // Guardar formulario PROA via AJAX
+            $(document).on('click', '.btn-guardar-proa', function () {
+                var $btn = $(this);
+                var $form = $btn.closest('.proa-form');
+                var $msg  = $form.find('.save-msg');
+
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...');
+                $msg.addClass('d-none');
+
+                var formData = $form.serializeArray();
+                // Incluir el token CSRF manualmente si serializeArray lo omite
+                var token = $('meta[name="csrf-token"]').attr('content');
+                if (!token) {
+                    formData.push({ name: '_token', value: $form.find('[name="_token"]').val() });
+                }
+
+                $.ajax({
+                    url: '{{ route("intervenciones-proa.guardar") }}',
+                    method: 'POST',
+                    data: formData,
+                    headers: { 'X-CSRF-TOKEN': token || $form.find('[name="_token"]').val() },
+                    success: function (resp) {
+                        if (resp.success) {
+                            $msg.removeClass('d-none');
+                            setTimeout(function () { $msg.addClass('d-none'); }, 4000);
+                        } else {
+                            alert('Error al guardar: ' + (resp.message || 'Error desconocido'));
+                        }
+                    },
+                    error: function (xhr) {
+                        var errMsg = 'Error al guardar la intervención.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errMsg += '\n' + xhr.responseJSON.message;
+                        }
+                        alert(errMsg);
+                    },
+                    complete: function () {
+                        $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar Intervención');
+                    }
+                });
+            });
+        });
+    </script>
+@stop

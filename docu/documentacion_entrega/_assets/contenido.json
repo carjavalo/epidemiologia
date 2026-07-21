@@ -1,0 +1,313 @@
+{
+  "CREDENCIALES_Y_CONFIGURACION": {
+    "titulo": "Credenciales y Configuración",
+    "subtitulo": "Sistema de Información PROA HUV",
+    "resumen": "Este documento describe la configuración técnica básica del sistema, las variables de entorno necesarias para su operación y las recomendaciones de seguridad para administrar credenciales y accesos institucionales.",
+    "secciones": [
+      {
+        "titulo": "1. Presentación",
+        "parrafos": [
+          "El sistema PROA HUV es una aplicación web desarrollada en Laravel, orientada a apoyar el Programa de Optimización del Uso de Antimicrobianos. Su configuración se basa principalmente en el archivo .env, que define los parámetros sensibles del entorno de ejecución.",
+          "El presente documento entrega a los responsables técnicos una referencia clara y ordenada sobre cómo administrar accesos, credenciales y servicios complementarios requeridos por el sistema."
+        ]
+      },
+      {
+        "titulo": "2. Configuración del entorno",
+        "parrafos": [
+          "La configuración general se realiza en el archivo .env del proyecto. En este archivo se definen variables como APP_NAME, APP_ENV, APP_URL y APP_DEBUG, las cuales determinan el comportamiento de la aplicación.",
+          "Se recomienda mantener APP_ENV en producción y APP_DEBUG en false una vez el sistema esté en operación, para evitar la exposición de información sensible."
+        ]
+      },
+      {
+        "titulo": "3. Conexión a base de datos",
+        "parrafos": [
+          "La conexión a la base de datos se configura mediante las variables DB_CONNECTION, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME y DB_PASSWORD. Estos valores deben coincidir con los del servidor MySQL asignado por el área de tecnología.",
+          "Antes de ejecutar migraciones o procesos de importación, debe verificarse la correcta conexión utilizando los comandos php artisan migrate:status o pruebas de acceso al servidor."
+        ]
+      },
+      {
+        "titulo": "4. Credenciales de usuarios",
+        "parrafos": [
+          "El acceso al sistema se realiza mediante autenticación web. Cada funcionario debe contar con un usuario propio, evitando el uso compartido de credenciales para mantener trazabilidad.",
+          "El administrador del sistema es responsable de la creación, modificación e inactivación de cuentas, así como de la asignación de roles según las funciones del usuario."
+        ]
+      },
+      {
+        "titulo": "5. Recomendaciones de seguridad",
+        "parrafos": [
+          "Se recomienda proteger el archivo .env restringiendo su acceso a nivel de servidor, mantener actualizadas las contraseñas, generar copias de seguridad periódicas de la base de datos y registrar cualquier cambio relevante de configuración."
+        ]
+      }
+    ]
+  },
+  "DOCUMENTACION_TECNICA": {
+    "titulo": "Documentación Técnica",
+    "subtitulo": "Sistema de Información PROA HUV",
+    "resumen": "Documento técnico que describe la arquitectura del sistema, los módulos funcionales, la estructura de base de datos y las consideraciones generales del entorno de desarrollo del sistema PROA HUV.",
+    "secciones": [
+      {
+        "titulo": "1. Introducción",
+        "parrafos": [
+          "El sistema PROA HUV es una aplicación web orientada a apoyar el seguimiento del uso de antimicrobianos en el Hospital Universitario del Valle. Combina información proveniente de epidemiología y de procedimientos clínicos para conformar una vista consolidada del paciente.",
+          "Este documento expone los componentes técnicos del sistema con el fin de servir como referencia para personal de desarrollo, soporte y administración."
+        ]
+      },
+      {
+        "titulo": "2. Arquitectura general",
+        "parrafos": [
+          "La aplicación se desarrolla sobre Laravel siguiendo el patrón Modelo-Vista-Controlador (MVC). Los modelos representan las entidades de negocio, los controladores gestionan la lógica funcional y las vistas Blade renderizan la interfaz de usuario.",
+          "Como capa de presentación se utiliza AdminLTE, que provee componentes consistentes para formularios, tablas y navegación. La interacción con el servidor combina formularios tradicionales y peticiones AJAX según el flujo."
+        ]
+      },
+      {
+        "titulo": "3. Módulos funcionales",
+        "parrafos": [
+          "El sistema se compone de módulos para gestión de usuarios, administración de catálogos clínicos, registros PROA, seguimiento microbiológico, importación de archivos y consulta por servicios o pacientes.",
+          "Cada módulo cuenta con sus propios controladores y vistas, manteniendo una estructura ordenada y separando responsabilidades funcionales."
+        ]
+      },
+      {
+        "titulo": "4. Base de datos",
+        "parrafos": [
+          "El motor utilizado es MySQL. Entre las tablas principales se encuentran pacientes, seguimiento_microbiologico, deta_procedimientos e intervenciones_proa. La tabla pacientes consolida la información básica del paciente proveniente de la base madre de epidemiología.",
+          "La tabla seguimiento_microbiologico integra los datos del cultivo, el tratamiento antimicrobiano y los indicadores de seguimiento, facilitando el análisis y la generación de reportes."
+        ]
+      },
+      {
+        "titulo": "5. Mantenimiento y despliegue",
+        "parrafos": [
+          "Las modificaciones estructurales del esquema se gestionan mediante migraciones. Se recomienda mantener actualizado el repositorio, ejecutar pruebas controladas antes de aplicar cambios y conservar copias de seguridad de la base de datos."
+        ]
+      }
+    ]
+  },
+  "DOCUMENTACION_TECNICA_ADICIONAL": {
+    "titulo": "Documentación Técnica Adicional",
+    "subtitulo": "Complemento técnico del sistema PROA HUV",
+    "resumen": "Documento complementario que profundiza en el flujo de datos, los estados de seguimiento y las consideraciones de carga e integridad para los procesos de importación masiva del sistema.",
+    "secciones": [
+      {
+        "titulo": "1. Introducción",
+        "parrafos": [
+          "Este documento amplía la información de la documentación técnica principal, enfocándose en los flujos internos de procesamiento, las validaciones de datos y las recomendaciones para garantizar la integridad de la información."
+        ]
+      },
+      {
+        "titulo": "2. Flujo de procesamiento",
+        "parrafos": [
+          "El proceso de importación inicia con el archivo de epidemiología, considerado base madre, que crea o actualiza registros en la tabla pacientes y genera entradas en seguimiento_microbiologico.",
+          "Posteriormente, el archivo PROA busca coincidencias por documento o historia clínica para complementar los registros con información de tratamiento antimicrobiano."
+        ]
+      },
+      {
+        "titulo": "3. Estados del seguimiento",
+        "parrafos": [
+          "El sistema utiliza campos booleanos para representar estados clave del caso, tales como tiene_procedimiento, tiene_intervencion_proa, cultivo_previo, caso_cerrado y mortalidad.",
+          "Estos indicadores permiten generar reportes y filtros sin requerir cálculos adicionales, simplificando la consulta y el análisis."
+        ]
+      },
+      {
+        "titulo": "4. Integridad y consistencia",
+        "parrafos": [
+          "La tabla pacientes conserva la identidad base del paciente. La tabla seguimiento_microbiologico almacena los detalles del episodio microbiológico y puede mantener algunos datos básicos del paciente para optimizar reportes.",
+          "Se recomienda evitar la duplicación manual de registros y respetar los campos clave de identificación al cargar nueva información."
+        ]
+      },
+      {
+        "titulo": "5. Trazabilidad y soporte",
+        "parrafos": [
+          "Los errores del sistema se registran en storage/logs/laravel.log. La revisión periódica de estos registros permite detectar incidencias tempranas y planear acciones correctivas oportunas."
+        ]
+      }
+    ]
+  },
+  "MANUAL_DE_USUARIO": {
+    "titulo": "Manual de Usuario",
+    "subtitulo": "Guía de uso del sistema PROA HUV",
+    "resumen": "Documento de orientación para el usuario final del sistema. Describe las funcionalidades principales, los pasos de uso recomendados y las consideraciones para una correcta operación.",
+    "secciones": [
+      {
+        "titulo": "1. Introducción",
+        "parrafos": [
+          "Este manual está dirigido al personal asistencial y administrativo encargado de operar el sistema PROA HUV. Su objetivo es facilitar el uso correcto y eficiente de las funcionalidades disponibles."
+        ]
+      },
+      {
+        "titulo": "2. Ingreso al sistema",
+        "parrafos": [
+          "El acceso al sistema se realiza desde un navegador web actualizado. El usuario debe ingresar su correo institucional y contraseña en la pantalla de inicio de sesión.",
+          "En caso de olvido o bloqueo de la contraseña, debe solicitarse el restablecimiento al administrador del sistema."
+        ]
+      },
+      {
+        "titulo": "3. Navegación general",
+        "parrafos": [
+          "Una vez autenticado, el usuario accede al panel principal donde se muestran las opciones disponibles según su rol. Desde el menú lateral puede dirigirse a los módulos de gestión, consulta, importación e informes.",
+          "Cada módulo presenta listados, formularios y filtros que facilitan la búsqueda y administración de la información."
+        ]
+      },
+      {
+        "titulo": "4. Registro y consulta de información",
+        "parrafos": [
+          "El registro de información se realiza completando los formularios disponibles en cada módulo. El sistema valida los datos obligatorios antes de almacenarlos.",
+          "La consulta puede hacerse mediante búsquedas, filtros por fecha, servicio o paciente, según las funcionalidades de cada módulo."
+        ]
+      },
+      {
+        "titulo": "5. Recomendaciones de uso",
+        "parrafos": [
+          "Se recomienda cerrar sesión al terminar el trabajo, evitar compartir credenciales y reportar cualquier comportamiento inesperado al equipo de soporte para mantener la confiabilidad del sistema."
+        ]
+      }
+    ]
+  },
+  "MATERIAL_ENTRENAMIENTO_SESION_1": {
+    "titulo": "Material de Entrenamiento - Sesión 1",
+    "subtitulo": "Introducción al sistema PROA HUV",
+    "resumen": "Documento de apoyo para la primera sesión de entrenamiento. Presenta el propósito del sistema, su alcance institucional y las funcionalidades generales orientadas al usuario nuevo.",
+    "secciones": [
+      {
+        "titulo": "1. Objetivos de la sesión",
+        "parrafos": [
+          "Esta sesión busca familiarizar al personal asistencial y administrativo con el sistema PROA HUV, sus objetivos institucionales y su relación con el Programa de Optimización del Uso de Antimicrobianos."
+        ]
+      },
+      {
+        "titulo": "2. Contexto institucional",
+        "parrafos": [
+          "El Hospital Universitario del Valle ha establecido el Programa PROA como una estrategia para mejorar la prescripción y uso de antimicrobianos, fortaleciendo la seguridad del paciente y la lucha contra la resistencia bacteriana.",
+          "El sistema brinda un soporte tecnológico que centraliza información clínica y microbiológica relevante para el equipo asistencial."
+        ]
+      },
+      {
+        "titulo": "3. Estructura general del sistema",
+        "parrafos": [
+          "El sistema se compone de módulos enfocados en la gestión de pacientes, registros de seguimiento microbiológico, intervenciones PROA y reportes estadísticos."
+        ]
+      },
+      {
+        "titulo": "4. Recorrido inicial",
+        "parrafos": [
+          "Durante la sesión se realiza un recorrido por la pantalla de inicio, el menú principal y las opciones generales, mostrando ejemplos básicos de consulta y registro."
+        ]
+      },
+      {
+        "titulo": "5. Compromisos posteriores a la sesión",
+        "parrafos": [
+          "Al finalizar la sesión, los participantes deben revisar el manual de usuario y reforzar el reconocimiento de los módulos para la siguiente jornada de entrenamiento."
+        ]
+      }
+    ]
+  },
+  "MATERIAL_ENTRENAMIENTO_SESION_2": {
+    "titulo": "Material de Entrenamiento - Sesión 2",
+    "subtitulo": "Operación avanzada del sistema PROA HUV",
+    "resumen": "Documento de apoyo para la segunda sesión de entrenamiento. Profundiza en el uso operativo del sistema, la importación de archivos y la consulta avanzada de información.",
+    "secciones": [
+      {
+        "titulo": "1. Objetivos de la sesión",
+        "parrafos": [
+          "Esta sesión busca afianzar el uso operativo del sistema, fortalecer la confianza del usuario en los módulos principales y resolver inquietudes prácticas surgidas en la primera jornada."
+        ]
+      },
+      {
+        "titulo": "2. Procesos de importación",
+        "parrafos": [
+          "Se explica el procedimiento para importar los archivos planos de epidemiología y PROA, identificando el formato esperado y los pasos para validar los resultados de la carga."
+        ]
+      },
+      {
+        "titulo": "3. Consulta y filtros avanzados",
+        "parrafos": [
+          "Se presentan ejemplos de consulta utilizando filtros por servicio, microorganismo, fecha y estado del caso, con énfasis en la interpretación correcta de los resultados."
+        ]
+      },
+      {
+        "titulo": "4. Registro de intervenciones PROA",
+        "parrafos": [
+          "Se demuestra el registro de intervenciones PROA, incluyendo dosis suministradas, adherencia y observaciones, así como la generación de reportes asociados."
+        ]
+      },
+      {
+        "titulo": "5. Cierre y evaluación",
+        "parrafos": [
+          "La sesión cierra con un espacio para preguntas, retroalimentación y compromisos individuales. Se entrega material adicional para consulta posterior."
+        ]
+      }
+    ]
+  },
+  "REGISTRO_HISTORICO_INTERACCIONES": {
+    "titulo": "Registro Histórico de Interacciones",
+    "subtitulo": "Sistema de Información PROA HUV",
+    "resumen": "Documento que describe el alcance, los criterios y la finalidad del registro histórico de interacciones del sistema, orientado a fortalecer la trazabilidad institucional.",
+    "secciones": [
+      {
+        "titulo": "1. Propósito",
+        "parrafos": [
+          "El registro histórico de interacciones permite conservar las acciones realizadas dentro del sistema, generando una base para la auditoría, la mejora continua y la trazabilidad clínica y administrativa."
+        ]
+      },
+      {
+        "titulo": "2. Información registrada",
+        "parrafos": [
+          "El sistema mantiene información asociada a los registros como fechas de creación, fechas de actualización y, según el módulo, indicadores que permiten reconocer el estado de los casos y de las intervenciones realizadas."
+        ]
+      },
+      {
+        "titulo": "3. Uso institucional",
+        "parrafos": [
+          "Esta información puede ser consultada por el equipo PROA y por las áreas autorizadas, con el fin de analizar tendencias, identificar oportunidades de mejora y respaldar decisiones clínicas y administrativas."
+        ]
+      },
+      {
+        "titulo": "4. Confidencialidad y manejo",
+        "parrafos": [
+          "El acceso al sistema y a su información debe realizarse bajo los principios de confidencialidad establecidos por la institución y por la normatividad vigente en materia de protección de datos."
+        ]
+      },
+      {
+        "titulo": "5. Recomendaciones",
+        "parrafos": [
+          "Se recomienda registrar oportunamente la información en el sistema y mantener los registros actualizados, para garantizar la utilidad del histórico como instrumento de soporte institucional."
+        ]
+      }
+    ]
+  },
+  "Estadistica": {
+    "titulo": "Estadísticas del Sistema",
+    "subtitulo": "Sistema de Información PROA HUV",
+    "resumen": "Documento orientador sobre los indicadores y reportes estadísticos generados por el sistema, su finalidad y su utilidad dentro del Programa de Optimización del Uso de Antimicrobianos.",
+    "secciones": [
+      {
+        "titulo": "1. Introducción",
+        "parrafos": [
+          "El sistema PROA HUV ofrece reportes y estadísticas que apoyan la toma de decisiones del equipo institucional, contribuyendo al seguimiento y la evaluación del Programa PROA."
+        ]
+      },
+      {
+        "titulo": "2. Indicadores principales",
+        "parrafos": [
+          "Entre los indicadores que pueden generarse se encuentran el número de pacientes con cultivo positivo, los microorganismos más frecuentes, el comportamiento de la resistencia, las intervenciones realizadas y los desenlaces clínicos asociados."
+        ]
+      },
+      {
+        "titulo": "3. Reportes operativos",
+        "parrafos": [
+          "Los reportes operativos permiten conocer la cantidad de casos activos, casos cerrados, intervenciones registradas y cumplimiento de las acciones definidas en el Programa PROA."
+        ]
+      },
+      {
+        "titulo": "4. Reportes para análisis",
+        "parrafos": [
+          "Los reportes para análisis ayudan a identificar tendencias, evaluar resultados a lo largo del tiempo y orientar acciones de mejora institucional."
+        ]
+      },
+      {
+        "titulo": "5. Recomendaciones",
+        "parrafos": [
+          "Se recomienda que los reportes generados sean revisados de manera periódica por el equipo PROA, con el fin de mantener actualizada la visión del comportamiento institucional del programa."
+        ]
+      }
+    ]
+  }
+}

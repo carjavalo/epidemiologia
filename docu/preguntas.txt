@@ -1,0 +1,24 @@
+sigue, basicamtne ela logicay ondciinalde lvalro decampo de clasificación de texto es: SI((estado= 1) y (clasificacion = 1); "Colonización Intrahospitalaria";
+
+  SI((estado = 1) y (clasificacion = 2); "Contaminado Intrahospitalaria";
+
+  SI((estado = 1) y (clasificación = 3); "Infección";
+
+  SI((estado = 1) y (clasificación = 4) y (sitio = "51. Infeccion Previa"); "Infección Previa";
+
+  SI((estado = 1) y (clasificación = 4) y (sitio = "52. No cumple criterios"); "No Cumple Criterios";
+
+  SI((estado = 1) y (clasificación = 4); "No aplica";
+
+  SI((estado = 1) y (clasificación = 5); "Infección sin Mios";
+
+  SI((estado = 2) y (clasificación = 1); "Colonización Extrahospitalaria";
+
+  SI((estado = 2) y (clasificación = 2); "Contaminado Extrahospitalaria";
+
+  SI((estado = 2) y (clasificación = 3); "Infección Extrahospitalaria";
+
+SI((estado = 1) y (clasificación = 6); "Infección Polimicrobiano";
+
+SI((estado = 1) y (clasificación = 7); "Complicación";
+
