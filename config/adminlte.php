@@ -299,16 +299,7 @@ return [
     */
 
     'menu' => [
-        // Navbar items:
-        [
-            'type' => 'navbar-search',
-            'text' => 'search',
-            'topnav_right' => true,
-        ],
-        [
-            'type' => 'fullscreen-widget',
-            'topnav_right' => true,
-        ],
+        // Navbar items: (se quitaron la búsqueda y el botón de pantalla completa)
 
         // Sidebar items:
         [
@@ -331,6 +322,18 @@ return [
             'url' => 'registros',
             'icon' => 'fas fa-fw fa-clipboard-list',
             'active' => ['registros*'],
+        ],
+        [
+            'text' => 'Conteo de IAAS',
+            'url' => 'iaas/conteo',
+            'icon' => 'fas fa-fw fa-virus-slash',
+            'active' => ['iaas/conteo*'],
+        ],
+        [
+            'text' => 'Base de datos',
+            'url' => 'base-datos',
+            'icon' => 'fas fa-fw fa-database',
+            'active' => ['base-datos*'],
         ],
         [
             'text' => 'Configuración',
@@ -379,6 +382,12 @@ return [
                     'url' => 'categoria-quirurgica',
                     'icon' => 'fas fa-fw fa-procedures',
                     'active' => ['categoria-quirurgica*'],
+                ],
+                [
+                    'text' => 'Diagnósticos (CIE-10)',
+                    'url' => 'diagnosticos',
+                    'icon' => 'fas fa-fw fa-notes-medical',
+                    'active' => ['diagnosticos*'],
                 ],
                 [
                     'text' => 'Tipo de Muestra',
@@ -468,6 +477,11 @@ return [
                     'type' => 'css',
                     'asset' => true,
                     'location' => 'css/proahuv-theme.css',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/proahuv-crud.css',
                 ],
             ],
         ],

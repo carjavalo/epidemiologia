@@ -32,6 +32,9 @@ class User extends Authenticatable
         'email',
         'password',
         'rol',
+        'perfil',
+        'puede_editar_epidemiologia',
+        'puede_editar_proa',
         'profile_image',
         'foto',
     ];
@@ -40,10 +43,47 @@ class User extends Authenticatable
     public const ROL_BASICO = 'basico';
     public const ROL_ADMIN  = 'administrador';
 
+    /** Perfiles / cargos (definen qué campos del formulario ve cada quien). */
+    public const PERFIL_AUXILIAR     = 'auxiliar';
+    public const PERFIL_ENFERMERO    = 'enfermero';
+    public const PERFIL_MEDICO       = 'medico';
+    public const PERFIL_EPIDEMIOLOGO = 'epidemiologo';
+
+    public const PERFILES = [
+        self::PERFIL_AUXILIAR     => 'Auxiliar',
+        self::PERFIL_ENFERMERO    => 'Enfermero',
+        self::PERFIL_MEDICO       => 'Médico',
+        self::PERFIL_EPIDEMIOLOGO => 'Epidemiólogo',
+    ];
+
     /** ¿El usuario es administrador? */
     public function esAdmin(): bool
     {
         return $this->rol === self::ROL_ADMIN;
+    }
+
+    /** ¿El usuario tiene perfil de enfermero? (ve campos exclusivos del formulario) */
+    public function esEnfermero(): bool
+    {
+        return $this->perfil === self::PERFIL_ENFERMERO;
+    }
+
+    /**
+     * ¿Puede editar los formularios de EPIDEMIOLOGÍA ya guardados?
+     * Los administradores siempre pueden.
+     */
+    public function puedeEditarEpidemiologia(): bool
+    {
+        return $this->esAdmin() || (bool) $this->puede_editar_epidemiologia;
+    }
+
+    /**
+     * ¿Puede editar las intervenciones PROA ya guardadas?
+     * Los administradores siempre pueden.
+     */
+    public function puedeEditarProa(): bool
+    {
+        return $this->esAdmin() || (bool) $this->puede_editar_proa;
     }
 
     /**
@@ -66,6 +106,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'puede_editar_epidemiologia' => 'boolean',
+            'puede_editar_proa' => 'boolean',
         ];
     }
 

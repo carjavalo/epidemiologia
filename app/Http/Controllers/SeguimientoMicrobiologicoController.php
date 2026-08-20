@@ -195,6 +195,11 @@ class SeguimientoMicrobiologicoController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Una importación completa procesa miles de filas y supera de largo el
+        // max_execution_time por defecto de Apache (60 s).
+        @set_time_limit(0);
+        @ini_set('memory_limit', '1024M');
+
         DB::beginTransaction();
 
         try {
@@ -202,13 +207,20 @@ class SeguimientoMicrobiologicoController extends Controller
             $filasEpidemiologia = $this->leerFilas($request->file('archivo_epidemiologia'), 'EPIDEMIOLOGIA');
             $resultadoEpidemiologia = $this->procesarEpidemiologia($filasEpidemiologia);
 
-            $resultadoProa = ['procesados' => 0, 'actualizados' => 0, 'sin_paciente' => 0];
+            $resultadoProa = ['procesados' => 0, 'actualizados' => 0, 'sinPaciente' => 0, 'omitidos' => 0, 'avisos' => []];
             if ($request->hasFile('archivo_proa')) {
                 $filasProa = $this->leerFilas($request->file('archivo_proa'), 'PROA');
                 $resultadoProa = $this->procesarProa($filasProa);
             }
 
             DB::commit();
+
+            // Filas que se omitieron o recortaron: se informan sin bloquear la
+            // importación, indicando de qué archivo viene cada una.
+            $avisos = array_merge(
+                array_map(fn ($a) => 'Epidemiología · ' . $a, $resultadoEpidemiologia['avisos'] ?? []),
+                array_map(fn ($a) => 'PROA · ' . $a, $resultadoProa['avisos'] ?? [])
+            );
 
             // Trazabilidad: registrar la importación
             $epiProc  = $resultadoEpidemiologia['procesados'] ?? 0;
@@ -220,9 +232,19 @@ class SeguimientoMicrobiologicoController extends Controller
                                  . ($request->hasFile('archivo_proa') ? ", PROA: {$proaProc} registro(s)" : '') . ').',
             ]);
 
-            return redirect()->back()->with('success', 'Archivos procesados correctamente.')
+            $mensaje = 'Archivos procesados correctamente.';
+            if ($avisos) {
+                $mensaje = 'Archivos procesados con ' . count($avisos) . ' advertencia(s). Revisa el detalle abajo.';
+            }
+            $cursosNuevos = $resultadoProa['cursosNuevos'] ?? 0;
+            if ($cursosNuevos > 0) {
+                $mensaje .= ' Se detectaron ' . $cursosNuevos . ' curso(s) nuevo(s) de antibiótico (ver la campana de notificaciones).';
+            }
+
+            return redirect()->back()->with('success', $mensaje)
                 ->with('resultado_epidemiologia', $resultadoEpidemiologia)
-                ->with('resultado_proa', $resultadoProa);
+                ->with('resultado_proa', $resultadoProa)
+                ->with('avisos_importacion', $avisos);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error importando seguimiento microbiologico: '.$e->getMessage());
@@ -409,6 +431,8 @@ class SeguimientoMicrobiologicoController extends Controller
         $pacientesCreados = 0;
         $seguimientosCreados = 0;
         $omitidos = 0;
+        $avisos = [];          // Filas descartadas, para informar al usuario.
+        $cachePacientes = [];  // identificador_unico => Paciente, para no repetir consultas.
 
         // Si la primera fila es un encabezado, mapear las columnas por nombre.
         // Así el archivo puede traer las columnas en otro orden o cantidad.
@@ -421,14 +445,24 @@ class SeguimientoMicrobiologicoController extends Controller
             }
         }
 
-        foreach ($filas as $campos) {
+        foreach ($filas as $numeroFila => $campos) {
             $campos = $this->padFila($campos, 45);
 
             if ($this->filaVacia($campos) || $this->esEncabezado($campos)) {
                 continue;
             }
 
+            // Identificación del paciente para los avisos (se calcula antes del
+            // try para que siga disponible si la fila falla más adelante).
             $f = $this->filaAsociativa($campos, $mapa, self::POSICIONES_EPI);
+            $quien = $this->etiquetaPaciente(
+                $this->limpiarNombre($f['nombre'] ?? null),
+                $f['identificador_unico'] ?? null,
+                $f['id_historia'] ?? null
+            );
+
+            // Una fila defectuosa no debe tumbar el resto de la importación.
+            try {
 
             // ── Mapeo según estructura real del archivo de epidemiología ──
             //  0: Información del paciente   "NOMBRE COMPLETO (ID - dd/mm/aaaa)"
@@ -511,39 +545,71 @@ class SeguimientoMicrobiologicoController extends Controller
             // Solo agregar los que traen valor (no pisar con null si no vienen)
             $datos = array_merge($datos, array_filter($comp, fn ($v) => !is_null($v)));
 
-            $paciente = Paciente::updateOrCreate(
-                ['identificador_unico' => $datos['identificador_unico']],
-                [
-                    'nombre'           => $datos['nombre'],
-                    'id_historia'      => $datos['id_historia'],
-                    'fecha_nacimiento' => $datos['fecha_nacimiento'],
-                    'sexo'             => $datos['sexo'],
-                ]
-            );
+            // Un mismo paciente aparece en muchas filas del archivo. Se resuelve
+            // una sola vez por importación para no repetir SELECT + UPDATE.
+            $clavePaciente = $datos['identificador_unico'];
 
-            if ($paciente->wasRecentlyCreated) {
-                $pacientesCreados++;
+            if (isset($cachePacientes[$clavePaciente])) {
+                $paciente = $cachePacientes[$clavePaciente];
+            } else {
+                $paciente = Paciente::updateOrCreate(
+                    ['identificador_unico' => $datos['identificador_unico']],
+                    [
+                        'nombre'           => $datos['nombre'],
+                        'id_historia'      => $datos['id_historia'],
+                        'fecha_nacimiento' => $datos['fecha_nacimiento'],
+                        'sexo'             => $datos['sexo'],
+                    ]
+                );
+
+                if ($paciente->wasRecentlyCreated) {
+                    $pacientesCreados++;
+                }
+
+                $cachePacientes[$clavePaciente] = $paciente;
             }
 
             // Clave única lógica: identificador + n_reporte + microorganismo + cultivo_num
-            $registro = EpidemiologiaRegistro::updateOrCreate(
-                [
-                    'identificador_unico' => $datos['identificador_unico'],
-                    'n_reporte'           => $datos['n_reporte'],
-                    'microorganismo'      => $datos['microorganismo'],
-                    'cultivo_num'         => $datos['cultivo_num'],
-                ],
-                array_merge($datos, ['paciente_id' => $paciente->id])
-            );
+            $registro = EpidemiologiaRegistro::firstOrNew([
+                'identificador_unico' => $datos['identificador_unico'],
+                'n_reporte'           => $datos['n_reporte'],
+                'microorganismo'      => $datos['microorganismo'],
+                'cultivo_num'         => $datos['cultivo_num'],
+            ]);
+
+            $payload = array_merge($datos, ['paciente_id' => $paciente->id]);
+
+            // Integridad de datos (req. 1): CULTIVO / SENSIBLES / INTERMEDIOS /
+            // RESISTENTES / MARCADORES se usan en PROA y NO se pueden perder.
+            // Si el registro ya tiene valor y la fila entrante trae el campo vacío,
+            // se conserva el valor existente (no se pisa con vacío).
+            if ($registro->exists) {
+                foreach (['cultivo_num', 'sensibles', 'intermedios', 'resistentes', 'marcadores_resistencia'] as $campo) {
+                    $nuevo = $payload[$campo] ?? null;
+                    if (($nuevo === null || $nuevo === '') && filled($registro->{$campo})) {
+                        unset($payload[$campo]);
+                    }
+                }
+            }
+
+            $registro->fill($payload)->save();
 
             if ($registro->wasRecentlyCreated) {
                 $seguimientosCreados++;
             }
 
             $procesados++;
+
+            } catch (\Throwable $e) {
+                $omitidos++;
+                // Si el archivo trae encabezados se usa el mapa real; si no, las posiciones fijas.
+                $avisos[] = 'Fila ' . ($numeroFila + 1) . ' — ' . $quien . ': '
+                          . $this->motivoLegible($e, $mapa ?: self::POSICIONES_EPI);
+                Log::warning('Epidemiología fila ' . ($numeroFila + 1) . ' (' . $quien . ') omitida: ' . $e->getMessage());
+            }
         }
 
-        return compact('procesados', 'pacientesCreados', 'seguimientosCreados', 'omitidos');
+        return compact('procesados', 'pacientesCreados', 'seguimientosCreados', 'omitidos', 'avisos');
     }
 
     private function procesarProa(array $filas): array
@@ -551,6 +617,11 @@ class SeguimientoMicrobiologicoController extends Controller
         $procesados = 0;
         $actualizados = 0;
         $sinPaciente = 0;
+        $omitidos = 0;
+        $avisos = [];          // Filas recortadas o descartadas, para informar al usuario.
+        $cachePacientes = [];  // documento|historia => Paciente|null
+        $cacheRegistros = [];  // paciente_id => EpidemiologiaRegistro
+        $nuevas = [];          // dosis creadas en esta importación (para detectar cursos nuevos)
 
         // Encabezado para agrupar los detalles de esta importación.
         $encabezado = EncabezadoProcedimiento::create([
@@ -565,12 +636,43 @@ class SeguimientoMicrobiologicoController extends Controller
             return in_array(mb_strtolower(trim((string) $v)), ['si', 'sí', '1', 'true', 'x', 'yes'], true);
         };
 
-        foreach ($filas as $campos) {
-            $campos = $this->padFila($campos, 48);
+        // La fecha que se muestra en el bloque (Fec_Sumistro) sale de la columna
+        // "Fecha inicio antibiótico" del Excel (columna W). La columna que el
+        // formato esperaba ("Fecha hora suministro", T) viene vacía. Se localiza
+        // por NOMBRE en el encabezado para no depender de la posición; si no
+        // aparece, se usa la columna W (índice 22).
+        $filas = array_values($filas);
+        $idxFechaInicio = null;
+        if (!empty($filas)) {
+            foreach ((array) $filas[0] as $i => $titulo) {
+                if (str_contains($this->normalizarTexto((string) $titulo), 'FECHA INICIO ANTIBIOTICO')) {
+                    $idxFechaInicio = (int) $i;
+                    break;
+                }
+            }
+        }
+        if ($idxFechaInicio === null) {
+            $idxFechaInicio = 22; // columna W (0-indexada)
+        }
+
+        foreach ($filas as $numeroFila => $campos) {
+            $campos = $this->padFila($campos, max(48, $idxFechaInicio + 1));
 
             if ($this->filaVacia($campos) || $this->esEncabezado($campos)) {
                 continue;
             }
+
+            // Identificación del paciente para los avisos: nombre (10,11,12),
+            // documento (9) e historia clínica (7).
+            $quien = $this->etiquetaPaciente(
+                implode(' ', array_filter([$campos[10] ?? null, $campos[11] ?? null, $campos[12] ?? null])),
+                $campos[9] ?? null,
+                $campos[7] ?? null
+            );
+
+            // Una fila defectuosa no debe tumbar el resto de la importación:
+            // se registra el motivo, se omite y se continúa.
+            try {
 
             // Sin documento ni historia no se puede identificar al paciente.
             if (empty($campos[9]) && empty($campos[7])) {
@@ -581,19 +683,51 @@ class SeguimientoMicrobiologicoController extends Controller
             // insertar, porque el modelo castea F_Ingreso/Fec_Sumistro a fecha.
             $campos[4]  = $this->normalizarFechaHora($campos[4] ?? null);   // F_Ingreso
             $campos[14] = $this->normalizarFecha($campos[14] ?? null);      // Fec_Nacimiento
-            $campos[19] = $this->normalizarFechaHora($campos[19] ?? null);  // Fecha+hora suministro
+            // Fec_Sumistro toma su valor de la columna "Fecha inicio antibiótico".
+            $fechaInicioRaw = $campos[$idxFechaInicio] ?? null;
+            if (!empty($fechaInicioRaw)) {
+                $campos[19] = $fechaInicioRaw;
+            }
+            $campos[19] = $this->normalizarFechaHora($campos[19] ?? null);  // Fecha de inicio del antibiótico
 
             // 1. Crear SIEMPRE la fila en deta_procedimientos (esto hace aparecer
             //    el bloque PROA y permite el cruce por documento / historia).
-            Procedimiento::insertarDesdeCampos($campos, $encabezado->id_procedimiento);
+            $recortados = [];
+            $procCreado = Procedimiento::insertarDesdeCampos($campos, $encabezado->id_procedimiento, $recortados);
+            // Guardar para detectar cursos nuevos de antibiótico al finalizar.
+            if ($procCreado && !empty($campos[9])) {
+                $nuevas[] = [
+                    'id'          => $procCreado->id,
+                    'ident'       => (string) $campos[9],
+                    'antibiotico' => (string) $procCreado->Antimicrobiano,
+                ];
+            }
             $procesados++;
+
+            if ($recortados) {
+                foreach ($recortados as $campo => $largo) {
+                    $avisos[] = 'Fila ' . ($numeroFila + 1) . ' — ' . $quien
+                              . ": el campo «{$campo}»" . $this->referenciaColumna($campo, self::ORIGEN_PROA)
+                              . " traía {$largo} caracteres y se recortó.";
+                }
+            }
 
             // 2. Reflejar procedimiento + intervención en el seguimiento del paciente.
             $identificador = $campos[9] ?? null;
             $historia = $campos[7] ?? null;
-            $paciente = Paciente::where('identificador_unico', $identificador)
-                ->orWhere('id_historia', $historia)
-                ->first();
+
+            // Un paciente aparece en muchas filas (una por dosis). Se resuelve
+            // una sola vez por importación.
+            $clavePaciente = $identificador . '|' . $historia;
+
+            if (array_key_exists($clavePaciente, $cachePacientes)) {
+                $paciente = $cachePacientes[$clavePaciente];
+            } else {
+                $paciente = Paciente::where('identificador_unico', $identificador)
+                    ->orWhere('id_historia', $historia)
+                    ->first();
+                $cachePacientes[$clavePaciente] = $paciente;
+            }
 
             if (!$paciente) {
                 $sinPaciente++;
@@ -604,19 +738,27 @@ class SeguimientoMicrobiologicoController extends Controller
             [$cantidad, $viaAplicacion, $tiempoHoras, $diasAntibiotico] = $this->parsearInstruccionesMedicamento($instrucciones);
             [$fechaSuministro] = $this->parsearFechaHora($campos[19] ?? null);
 
-            $registro = EpidemiologiaRegistro::where('paciente_id', $paciente->id)
-                ->orderByDesc('fecha_toma_muestra')
-                ->first();
+            // El seguimiento destino es siempre el mismo para un paciente dado,
+            // así que también se resuelve una sola vez.
+            if (isset($cacheRegistros[$paciente->id])) {
+                $registro = $cacheRegistros[$paciente->id];
+            } else {
+                $registro = EpidemiologiaRegistro::where('paciente_id', $paciente->id)
+                    ->orderByDesc('fecha_toma_muestra')
+                    ->first();
 
-            if (!$registro) {
-                $registro = EpidemiologiaRegistro::create([
-                    'paciente_id' => $paciente->id,
-                    'nombre' => $paciente->nombre,
-                    'id_historia' => $paciente->id_historia,
-                    'fecha_nacimiento' => $paciente->fecha_nacimiento,
-                    'sexo' => $paciente->sexo,
-                    'identificador_unico' => $paciente->identificador_unico,
-                ]);
+                if (!$registro) {
+                    $registro = EpidemiologiaRegistro::create([
+                        'paciente_id' => $paciente->id,
+                        'nombre' => $paciente->nombre,
+                        'id_historia' => $paciente->id_historia,
+                        'fecha_nacimiento' => $paciente->fecha_nacimiento,
+                        'sexo' => $paciente->sexo,
+                        'identificador_unico' => $paciente->identificador_unico,
+                    ]);
+                }
+
+                $cacheRegistros[$paciente->id] = $registro;
             }
 
             // Sección 4 — Procedimiento (columnas 0..19)
@@ -643,7 +785,7 @@ class SeguimientoMicrobiologicoController extends Controller
             $intervencion = [
                 'mes'                      => $this->limpiarValor($campos[20] ?? null),
                 'fecha_intervencion'       => $this->normalizarFecha($campos[21] ?? null),
-                'fecha_inicio_antibiotico' => $this->normalizarFecha($campos[22] ?? null),
+                'fecha_inicio_antibiotico' => $this->normalizarFecha($campos[$idxFechaInicio] ?? null),
                 'dosis_suministrada'       => $this->limpiarValor($campos[23] ?? null),
                 'sistema_internacional'    => $this->limpiarValor($campos[24] ?? null),
                 'perfil_antimicrobiano'    => $this->limpiarValor($campos[25] ?? null),
@@ -680,9 +822,248 @@ class SeguimientoMicrobiologicoController extends Controller
             ));
 
             $actualizados++;
+
+            } catch (\Throwable $e) {
+                $omitidos++;
+                $avisos[] = 'Fila ' . ($numeroFila + 1) . ' — ' . $quien . ': ' . $this->motivoLegible($e, self::ORIGEN_PROA);
+                Log::warning('PROA fila ' . ($numeroFila + 1) . ' (' . $quien . ') omitida: ' . $e->getMessage());
+            }
         }
 
-        return compact('procesados', 'actualizados', 'sinPaciente');
+        // Detectar cursos NUEVOS de antibiótico (re-tratamientos a más de 7 días)
+        // y avisar en la bandeja de notificaciones.
+        $cursosNuevos = $this->detectarCursosNuevos($nuevas);
+
+        return compact('procesados', 'actualizados', 'sinPaciente', 'omitidos', 'avisos', 'cursosNuevos');
+    }
+
+    /**
+     * A partir de las dosis creadas en esta importación, detecta cursos nuevos
+     * de antibiótico (segundo curso o posterior del mismo fármaco en el mismo
+     * paciente, a 7+ días del anterior) y crea una notificación por cada uno.
+     */
+    private function detectarCursosNuevos(array $nuevas): int
+    {
+        if (!$nuevas) {
+            return 0;
+        }
+
+        $creadas = 0;
+
+        // Agrupar las dosis nuevas por (documento, antibiótico).
+        $porGrupo = collect($nuevas)->groupBy(fn ($n) => $n['ident'] . '||' . $n['antibiotico']);
+
+        foreach ($porGrupo as $clave => $items) {
+            [$ident, $antibiotico] = array_pad(explode('||', $clave, 2), 2, '');
+            if ($ident === '' || $antibiotico === '') {
+                continue;
+            }
+
+            $idsNuevos = collect($items)->pluck('id')->all();
+
+            // Todas las dosis de ese antibiótico para ese paciente.
+            $dosis = Procedimiento::where('Num_Ident', $ident)
+                ->where('Antimicrobiano', $antibiotico)
+                ->get(['id', 'Num_Ident', 'Antimicrobiano', 'Fec_Sumistro', 'Nom_Sala']);
+
+            if ($dosis->count() < 2) {
+                continue; // sin re-tratamiento posible
+            }
+
+            $cursos = \App\Support\ProaCursos::agrupar($dosis);
+
+            foreach ($cursos as $i => $curso) {
+                if ($i === 0) {
+                    continue; // el primer curso no es re-tratamiento
+                }
+                $rep = $curso['representativa'] ?? null;
+                // Solo si el curso lo abrió una dosis de ESTA importación.
+                if (!$rep || !in_array($rep->id, $idsNuevos, true)) {
+                    continue;
+                }
+                // Evita inundar con re-tratamientos antiguos del histórico:
+                // solo se notifican cursos iniciados en los últimos 60 días.
+                if ($curso['inicio'] && $curso['inicio']->lt(\Carbon\Carbon::today()->subDays(60))) {
+                    continue;
+                }
+
+                $fecha = $curso['inicio']?->format('d/m/Y') ?? 'sin fecha';
+
+                $notif = \App\Models\Notificacion::crear([
+                    'tipo'             => 'proa',
+                    'titulo'           => 'Nuevo tratamiento: ' . $antibiotico,
+                    'mensaje'          => 'Se detectó un nuevo curso de ' . $antibiotico
+                                          . ' (paciente doc. ' . $ident . ') iniciado el ' . $fecha
+                                          . ', a más de 7 días del curso anterior del mismo antibiótico.',
+                    'url'              => \App\Models\Notificacion::urlRegistroPaciente($ident),
+                    'referencia_tabla' => 'deta_procedimientos',
+                    'referencia_id'    => $rep->id,
+                ]);
+
+                if ($notif) {
+                    $creadas++;
+                }
+            }
+        }
+
+        return $creadas;
+    }
+
+    /**
+     * Columna de origen (índice 0) de cada campo de deta_procedimientos.
+     * Permite decirle a quien importa qué columna del archivo revisar.
+     */
+    private const ORIGEN_PROA = [
+        'Cod_Episodio'      => 0,
+        'Cod_Sala'          => 1,
+        'Nom_Sala'          => 2,
+        'Num_Cama'          => 3,
+        'F_Ingreso'         => 4,
+        'Cod_Eps'           => 5,
+        'Nom_Eps'           => 6,
+        'Hist_Clinica'      => 7,
+        'Tipo_Ident'        => 8,
+        'Num_Ident'         => 9,
+        'Medico_Trata'      => 10,
+        'Cod_Diag'          => 15,
+        'CIE10'             => 15,
+        'Diagnostico'       => 16,
+        'Antimicrobiano'    => 17,
+        'Presentacion'      => 17,
+        'Cantidad'          => 18,
+        'Via_Aplicacion'    => 18,
+        'Tiem_Horas'        => 18,
+        'Dias_Antibioticos' => 18,
+
+        // Los mismos datos reflejados en seguimiento_microbiologico (sección 4)
+        'cod_episodio'      => 0,
+        'nom_sala'          => 2,
+        'num_cama'          => 3,
+        'fecha_ingreso'     => 4,
+        'nombre_eps'        => 6,
+        'cod_diag'          => 15,
+        'cie10'             => 15,
+        'diagnostico'       => 16,
+        'antimicrobiano'    => 17,
+        'presentacion'      => 17,
+
+        // Intervención PROA (sección 5) — aquí viven los ENUM que suelen fallar
+        'mes'                      => 20,
+        'fecha_intervencion'       => 21,
+        'fecha_inicio_antibiotico' => 22,
+        'dosis_suministrada'       => 23,
+        'sistema_internacional'    => 24,
+        'perfil_antimicrobiano'    => 25,
+        'especialista_tratante'    => 26,
+        'diagnostico_infeccioso'   => 27,
+        'dosis_adecuada'           => 28,
+        'fecha_fin_antibiotico'    => 29,
+        'tiempo_tratamiento'       => 30,
+        'duracion_adecuada'        => 31,
+        'cultivo_previo'           => 32,
+        'resultado_cultivo'        => 33,
+        'solicitudes_pruebas'      => 34,
+        'oportunidad_reporte'      => 35,
+        'indicacion_terapia'       => 36,
+        'tratamiento'              => 37,
+        'valoracion_grupo1'        => 38,
+        'valoracion_uci'           => 39,
+        'fecha_valoracion'         => 40,
+        'ajuste_prescripcion'      => 41,
+        'adherencia_proa'          => 42,
+        'adherencia_guias'         => 43,
+        'razon_no_adherencia'      => 44,
+        'observacion'              => 45,
+        'caso_cerrado'             => 46,
+        'mortalidad'               => 47,
+    ];
+
+    /**
+     * Convierte un índice de columna (0 = A) en su letra de Excel.
+     */
+    private function columnaExcel(int $indice): string
+    {
+        $letra = '';
+        for ($n = $indice; $n >= 0; $n = intdiv($n, 26) - 1) {
+            $letra = chr(65 + ($n % 26)) . $letra;
+        }
+
+        return $letra;
+    }
+
+    /**
+     * Referencia legible a la columna del archivo de origen.
+     * Devuelve cadena vacía si el campo no tiene una columna conocida.
+     */
+    private function referenciaColumna(string $campo, array $origen): string
+    {
+        if (!array_key_exists($campo, $origen) || !is_int($origen[$campo])) {
+            return '';
+        }
+
+        return ' — columna ' . $this->columnaExcel($origen[$campo]) . ' del archivo';
+    }
+
+    /**
+     * Etiqueta legible del paciente, para poder ubicar la fila en el archivo
+     * de origen sin depender solo del número de línea.
+     */
+    private function etiquetaPaciente($nombre, $documento, $historia): string
+    {
+        $nombre    = trim((string) $nombre);
+        $documento = trim((string) $documento);
+        $historia  = trim((string) $historia);
+
+        $identificadores = [];
+        if ($documento !== '') {
+            $identificadores[] = 'ID ' . $documento;
+        }
+        if ($historia !== '') {
+            $identificadores[] = 'HC ' . $historia;
+        }
+
+        $partes = [];
+        if ($nombre !== '') {
+            $partes[] = $nombre;
+        }
+        if ($identificadores) {
+            $partes[] = '(' . implode(' · ', $identificadores) . ')';
+        }
+
+        return $partes ? implode(' ', $partes) : 'paciente sin identificar';
+    }
+
+    /**
+     * Traduce el error crudo de la base a algo accionable para quien importa.
+     */
+    private function motivoLegible(\Throwable $e, array $origen = []): string
+    {
+        $mensaje = $e->getMessage();
+
+        if (preg_match("/Data too long for column '([^']+)'/", $mensaje, $m)) {
+            return "el campo «{$m[1]}»" . $this->referenciaColumna($m[1], $origen)
+                 . ' trae un valor más largo del permitido.';
+        }
+
+        if (preg_match("/Data truncated for column '([^']+)'/", $mensaje, $m)) {
+            return "el campo «{$m[1]}»" . $this->referenciaColumna($m[1], $origen)
+                 . ' trae un valor que no está entre las opciones válidas.';
+        }
+
+        if (preg_match("/Incorrect (date|datetime|integer) value: '([^']*)' for column (.+?) at row/", $mensaje, $m)) {
+            // MySQL puede reportar `base`.`tabla`.`columna`; interesa el último tramo.
+            $tramos = array_values(array_filter(preg_split('/[`\'.]+/', $m[3])));
+            $campo  = $tramos ? end($tramos) : $m[3];
+
+            return "el campo «{$campo}»" . $this->referenciaColumna($campo, $origen)
+                 . " trae «{$m[2]}», que no es un valor de tipo {$m[1]} válido.";
+        }
+
+        if (preg_match("/Incorrect (date|datetime|integer) value: '([^']*)'/", $mensaje, $m)) {
+            return "valor de tipo {$m[1]} inválido: «{$m[2]}».";
+        }
+
+        return \Illuminate\Support\Str::limit($mensaje, 160);
     }
 
     private function lineasValidas(string $contenido): array

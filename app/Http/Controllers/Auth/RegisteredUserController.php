@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -29,32 +30,24 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        \Log::info('=== INICIO REGISTRO ===');
-        \Log::info('Datos recibidos: ', $request->all());
-        
-        $request->validate([
-            'usuario' => ['required', 'string', 'max:100', 'unique:'.User::class],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+        // El registro solo pide usuario + contraseña (sin correo). Los errores
+        // van a un "bag" propio ('registro') para que la pantalla mantenga
+        // activa la pestaña de registro y no la de inicio de sesión.
+        Validator::make($request->all(), [
+            'usuario'  => ['required', 'string', 'max:100', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::min(6)],
-        ]);
-
-        \Log::info('Validación OK, creando usuario...');
+        ])->validateWithBag('registro');
 
         $user = User::create([
-            'usuario' => $request->usuario,
-            'name' => $request->usuario, // se mantiene para compatibilidad (avatar/nombre AdminLTE)
-            'email' => $request->email,
+            'usuario'  => $request->usuario,
+            'name'     => $request->usuario, // se mantiene para compatibilidad (avatar/nombre AdminLTE)
             'password' => Hash::make($request->password),
-            'rol' => User::ROL_BASICO, // todo registro nuevo entra como usuario básico
+            'rol'      => User::ROL_BASICO,   // todo registro nuevo entra como usuario básico
         ]);
-
-        \Log::info('Usuario creado: ID=' . $user->id);
 
         event(new Registered($user));
 
         Auth::login($user);
-        
-        \Log::info('Login exitoso, redirigiendo a dashboard');
 
         return redirect(route('dashboard', absolute: false));
     }

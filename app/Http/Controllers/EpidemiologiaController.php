@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Actividad;
+use App\Models\CasoMicroorganismo;
 use App\Models\EpidemiologiaRegistro;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
@@ -17,7 +18,7 @@ class EpidemiologiaController extends Controller
      */
     private const CAMPOS_MUESTRA = [
         'tipo_muestra', 'n_reporte', 'cultivo_num', 'sede', 'ubicacion',
-        'fecha_toma_muestra', 'microorganismo', 'sensibles', 'intermedios',
+        'fecha_toma_muestra', 'fecha_reporte', 'microorganismo', 'sensibles', 'intermedios',
         'resistentes', 'marcadores_resistencia',
     ];
 
@@ -131,7 +132,36 @@ class EpidemiologiaController extends Controller
             'comentarios'             => 'nullable|string',
             'fecha_insercion'         => 'nullable|date',
             'fecha_retiro'            => 'nullable|date',
+            'fecha_dx_infeccion'      => 'nullable|date',
+            'dias_estancia_previos_infeccion' => 'nullable|integer',
+            // Perfil enfermero (req. 7, 8, 11)
+            'dispositivo_notificacion' => 'nullable|string|max:10',
+            'es_iso'                   => 'nullable|string|max:10',
+            'duda'                     => 'nullable|string|max:10',
+            'estado'                   => 'nullable|string|max:20',
+            'modificado'               => 'nullable|string|max:10',
+            'fecha_reporte_hospital_seguro' => 'nullable|date',
         ]);
+
+        // Días de estancia previos a la infección (req. 3): se calcula en backend
+        // = (fecha de Dx. de infección) − (fecha de ingreso hospitalario).
+        if ($request->filled('fecha_dx_infeccion') && $request->filled('fecha_ingreso_hosp')) {
+            try {
+                $ingreso = \Carbon\Carbon::parse($request->input('fecha_ingreso_hosp'));
+                $dx = \Carbon\Carbon::parse($request->input('fecha_dx_infeccion'));
+                $validated['dias_estancia_previos_infeccion'] = (int) $ingreso->diffInDays($dx, false);
+            } catch (\Throwable $e) {
+                $validated['dias_estancia_previos_infeccion'] = null;
+            }
+        } else {
+            $validated['dias_estancia_previos_infeccion'] = null;
+        }
+
+        // Origen del egreso (req. 6): lo capturado en la página queda como 'manual';
+        // el cruce futuro con la base de mortalidad lo marcará como 'mortalidad'.
+        if ($request->filled('egreso')) {
+            $validated['egreso_fuente'] = 'manual';
+        }
 
         // Calcular dias_entre_qx_e_infeccion y clasificacion_texto en backend si corresponde
         if ($request->has('tipo') || $request->has('clasificacion') || $request->has('sitio')) {
@@ -177,8 +207,19 @@ class EpidemiologiaController extends Controller
             }
         }
 
-        // Control de edición: un usuario básico solo puede llenar una vez.
+        // Control de edición. Un usuario básico queda bloqueado tras registrar,
+        // salvo que tenga el permiso "puede editar registros" (o sea admin).
         $esAdmin = optional($request->user())->esAdmin();
+        $puedeEditar = (bool) optional($request->user())->puedeEditarEpidemiologia();
+
+        // Semaforización: al guardar el bloque queda "registrado" (verde).
+        $validated['registrado'] = true;
+
+        // Tiempo quirúrgico: se guarda como "<número> minutos" (el input es numérico).
+        if (array_key_exists('tiempo_quirurgico', $validated) && $validated['tiempo_quirurgico'] !== null) {
+            $num = preg_replace('/\D/', '', (string) $validated['tiempo_quirurgico']);
+            $validated['tiempo_quirurgico'] = $num !== '' ? $num . ' minutos' : null;
+        }
 
         // ── Campos de la muestra ───────────────────────────────────────────
         // El formulario agrupa en un solo bloque todos los registros que
@@ -199,10 +240,10 @@ class EpidemiologiaController extends Controller
         if ($request->filled('id')) {
             $registro = EpidemiologiaRegistro::findOrFail($request->id);
 
-            if (!$esAdmin && $registro->edicion_bloqueada) {
+            if (!$puedeEditar && $registro->edicion_bloqueada) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Este formulario ya fue registrado. Solo un administrador puede modificarlo.',
+                    'message' => 'Este formulario ya fue registrado. No tienes permiso para modificarlo.',
                 ], 403);
             }
 
@@ -262,7 +303,7 @@ class EpidemiologiaController extends Controller
             foreach ($consulta->get() as $fila) {
                 $esPrincipal = (int) $fila->id === (int) $registro->id;
 
-                if (!$esAdmin && !$esPrincipal && $fila->edicion_bloqueada) {
+                if (!$puedeEditar && !$esPrincipal && $fila->edicion_bloqueada) {
                     continue;
                 }
 
@@ -326,6 +367,95 @@ class EpidemiologiaController extends Controller
             'success' => true,
             'message' => 'Registro guardado correctamente.',
             'id'      => $registro->id,
+        ]);
+    }
+
+    /**
+     * Agrupa las muestras seleccionadas (checkboxes) en un mismo caso de
+     * microorganismo. Crea un caso nuevo, mueve allí todas las muestras
+     * marcadas y limpia los casos que queden vacíos.
+     *
+     * Todas las muestras deben ser del mismo paciente. El caso hereda los
+     * datos complementarios de la muestra más antigua (por fecha de toma).
+     */
+    public function agruparCasos(Request $request)
+    {
+        $datos = $request->validate([
+            'muestra_ids'   => 'required|array|min:2',
+            'muestra_ids.*' => 'integer',
+        ]);
+
+        $muestras = EpidemiologiaRegistro::whereIn('id', $datos['muestra_ids'])->get();
+
+        if ($muestras->count() < 2) {
+            return response()->json(['success' => false, 'message' => 'Se necesitan al menos dos muestras.'], 422);
+        }
+
+        // Todas deben ser del mismo paciente: no tiene sentido agrupar muestras
+        // de pacientes distintos en un mismo caso.
+        if ($muestras->pluck('paciente_id')->unique()->count() > 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Las muestras seleccionadas no pertenecen al mismo paciente.',
+            ], 422);
+        }
+
+        // Muestra más antigua (por fecha de toma): de ella salen los datos del caso.
+        $base = $muestras->sortBy(fn ($m) => $m->fecha_toma_muestra ?: '9999-12-31')->first();
+
+        try {
+            $caso = DB::transaction(function () use ($muestras, $base, $request) {
+                $atributos = [
+                    'paciente_id'         => $base->paciente_id,
+                    'microorganismo'      => $base->microorganismo,
+                    'microorganismo_norm' => CasoMicroorganismo::normalizar($base->microorganismo),
+                    'origen'              => CasoMicroorganismo::ORIGEN_MANUAL,
+                    'edicion_bloqueada'   => (bool) $muestras->contains(fn ($m) => $m->edicion_bloqueada),
+                    'creado_por'          => optional($request->user())->id,
+                ];
+
+                // Copiar los datos complementarios desde la muestra base.
+                foreach (CasoMicroorganismo::CAMPOS_COMPLEMENTARIOS as $campo) {
+                    $atributos[$campo] = $base->{$campo} ?? null;
+                }
+
+                $caso = CasoMicroorganismo::create($atributos);
+
+                // Casos de origen que quedarán potencialmente vacíos tras mover.
+                $casosPrevios = $muestras->pluck('caso_id')->filter()->unique()->values();
+
+                EpidemiologiaRegistro::whereIn('id', $muestras->pluck('id'))
+                    ->update(['caso_id' => $caso->id]);
+
+                // Eliminar los casos antiguos que hayan quedado sin muestras.
+                foreach ($casosPrevios as $casoId) {
+                    $quedan = EpidemiologiaRegistro::where('caso_id', $casoId)->count();
+                    if ($quedan === 0) {
+                        CasoMicroorganismo::where('id', $casoId)->delete();
+                    }
+                }
+
+                return $caso;
+            });
+        } catch (\Throwable $e) {
+            Log::error('Error agrupando casos: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'No se pudo agrupar: ' . $e->getMessage()], 500);
+        }
+
+        Actividad::registrar([
+            'tipo'             => 'epidemiologia',
+            'accion'           => 'agrupar',
+            'descripcion'      => 'Agrupó ' . $muestras->count() . ' muestra(s) en un mismo caso'
+                                  . ($base->microorganismo ? ' — ' . $base->microorganismo : ''),
+            'referencia_tabla' => 'casos_microorganismo',
+            'referencia_id'    => $caso->id,
+            'paciente'         => $base->nombre ?: optional($base->paciente)->nombre,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Muestras agrupadas correctamente.',
+            'caso_id' => $caso->id,
         ]);
     }
 

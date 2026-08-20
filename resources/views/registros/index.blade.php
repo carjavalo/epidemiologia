@@ -2,6 +2,10 @@
 
 @section('title', 'Registros por Servicio')
 
+@section('content_top_nav_right')
+    @include('partials.notificaciones-bell')
+@stop
+
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -10px;">
         <h1 style="font-size: 1.6rem; margin-bottom: 0;"><i class="fas fa-hospital mr-2"></i>Registros por Servicio</h1>
@@ -24,12 +28,131 @@
             }
             return $opciones;
         };
+
+        // ¿El usuario ve los campos exclusivos de enfermería? (req. 7, 8, 11).
+        // Enfermero sí; auxiliar no. Los administradores también (supervisión).
+        $esEnfermero = auth()->check() && (auth()->user()->esEnfermero() || auth()->user()->esAdmin());
+
+        // Listado oficial del campo SITIO (req. 2.1). Transcrito del documento de
+        // requerimientos; la fuente de verdad es la columna SITIO de Camilo.xlsx.
+        $opcionesSitio = [
+            '1. Absceso Espinal sin Meningitis',
+            '2. Absceso Mamariomastitis',
+            '3. Conjuntivitis',
+            '4. Cicuncision en Recien Nacidos',
+            '5. Endocarditis',
+            '6. Endometritis',
+            '7. Enterocolitis Necrotizante',
+            '8. Gastroenteritis',
+            '9. Herida Quirúrgica Incisional Superficial',
+            '10. Herida Quirúrgica Incisional Superficial Secundaria',
+            '11. Herida Quirúrgica Incisional Profunda',
+            '12. Herida Quirurgica Organo/Espacio',
+            '13. Infeccion de Cavidad (Boca, Lengua, Encias)',
+            '14. Infección de la Articulacion o Bursa',
+            '15. Infeccion de la Cúpula Vaginal',
+            '15. Infección de la Episiotomia',
+            '16. Infección de Tracto Respiratorio Superior',
+            '17. Infección del Espacio Intervertebral',
+            '18. Infección del Oido/mastoides',
+            '19. Infeccion del Torrente Sanguineo - Cateter Mahurkar',
+            '19. Infeccion del Torrente Sanguineo - Cateter implantable',
+            '19. Infeccion del Torrente Sanguineo - Cateter umbilical',
+            '19. Infeccion del Torrente Sanguineo Linea Vascular - CVC',
+            '19. Infeccion del otros Torrente Sanguineo Linea Vascular - PICC',
+            '20. Infeccion del Torrente Sanguineo Linea Vascular con otro foco',
+            '21. Infeccion del Tracto Gastrointestinal',
+            '22. Infeccion Intraabdominal',
+            '23. Infeccion Intracraneal',
+            '24. Infeccion Sintomática del Tracto Urinario',
+            '25. Infeccion Sintomática del Tracto Urinario con Sonda',
+            '26. Infeccion Sistémica/Disemiada',
+            '27. Infección Venosa o Arterial',
+            '27. Infección arte',
+            '28. Mediastinitis',
+            '29. Meningitis o Ventriculitis',
+            '30. Miocarditis o Pericarditis',
+            '31. Neumonia 1 - 2 - 3',
+            '32. Neumonia Asociada Intubación 1 - 2 - 3',
+            '33. Neumonia Asociada a Ventilador 1 - 2 - 3',
+            '34. Ojo Exepto Conjuntivitis',
+            '35. Onfalitis',
+            '36. Osteomielitis',
+            '37. Otras Infecciones del Tracto Reproductivo',
+            '38. Otras Infecciones del Tracto Respiratorio Inferior',
+            '39. Otras Infecciones del Tracto Urinario',
+            '40. Otros',
+            '41. Piel',
+            '41. Piel - Flebitis',
+            '42. Pustulosis Infantil',
+            '43. Quemadura',
+            '44. Sepsis Clinica',
+            '45. Sinusitis',
+            '46. Tejidos Blandos',
+            '47. Traquea-Bronquios-Bronquiolos (Sin neumonia)',
+            '48. Ulcera por Decúbito',
+            '49. Bacteriuria Asintomatica Bacteremica',
+            '50. No aplica',
+            '51. Infeccion Previa',
+            '52. No cumple criterios',
+            '53. LA - Infeccion del Torrente Sanguineo sin Linea Vascular - Arterial',
+            '54. Herida Quirúrgica Incisional Profunda Primaria',
+            '55. Herida Quirúrgica Incisional Profunda Secundaria',
+            '56. Herida Quirúrgica Incisional Superficial Primaria',
+            '57. Covid-19',
+        ];
+
+        // Opciones oficiales tomadas de Camilo.xlsx.
+        $opcionesEspecialidadQx = [
+            'CIRUGIA CARDIOVASCULAR', 'CIRUGIA DE CABEZA Y CUELLO', 'CIRUGIA DE MAMA', 'CIRUGIA DE TORAX',
+            'CIRUGIA GASTRO ONCOLOGICA', 'CIRUGIA GASTROINTESTINAL-HEPATOBILIAR', 'CIRUGIA GENERAL',
+            'CIRUGIA LAPAROSCOPIA', 'CIRUGIA MAXILOFACIAL', 'CIRUGIA ONCOLOGICA', 'CIRUGIA PEDIATRICA',
+            'CIRUGIA PLASTICA', 'CIRUGIA QUEMADOS', 'CIRUGIA TRASPLANTE Y ORGANO ABDOMINAL',
+            'CIRUGIA TRAUMA Y EMERGENCIA', 'GASTROENTEROLOGÍA', 'GINECOLOGIA ONCOLOGICA',
+            'GINECOLOGIA Y OBSTETRICIA', 'NEUROCIRUGIA', 'NEUROTOLOGIA', 'ODONTOLOGIA GRAL.',
+            'OFTALMOLOGIA', 'ORTOPEDIA', 'OTORRINOLARINGOLOGIA', 'RADIOLOGIA INTERVENCIONISTA', 'UROLOGIA',
+        ];
+        $opcionesAntibioticos = [
+            'Amikacina', 'Amoxicilina/ A.Clavulamico', 'Ampicilina', 'Ampicilina/ Sulbactam', 'Anfotericina',
+            'Anidulofungina', 'Aztreonam', 'Caspofungina', 'Cefazolina', 'Cefepime', 'Cefoperazona / Sulbactam',
+            'Cefotaxime', 'Cefoxitin', 'Ceftazidima', 'Ceftriaxone', 'Cefuroxime', 'Ciprofloxacina',
+            'Claritromicina', 'Clindamicina', 'Colistina', 'Daptomicina', 'Ertapenem', 'Fluconazol',
+            'Gentamicina', 'Imipenem', 'Linezolid', 'Meropenem', 'Metronidazol', 'Oxacilina', 'Penicilina',
+            'Piperacilina / Tazobactam', 'Polimixina', 'Rifampicina', 'Tigeciclina',
+            'Trimetoprim / Sulfametoxazol', 'Vancomicina', 'NO APLICA',
+        ];
+        $opcionesAsa = ['1', '2', '3', '4', '5', '6', 'Sin Registro'];
+
+        // TIPO DE MUESTRA — 33 opciones oficiales (Camilo.xlsx).
+        $opcionesTipoMuestra = [
+            '1. Absceso tejidos organos', '2. Cepillado o LBA', '3. Coleccion piel y tejidps blandos',
+            '4. Hemocultivo barrido cateter', '5. Liquido cefalorraquideo', '6. Liquido peritoneal',
+            '7. Liquido pleural', '8. Materia fecal', '9. Orina', '10. Orina por cateterismo vesical',
+            '11. Orina por miccion expontanea', '12. Orina por sonda vesical', '13. Otro tipo de muestra',
+            '14. Punta de cateter (VP)', '15. Punta de cateter (CVC - PICC)', '16. Sangre - puncion periferica',
+            '17. Secrecion aspirado traqueal', '18. Secrecion de piel y tejidos blandos',
+            '19. Secrecion herida quirurgica', '20. Secrecion sitio CVC', '21. Segmento tejido',
+            '22. Liquido sinovial', '23. Liquido pericardio', '24. Esputo', '25. Secrecion ocular',
+            '26. Hisopado rectal', '27. Hisopado nasal', '28. Hisopado rectovaginal',
+            '29. Hemocultivo puncion arterial', '30. Aspirado medula osea', '31. Biopsia', '32. Otros',
+            '99. No Aplica',
+        ];
+
+        // TIPO DE DOCUMENTO — opciones de Camilo.xlsx.
+        $opcionesTipoDocumento = [
+            'CC', 'TI', 'RC', 'RN', 'CE', 'PT', 'PA', 'SC', 'AS', 'CN', 'URG',
+            'ARG', 'BOL', 'BRA', 'CHI', 'ECU', 'PAR', 'PER', 'VEN',
+        ];
     @endphp
+
+    {{-- Contenedor que se intercambia por AJAX en búsquedas/filtros/navegación
+         (sin recargar). Incluye el botón volver, el buscador y los resultados. --}}
+    <div id="registros-resultados">
 
     {{-- Botón volver si hay servicio seleccionado --}}
     @if($servicioSeleccionado)
         <div class="mb-2">
-            <a href="{{ route('registros.index') }}" class="btn btn-outline-primary">
+            <a href="{{ route('registros.index') }}" class="btn btn-outline-primary js-nav">
                 <i class="fas fa-arrow-left mr-1"></i>Volver a Servicios
             </a>
         </div>
@@ -57,7 +180,7 @@
                     <div class="input-group-append">
                         <button type="submit" class="btn btn-primary">Buscar</button>
                         @if($search)
-                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'anio' => $anio, 'mes' => $mes])) }}" class="btn btn-outline-secondary" title="Limpiar búsqueda">
+                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'anio' => $anio, 'mes' => $mes])) }}" class="btn btn-outline-secondary js-nav" title="Limpiar búsqueda">
                                 <i class="fas fa-times"></i>
                             </a>
                         @endif
@@ -73,7 +196,7 @@
                         <span class="small font-weight-bold text-muted"><i class="far fa-calendar-alt mr-1"></i>Filtrar por fecha:</span>
                     </div>
                     <div class="col-auto">
-                        <select name="anio" class="form-control form-control-sm" onchange="this.form.submit()" title="Año">
+                        <select name="anio" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Año">
                             <option value="">Año: todos</option>
                             @foreach($aniosDisponibles as $a)
                                 <option value="{{ $a }}" {{ (string) $anio === (string) $a ? 'selected' : '' }}>{{ $a }}</option>
@@ -81,7 +204,7 @@
                         </select>
                     </div>
                     <div class="col-auto">
-                        <select name="mes" class="form-control form-control-sm" onchange="this.form.submit()" title="Mes">
+                        <select name="mes" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Mes">
                             <option value="">Mes: todos</option>
                             @foreach($meses as $num => $nombre)
                                 <option value="{{ $num }}" {{ (string) $mes === (string) $num ? 'selected' : '' }}>{{ $nombre }}</option>
@@ -89,11 +212,18 @@
                         </select>
                     </div>
                     <div class="col-auto">
+                        <select name="tipo" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Tipo de registro">
+                            <option value="todos" {{ ($tipo ?? 'todos') === 'todos' ? 'selected' : '' }}>Todos los pacientes</option>
+                            <option value="proa" {{ ($tipo ?? '') === 'proa' ? 'selected' : '' }}>Solo con PROA</option>
+                            <option value="epidemiologia" {{ ($tipo ?? '') === 'epidemiologia' ? 'selected' : '' }}>Solo epidemiología</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
                         <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
                     </div>
-                    @if($anio || $mes)
+                    @if($anio || $mes || (($tipo ?? 'todos') !== 'todos'))
                         <div class="col-auto">
-                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'search' => $search])) }}" class="btn btn-sm btn-outline-secondary">
+                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'search' => $search])) }}" class="btn btn-sm btn-outline-secondary js-nav">
                                 <i class="fas fa-times mr-1"></i>Limpiar filtros
                             </a>
                         </div>
@@ -112,40 +242,30 @@
             @forelse($serviciosPaginados as $servicio)
                 @php
                     $servicioNombre = $servicio->ubicacion;
-                    $pacientesPorServicio = $dataPorServicio[$servicioNombre] ?? collect();
-                    $totalPacientes = $pacientesPorServicio->count();
+                    // Conteo directo de pacientes por servicio (correcto y eficiente).
+                    $totalPacientes = $pacientesCountPorServicio[$servicioNombre] ?? 0;
                     $totalProaServicio = $proaCountPorServicio[$servicioNombre] ?? 0;
                 @endphp
 
-                <div class="col-lg-4 col-md-6 col-sm-12 mb-3">
-                    <div class="card card-outline card-primary service-card shadow-sm h-100">
-                        <a href="{{ route('registros.index', ['servicio' => $servicioNombre]) }}" 
-                           class="card-header service-header text-decoration-none">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="d-flex align-items-center flex-grow-1">
-                                    <div class="service-icon mr-3">
-                                        <i class="fas fa-hospital-alt"></i>
-                                    </div>
-                                    <div class="service-info">
-                                        <h6 class="mb-0 font-weight-bold text-truncate" title="{{ $servicioNombre }}">
-                                            {{ Str::limit($servicioNombre, 35) }}
-                                        </h6>
-                                        <div class="d-flex align-items-center flex-wrap mt-1" style="gap: 6px;">
-                                            <small class="text-light-muted">
-                                                <i class="fas fa-users mr-1"></i>{{ $totalPacientes }} paciente(s)
-                                            </small>
-                                            @if($totalProaServicio > 0)
-                                                <span class="badge badge-success badge-pill px-2 py-1" style="font-size: 0.72rem;" title="Pacientes con intervención PROA registrada">
-                                                    <i class="fas fa-capsules mr-1"></i>{{ $totalProaServicio }} PROA
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                <i class="fas fa-chevron-right text-white-50 ml-2"></i>
-                            </div>
-                        </a>
-                    </div>
+                <div class="col-servicio mb-3">
+                    <a href="{{ route('registros.index', ['servicio' => $servicioNombre]) }}"
+                       class="service-tile" title="{{ $servicioNombre }}">
+                        <div class="service-tile-top">
+                            <span class="service-tile-ico"><i class="fas fa-hospital-alt"></i></span>
+                            <i class="fas fa-chevron-right service-tile-arrow"></i>
+                        </div>
+                        <h6 class="service-tile-name">{{ Str::limit($servicioNombre, 42) }}</h6>
+                        <div class="service-tile-stats">
+                            <span class="service-tile-pac">
+                                <i class="fas fa-users mr-1"></i>{{ $totalPacientes }} paciente(s)
+                            </span>
+                            @if($totalProaServicio > 0)
+                                <span class="service-tile-proa" title="Pacientes con intervención PROA registrada">
+                                    <i class="fas fa-capsules mr-1"></i>{{ $totalProaServicio }} PROA
+                                </span>
+                            @endif
+                        </div>
+                    </a>
                 </div>
 
             @empty
@@ -186,6 +306,13 @@
                 </div>
             @endif
 
+            {{-- Catálogo CIE-10 compartido para el buscador de diagnóstico (una sola vez) --}}
+            <datalist id="lista-diagnosticos">
+                @foreach(($catalogos['diagnosticos'] ?? collect()) as $dx)
+                    <option value="{{ $dx->codigo }} - {{ $dx->descripcion }}"></option>
+                @endforeach
+            </datalist>
+
             <div class="col-12">
                 <div class="pacientes-scroll-container">
                     <div class="row justify-content-center">
@@ -197,11 +324,14 @@
                                     $tienePROA            = $info['tiene_proa'];
                                     $primerRegistro       = $tienePROA ? $medicamentosPorPaciente->first()?->first() : null;
                                     $pacienteKey          = $servicioKey . '-pac-' . md5($pacienteId);
+                                    // Estado general del paciente: completo si epidemiología está toda
+                                    // registrada y (no tiene PROA o PROA también está completo).
+                                    $pacienteCompleto     = $info['epi_completo'] && (!$tienePROA || $info['proa_completo']);
                                 @endphp
 
                                 <div class="col-xl-9 col-lg-10 col-md-12 mb-3">
                                     <div class="card patient-card shadow-lg">
-                            <div class="card-header patient-header" data-toggle="collapse" data-target="#{{ $pacienteKey }}" role="button">
+                            <div class="card-header patient-header js-patient-block" data-toggle="collapse" data-target="#{{ $pacienteKey }}" role="button">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
                                         <span class="patient-avatar mr-3">
@@ -216,7 +346,9 @@
                                     </div>
                                     <div class="d-flex align-items-center">
                                         @if($tienePROA)
-                                            <span class="badge badge-success badge-pill px-2 py-1 mr-2" style="font-size: 0.75rem;" title="Paciente con datos PROA">
+                                            {{-- Píldora PROA: verde si todo está registrado, roja si falta --}}
+                                            <span class="badge js-badge-proa-pill {{ $info['proa_completo'] ? 'badge-success' : 'badge-danger' }} badge-pill px-2 py-1 mr-2" style="font-size: 0.75rem;"
+                                                  title="{{ $info['proa_completo'] ? 'PROA completo' : 'Falta registrar PROA' }}">
                                                 <i class="fas fa-capsules"></i> PROA
                                             </span>
                                             <span class="badge badge-info badge-pill px-2 py-1 mr-2" style="font-size: 0.8rem;">
@@ -240,7 +372,7 @@
                                     {{-- BLOQUE 1: EPIDEMIOLOGÍA --}}
                                     {{-- ========================================== --}}
                                     @php $epiKey = $pacienteKey . '-epi'; @endphp
-                                    <div class="card mb-3 border-info">
+                                    <div class="card mb-3 border-info epi-card">
                                         <div class="card-header bg-gradient-info text-white" 
                                              data-toggle="collapse" 
                                              data-target="#{{ $epiKey }}"
@@ -248,6 +380,8 @@
                                              style="cursor: pointer;">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
+                                                    <span class="estado-dot {{ $info['epi_completo'] ? 'estado-ok' : 'estado-pend' }} mr-2"
+                                                          title="{{ $info['epi_completo'] ? 'Todos los microorganismos registrados' : 'Faltan microorganismos por registrar' }}"></span>
                                                     <i class="fas fa-chart-line mr-2"></i>
                                                     <strong style="font-size: 1rem;">EPIDEMIOLOGÍA</strong>
                                                     <span class="badge badge-light text-info ml-2" style="font-size: 0.8rem;" title="Registros de microorganismos del paciente">
@@ -289,10 +423,26 @@
                                                     </div>
                                                 </div>
 
-                                                {{-- Acordeón: un bloque por microorganismo. Los registros duplicados
-                                                     del mismo microorganismo se agrupan dentro del mismo bloque. --}}
+                                                {{-- Barra de acción: agrupar las muestras seleccionadas en un mismo caso --}}
+                                                <div class="agrupar-bar" data-paciente="{{ $paciente?->identificador_unico }}">
+                                                    <div class="agrupar-info">
+                                                        <i class="fas fa-object-group mr-1"></i>
+                                                        Marca las muestras que sean del mismo caso y agrúpalas.
+                                                        <span class="agrupar-conteo text-muted"></span>
+                                                    </div>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary btn-agrupar-casos" disabled>
+                                                        <i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas
+                                                    </button>
+                                                </div>
+
+                                                {{-- Acordeón: un bloque por CASO de microorganismo. El agrupamiento
+                                                     lo define caso_id (que la usuaria puede rehacer con los checkboxes);
+                                                     si por alguna razón falta, se agrupa por nombre de microorganismo. --}}
                                                 @php
                                                     $gruposMicro = collect($info['seguimientos'])->groupBy(function ($r) {
+                                                        if (!empty($r->caso_id)) {
+                                                            return 'caso-' . $r->caso_id;
+                                                        }
                                                         $n = trim((string) ($r->microorganismo ?? ''));
                                                         return $n === '' ? '__SIN_MICROORGANISMO__' : mb_strtoupper($n, 'UTF-8');
                                                     });
@@ -304,18 +454,24 @@
                                                         // datos complementarios (que son iguales para todo el grupo).
                                                         $reg = $grupoMicro->first();
                                                     @endphp
-                                                    <div class="card mb-2 border-secondary">
+                                                    <div class="card mb-2 border-secondary micro-card">
                                                         <div class="card-header bg-secondary text-white"
                                                              data-toggle="collapse"
                                                              data-target="#{{ $microKey }}"
                                                              role="button"
                                                              style="cursor: pointer;">
+                                                            @php $microRegistrado = collect($grupoMicro)->every(fn ($r) => (bool) $r->registrado); @endphp
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <div>
+                                                                    <span class="estado-dot {{ $microRegistrado ? 'estado-ok' : 'estado-pend' }} mr-2"
+                                                                          title="{{ $microRegistrado ? 'Registrado' : 'Falta por registrar' }}"></span>
                                                                     <i class="fas fa-vial mr-2"></i>
                                                                     <strong>Información adicional de {{ $reg->microorganismo ?: 'Sin microorganismo' }}</strong>
                                                                     <span class="badge badge-light text-dark ml-2" style="font-size:0.75rem;" title="Registros de este microorganismo">
                                                                         {{ $grupoMicro->count() }} registro(s)
+                                                                    </span>
+                                                                    <span class="badge {{ $microRegistrado ? 'badge-success' : 'badge-danger' }} ml-1" style="font-size:0.7rem;">
+                                                                        {{ $microRegistrado ? 'Registrado' : 'Falta' }}
                                                                     </span>
                                                                 </div>
                                                                 <i class="fas fa-chevron-down collapse-icon"></i>
@@ -326,10 +482,10 @@
                                                                 <form class="microorganismo-info-form" data-paciente="{{ $paciente?->identificador_unico }}">
                                                                     @csrf
                                                                     <input type="hidden" name="id" value="{{ $reg->id }}">
-                                                                    @php $bloqueadoInfo = !optional(auth()->user())->esAdmin() && $reg->edicion_bloqueada; @endphp
+                                                                    @php $bloqueadoInfo = !optional(auth()->user())->puedeEditarEpidemiologia() && $reg->edicion_bloqueada; @endphp
                                                                     @if($bloqueadoInfo)
                                                                         <div class="alert alert-warning py-1 px-2 mb-2" style="font-size:0.8rem;">
-                                                                            <i class="fas fa-lock mr-1"></i> Este formulario ya fue registrado. Solo un administrador puede modificarlo.
+                                                                            <i class="fas fa-lock mr-1"></i> Este formulario ya fue registrado. No tienes permiso para modificarlo.
                                                                         </div>
                                                                     @endif
                                                                     <fieldset @disabled($bloqueadoInfo)>
@@ -361,8 +517,12 @@
                                                         <div class="row mb-2">
                                                             <div class="col-md-2">
                                                                 <label class="proa-label">Tipo de Muestra</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][tipo_muestra]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->tipo_muestra ?? '' }}">
+                                                                <select name="registros[{{ $fila->id }}][tipo_muestra]" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor($catalogos['tiposMuestra']->pluck('descripcion')->all(), $fila->tipo_muestra) as $op)
+                                                                        <option value="{{ $op }}" {{ ($fila->tipo_muestra ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                             <div class="col-md-2">
                                                                 <label class="proa-label">N. Reporte</label>
@@ -389,6 +549,12 @@
                                                                 <input type="date" name="registros[{{ $fila->id }}][fecha_toma_muestra]"
                                                                        class="form-control form-control-sm fecha-muestra"
                                                                        value="{{ $fila->fecha_toma_muestra?->format('Y-m-d') }}">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Fecha de Reporte <span class="text-danger">*</span></label>
+                                                                <input type="date" name="registros[{{ $fila->id }}][fecha_reporte]"
+                                                                       class="form-control form-control-sm fecha-reporte" required
+                                                                       value="{{ $fila->fecha_reporte?->format('Y-m-d') }}">
                                                             </div>
                                                         </div>
 
@@ -474,6 +640,7 @@
                                                         <div class="col-md-4">
                                                             <label class="proa-label">Diagnóstico de ingreso</label>
                                                             <input type="text" name="diagnostico_ingreso" class="form-control form-control-sm const-field"
+                                                                   list="lista-diagnosticos" autocomplete="off" placeholder="Busque por código o texto…"
                                                                    value="{{ $reg->diagnostico_ingreso ?? '' }}">
                                                         </div>
                                                     </div>
@@ -484,7 +651,7 @@
                                                             <label class="proa-label">Tipo ID</label>
                                                             <select name="tipo_id" class="form-control form-control-sm const-field">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['RC', 'TI', 'CC', 'CE', 'PA', 'PPT', 'CD', 'DNI'], $reg->tipo_id) as $op)
+                                                                @foreach($conValor(['ARG', 'AS', 'BOL', 'BRA', 'CC', 'CHI', 'CN', 'ECU', 'PAR', 'PER', 'PT', 'RC', 'RN', 'SC', 'TI', 'URG', 'VEN'], $reg->tipo_id) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->tipo_id ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
@@ -501,7 +668,8 @@
                                                         </div>
                                                         <div class="col-md-2">
                                                             <label class="proa-label">Peso (kg)</label>
-                                                            <input type="number" step="0.1" name="peso" class="form-control form-control-sm const-field"
+                                                            <input type="number" step="0.1" min="0" inputmode="decimal" name="peso"
+                                                                   class="form-control form-control-sm const-field solo-numero"
                                                                    value="{{ $reg->peso ?? '' }}">
                                                         </div>
                                                     </div>
@@ -547,7 +715,7 @@
                                                             <label class="proa-label">Sitio</label>
                                                             <select name="sitio" class="form-control form-control-sm">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['Info pendiente', '51. Infeccion Previa', '52. No cumple criterios'], $reg->sitio) as $op)
+                                                                @foreach($conValor($opcionesSitio, $reg->sitio) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->sitio ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
@@ -577,13 +745,27 @@
                                                         </div>
                                                     </div>
 
+                                                    {{-- Fila 4b: Fechas de infección (req. 3) --}}
+                                                    <div class="row mb-2">
+                                                        <div class="col-md-3">
+                                                            <label class="proa-label">Fecha de Dx. de infección</label>
+                                                            <input type="date" name="fecha_dx_infeccion" class="form-control form-control-sm fecha-dx-infeccion"
+                                                                   value="{{ isset($reg->fecha_dx_infeccion) ? $reg->fecha_dx_infeccion->format('Y-m-d') : '' }}">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <label class="proa-label">DÍAS DE ESTANCIA PREVIOS A INFECCIÓN</label>
+                                                            <input type="text" name="dias_estancia_previos_infeccion" class="form-control form-control-sm bg-white" readonly
+                                                                   value="{{ $reg->dias_estancia_previos_infeccion ?? '' }}" placeholder="Calculado automáticamente">
+                                                        </div>
+                                                    </div>
+
                                                     {{-- Fila 5: Especialidad que realizo cirugia, Procedimiento quirurjico, Tiempo quirurjico --}}
                                                     <div class="row mb-2">
                                                         <div class="col-md-4">
                                                             <label class="proa-label">Especialidad que realizó cirugía</label>
                                                             <select name="especialidad_cirugia" class="form-control form-control-sm">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['Cirugía General', 'Traumatología y Ortopedia', 'Urología', 'Ginecología y Obstetricia', 'Neurocirugía', 'Cirugía Cardiovascular', 'Cirugía Pediátrica', 'Cirugía Plástica', 'Oftalmología', 'Otorrinolaringología'], $reg->especialidad_cirugia) as $op)
+                                                                @foreach($conValor($opcionesEspecialidadQx, $reg->especialidad_cirugia) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->especialidad_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
@@ -595,8 +777,15 @@
                                                         </div>
                                                         <div class="col-md-3">
                                                             <label class="proa-label">Tiempo Quirúrgico</label>
-                                                            <input type="text" name="tiempo_quirurgico" class="form-control form-control-sm"
-                                                                   value="{{ $reg->tiempo_quirurgico ?? '' }}" placeholder="Ej: 120 min">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" min="0" step="1" inputmode="numeric" name="tiempo_quirurgico"
+                                                                       class="form-control form-control-sm solo-entero"
+                                                                       value="{{ preg_replace('/\D/', '', (string) ($reg->tiempo_quirurgico ?? '')) }}"
+                                                                       placeholder="Ej: 120">
+                                                                <div class="input-group-append">
+                                                                    <span class="input-group-text">minutos</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
@@ -633,7 +822,7 @@
                                                             <label class="proa-label">Antibióticos usados</label>
                                                             <select name="antibioticos_usados" class="form-control form-control-sm">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->antibioticos_usados) as $op)
+                                                                @foreach($conValor($opcionesAntibioticos, $reg->antibioticos_usados) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->antibioticos_usados ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
@@ -642,7 +831,7 @@
                                                             <label class="proa-label">ASA Preoperatoria</label>
                                                             <select name="asa_preoperatoria" class="form-control form-control-sm">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->asa_preoperatoria) as $op)
+                                                                @foreach($conValor($opcionesAsa, $reg->asa_preoperatoria) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->asa_preoperatoria ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
@@ -691,30 +880,106 @@
                                                             <label class="proa-label">Interconsulta con infectología</label>
                                                             <select name="interconsulta_infectologia" class="form-control form-control-sm">
                                                                 <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->interconsulta_infectologia) as $op)
+                                                                @foreach($conValor(['SI', 'NO', 'NO APLICA'], $reg->interconsulta_infectologia) as $op)
                                                                     <option value="{{ $op }}" {{ ($reg->interconsulta_infectologia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                 @endforeach
                                                             </select>
                                                         </div>
                                                     </div>
 
-                                                    {{-- Fila 8: Fecha inserción, Fecha retiro, Comentarios --}}
+                                                    {{-- Fila 8: Comentarios (las fechas de inserción/retiro se movieron al bloque de enfermería, req. 7) --}}
                                                     <div class="row mb-3">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Fecha de inserción</label>
-                                                            <input type="date" name="fecha_insercion" class="form-control form-control-sm"
-                                                                   value="{{ isset($reg->fecha_insercion) ? $reg->fecha_insercion->format('Y-m-d') : '' }}">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Fecha de retiro</label>
-                                                            <input type="date" name="fecha_retiro" class="form-control form-control-sm"
-                                                                   value="{{ isset($reg->fecha_retiro) ? $reg->fecha_retiro->format('Y-m-d') : '' }}">
-                                                        </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-12">
                                                             <label class="proa-label">Comentarios</label>
                                                             <textarea name="comentarios" class="form-control form-control-sm" rows="2" placeholder="Comentarios adicionales...">{{ $reg->comentarios ?? '' }}</textarea>
                                                         </div>
                                                     </div>
+
+                                                    @if($esEnfermero)
+                                                    {{-- ===== Datos de enfermería (req. 7, 8, 11) — solo perfil enfermero ===== --}}
+                                                    <div class="enfermeria-bloque border rounded p-2 mb-3">
+                                                        <div class="proa-label font-weight-bold mb-2" style="color:#2a377e;">
+                                                            <i class="fas fa-user-nurse mr-1"></i> Datos de enfermería
+                                                        </div>
+
+                                                        {{-- Req. 7: dispositivo de notificación obligatoria --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-6">
+                                                                <label class="proa-label">¿Es una infección asociada a dispositivo de notificación obligatoria?</label>
+                                                                <select name="dispositivo_notificacion" class="form-control form-control-sm select-dispositivo">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->dispositivo_notificacion) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->dispositivo_notificacion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mb-2 bloque-dispositivo">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Fecha de inserción</label>
+                                                                <input type="date" name="fecha_insercion" class="form-control form-control-sm"
+                                                                       value="{{ isset($reg->fecha_insercion) ? $reg->fecha_insercion->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Fecha de retiro</label>
+                                                                <input type="date" name="fecha_retiro" class="form-control form-control-sm"
+                                                                       value="{{ isset($reg->fecha_retiro) ? $reg->fecha_retiro->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Req. 8: ¿ISO? --}}
+                                                        <div class="row mb-1">
+                                                            <div class="col-md-6">
+                                                                <label class="proa-label">¿Este microorganismo corresponde a una ISO (Infección de Sitio Quirúrgico)?</label>
+                                                                <select name="es_iso" class="form-control form-control-sm select-iso">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->es_iso) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->es_iso ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-6 d-flex align-items-end bloque-iso-nota">
+                                                                <small class="text-muted">Si es <strong>SÍ</strong>, diligencie los campos quirúrgicos de arriba (categoría, especialidad, procedimiento, baño, asepsia, profilaxis, antibióticos, ASA, tipo/clasificación de cirugía, NNIS). No se vuelven a preguntar.</small>
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Req. 11: solo cuando SITIO ≠ "No aplica" --}}
+                                                        <div class="row mb-1 bloque-sitio-enfermero">
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Duda</label>
+                                                                <select name="duda" class="form-control form-control-sm">
+                                                                    <option value="">—</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->duda) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->duda ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Estado</label>
+                                                                <select name="estado" class="form-control form-control-sm">
+                                                                    <option value="">—</option>
+                                                                    @foreach($conValor(['APROBADO', 'DESCARTADO'], $reg->estado) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->estado ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Modificado</label>
+                                                                <select name="modificado" class="form-control form-control-sm">
+                                                                    <option value="">—</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->modificado) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->modificado ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <label class="proa-label">Fecha de reporte al hospital seguro</label>
+                                                                <input type="date" name="fecha_reporte_hospital_seguro" class="form-control form-control-sm"
+                                                                       value="{{ isset($reg->fecha_reporte_hospital_seguro) ? $reg->fecha_reporte_hospital_seguro->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    @endif
 
                                                                     </fieldset>
 
@@ -743,17 +1008,22 @@
                                     {{-- BLOQUE 2: PROA (solo si el paciente está en el TXT/tabla de PROA) --}}
                                     {{-- ========================================== --}}
                                     @if($tienePROA)
-                                    <div class="card mb-2 border-success">
-                                        <div class="card-header bg-gradient-success text-white" 
-                                             data-toggle="collapse" 
+                                    <div class="card mb-2 border-success proa-card">
+                                        <div class="card-header text-white {{ $info['proa_completo'] ? 'bg-proa-ok' : 'bg-proa-pend' }}"
+                                             data-toggle="collapse"
                                              data-target="#{{ $pacienteKey }}-proa"
                                              role="button"
                                              style="cursor: pointer;">
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <div>
+                                                    <span class="estado-dot {{ $info['proa_completo'] ? 'estado-ok-light' : 'estado-pend-light' }} mr-2"
+                                                          title="{{ $info['proa_completo'] ? 'Todos los antibióticos registrados' : 'Faltan antibióticos por registrar' }}"></span>
                                                     <i class="fas fa-capsules mr-2"></i>
                                                     <strong style="font-size: 1rem;">PROA</strong>
                                                     <small class="ml-2">({{ $info['total_medic'] }} medicamento(s))</small>
+                                                    <span class="badge badge-light ml-2" style="font-size: 0.75rem;">
+                                                        {{ $info['proa_completo'] ? 'Completo' : 'Falta registrar' }}
+                                                    </span>
                                                 </div>
                                                 <i class="fas fa-chevron-down collapse-icon"></i>
                                             </div>
@@ -765,7 +1035,13 @@
                                     @foreach($medicamentosPorPaciente as $medicamento => $registros)
                                         @php
                                             $medKey = $pacienteKey . '-med-' . md5($medicamento);
-                                            $totalDosis = $registros->count();
+                                            // Se agrupa en CURSOS de tratamiento de 7 días: un bloque por curso.
+                                            // Una dosis a 7+ días del inicio del curso abre un curso nuevo.
+                                            $cursos = \App\Support\ProaCursos::agrupar($registros);
+                                            $totalDosis = count($cursos);
+                                            // Antibiótico registrado si la dosis representativa de CADA curso
+                                            // tiene intervención.
+                                            $medRegistrado = collect($cursos)->every(fn ($c) => $c['representativa'] && $intervenciones->has($c['representativa']->id));
                                         @endphp
 
                                         {{-- Tarjeta de medicamento --}}
@@ -777,12 +1053,17 @@
                                                  role="button">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <div>
+                                                        <span class="estado-dot {{ $medRegistrado ? 'estado-ok' : 'estado-pend' }} mr-2"
+                                                              title="{{ $medRegistrado ? 'Registrado' : 'Falta por registrar' }}"></span>
                                                         <i class="fas fa-pills text-success mr-1"></i>
                                                         <strong>{{ $medicamento }}</strong>
                                                     </div>
                                                     <div class="d-flex align-items-center">
+                                                        <span class="badge {{ $medRegistrado ? 'badge-success' : 'badge-danger' }} badge-sm mr-2">
+                                                            {{ $medRegistrado ? 'Registrado' : 'Falta' }}
+                                                        </span>
                                                         <span class="badge badge-secondary badge-sm mr-2">
-                                                            {{ $totalDosis }} dosis
+                                                            {{ $totalDosis }} {{ $totalDosis == 1 ? 'curso' : 'cursos' }}
                                                         </span>
                                                         <i class="fas fa-chevron-down collapse-icon text-muted"></i>
                                                     </div>
@@ -792,39 +1073,58 @@
                                             {{-- Registros individuales del medicamento --}}
                                             <div id="{{ $medKey }}" class="collapse">
                                                 <div class="card-body p-2 bg-white">
-                                                    @foreach($registros as $registro)
-                                                        @php $regKey = $medKey . '-reg-' . $registro->id; @endphp
+                                                    {{-- Un bloque por CURSO de tratamiento (7 días). Dentro de un
+                                                         curso, las dosis con la misma fecha se muestran una sola vez. --}}
+                                                    @foreach($cursos as $curso)
+                                                        @php
+                                                            $registro   = $curso['representativa'];
+                                                            $inicio     = $curso['inicio'];
+                                                            $fechaCard  = $medKey . '-curso-' . $registro->id;
+                                                            $regKey     = $fechaCard;
+                                                            $fechaLabel = $inicio ? $inicio->format('d/m/Y') : 'Sin fecha';
+                                                            $diaActual  = \App\Support\ProaCursos::diaActual($inicio);
+                                                            $dosisCurso = $curso['dosis']->count();
+                                                        @endphp
 
-                                                        {{-- Tarjeta de registro individual --}}
+                                                        {{-- Un bloque por curso: fecha de inicio + contador Día X de 7 --}}
                                                         <div class="card reg-card mb-2">
                                                             <div class="card-header reg-header"
                                                                  data-toggle="collapse"
-                                                                 data-target="#{{ $regKey }}"
+                                                                 data-target="#{{ $fechaCard }}"
                                                                  aria-expanded="false"
                                                                  role="button">
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <div>
-                                                                        <i class="fas fa-file-medical text-info mr-1"></i>
-                                                                        <strong>{{ \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('d/m/Y') }}</strong>
-                                                                        <span class="text-muted ml-2">{{ $registro->Ho_Sumisnistro }}</span>
+                                                                        <i class="fas fa-calendar-day text-info mr-1"></i>
+                                                                        <strong>{{ $fechaLabel }}</strong>
+                                                                        @if($inicio)
+                                                                            <span class="badge curso-contador {{ $diaActual > 7 ? 'badge-warning' : 'badge-info' }} ml-2"
+                                                                                  data-inicio="{{ $inicio->format('Y-m-d') }}"
+                                                                                  title="Día de tratamiento (lo ideal son 7 días)">
+                                                                                Día {{ $diaActual }} de 7
+                                                                            </span>
+                                                                        @endif
+                                                                        @if($dosisCurso > 1)
+                                                                            <span class="badge badge-light border ml-1" style="font-size:0.7rem;" title="Dosis dentro de este curso">{{ $dosisCurso }} dosis</span>
+                                                                        @endif
                                                                     </div>
                                                                     <i class="fas fa-chevron-down collapse-icon text-muted"></i>
                                                                 </div>
                                                             </div>
 
-                                                            {{-- Formulario PROA --}}
-                                                            <div id="{{ $regKey }}" class="collapse">
-                                                                <div class="card-body bg-white p-3">
+                                                            <div id="{{ $fechaCard }}" class="collapse">
+                                                                <div class="card-body bg-white p-2">
+                                                                        <div class="proa-dose">
                                                                 @php $interv = $intervenciones[$registro->id] ?? null; @endphp
 
-                                                                <form class="proa-form" data-id="{{ $registro->id }}">
+                                                                <form class="proa-form" data-id="{{ $registro->id }}" data-registrado="{{ $intervenciones->has($registro->id) ? '1' : '0' }}">
                                                                 @csrf
 
                                                                 <input type="hidden" name="id_deta_procedimiento" value="{{ $registro->id }}">
-                                                                @php $bloqueadoProa = !optional(auth()->user())->esAdmin() && optional($interv)->edicion_bloqueada; @endphp
+                                                                @php $bloqueadoProa = !optional(auth()->user())->puedeEditarProa() && optional($interv)->edicion_bloqueada; @endphp
                                                                 @if($bloqueadoProa)
                                                                     <div class="alert alert-warning py-1 px-2 mb-2" style="font-size:0.8rem;">
-                                                                        <i class="fas fa-lock mr-1"></i> Esta intervención PROA ya fue registrada. Solo un administrador puede modificarla.
+                                                                        <i class="fas fa-lock mr-1"></i> Esta intervención PROA ya fue registrada. No tienes permiso para modificarla.
                                                                     </div>
                                                                 @endif
                                                                 <fieldset @disabled($bloqueadoProa)>
@@ -926,8 +1226,12 @@
                                                                     </div>
                                                                     <div class="col-md-2">
                                                                         <label class="proa-label">VÍA DE ADMINISTRACIÓN</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Via_Aplicacion ?? '' }}">
+                                                                        <select class="form-control form-control-sm" name="via_aplicacion">
+                                                                            <option value="">— Seleccionar —</option>
+                                                                            @foreach($conValor(['Oral', 'Venoso'], $registro->Via_Aplicacion) as $op)
+                                                                                <option value="{{ $op }}" {{ ($registro->Via_Aplicacion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                            @endforeach
+                                                                        </select>
                                                                     </div>
                                                                     <div class="col-md-2">
                                                                         <label class="proa-label">DOSIS SUMINISTRADA</label>
@@ -1017,10 +1321,12 @@
                                                                     </div>
                                                                     <div class="col-md-2">
                                                                         <label class="proa-label">TIEMPO DE TRATAMIENTO</label>
-                                                                        <input type="text" class="form-control form-control-sm"
+                                                                        <input type="text" class="form-control form-control-sm bg-white tiempo-tratamiento-auto" readonly
                                                                                name="tiempo_tratamiento"
+                                                                               data-inicio="{{ $registro->Fec_Sumistro ? \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('Y-m-d') : '' }}"
                                                                                value="{{ $interv?->tiempo_tratamiento ?? '' }}"
-                                                                               placeholder="Ej: 7 días">
+                                                                               title="Contador automático desde la fecha de inicio (ideal 7 días)"
+                                                                               placeholder="Automático">
                                                                     </div>
                                                                     <div class="col-md-2">
                                                                         <label class="proa-label">¿DURACIÓN ADECUADA?</label>
@@ -1247,11 +1553,11 @@
                                                                 @endunless
 
                                                                 </form>
+                                                                        </div>{{-- /.proa-dose --}}
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        {{-- /registro individual --}}
-
+                                                        {{-- /bloque de fecha --}}
                                                     @endforeach
                                                 </div>
                                             </div>
@@ -1300,6 +1606,7 @@
             {{ $serviciosPaginados->links('pagination::bootstrap-4') }}
         </div>
     @endif
+    </div>{{-- /#registros-resultados --}}
 
 @stop
 
@@ -1366,6 +1673,48 @@
             cursor: default;
         }
 
+        /* Bloque de campos exclusivos del perfil enfermero (req. 7, 8, 11) */
+        .enfermeria-bloque { background: #f7f9fd; border-color: #e5e7f0 !important; }
+
+        /* ── FIX: encabezados de bloques con COLOR DISTINTIVO PASTEL + texto oscuro.
+              (El estilo shadowless los dejaba en blanco y el texto blanco quedaba
+              invisible.) Especificidad alta para ganarle a proahuv-crud.css. ── */
+        .content-wrapper .card.epi-card > .card-header {
+            background: #e7f3fb !important;
+            color: #1a6b8e !important;
+            border-bottom: 1px solid #cfe6f4 !important;
+        }
+        .content-wrapper .card.micro-card > .card-header {
+            background: #eceef4 !important;
+            color: #495264 !important;
+            border-bottom: 1px solid #dfe2ea !important;
+        }
+        .content-wrapper .card.proa-card > .card-header.bg-proa-ok {
+            background: #e6f6ee !important;
+            color: #1c7a4d !important;
+            border-bottom: 1px solid #cdeede !important;
+        }
+        .content-wrapper .card.proa-card > .card-header.bg-proa-pend {
+            background: #fdeceb !important;
+            color: #b23b46 !important;
+            border-bottom: 1px solid #f6d6d6 !important;
+        }
+        /* El texto interno (strong, small, íconos, badge-light) hereda el color oscuro */
+        .content-wrapper .card.epi-card > .card-header .badge-light,
+        .content-wrapper .card.micro-card > .card-header .badge-light,
+        .content-wrapper .card.proa-card > .card-header .badge-light {
+            background: rgba(255, 255, 255, 0.75) !important;
+        }
+        /* Bordes de acento pastel para reforzar la distinción entre bloques */
+        .content-wrapper .card.epi-card   { border-left: 3px solid #8ec7e8 !important; }
+        .content-wrapper .card.micro-card { border-left: 3px solid #c1c7d4 !important; }
+        .content-wrapper .card.proa-card  { border-left: 3px solid #86d3a8 !important; }
+
+        /* Campo inhabilitado por la lógica de SITIO = "50. No aplica" (req. 2.2) */
+        .campo-inhabilitado { opacity: .5; }
+        .campo-inhabilitado .form-control,
+        .campo-inhabilitado .input-group-text { background-color: #f1f2f6 !important; cursor: not-allowed; }
+
         /* ── Secciones de muestra repetidas dentro de un mismo microorganismo ── */
         .registro-muestra {
             padding: 10px 12px 2px;
@@ -1407,45 +1756,110 @@
             margin: 6px 4px 10px;
         }
 
-        /* Tarjetas de servicio en grid — minimalista, azul institucional */
-        .service-card {
-            transition: transform 0.18s ease, box-shadow 0.18s ease;
-            border-radius: 14px;
-            border: 1px solid #e5e7f0 !important;
+        /* Barra para agrupar muestras seleccionadas en un mismo caso */
+        .agrupar-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: #eef1fa;
+            border: 1px solid #dbe1f3;
+            border-radius: 10px;
+            padding: 8px 14px;
+            margin-bottom: 12px;
+        }
+        .agrupar-info {
+            font-size: 0.82rem;
+            color: #2a377e;
+            font-weight: 600;
+        }
+        .agrupar-conteo {
+            font-weight: 500;
+            margin-left: 6px;
+        }
+
+        /* ── Grid de servicios: 2 → 3 → 4 → 5 columnas según el ancho ── */
+        .col-servicio {
+            position: relative;
+            width: 100%;
+            padding-right: 12px;
+            padding-left: 12px;
+            flex: 0 0 50%;              /* móvil: 2 por fila */
+            max-width: 50%;
+        }
+        @media (min-width: 768px)  { .col-servicio { flex: 0 0 33.3333%; max-width: 33.3333%; } }  /* md: 3 */
+        @media (min-width: 1200px) { .col-servicio { flex: 0 0 25%;      max-width: 25%; } }        /* ancho: 4 */
+
+        /* ── Tiles de servicio: cards cuadradas, grid limpio y moderno ── */
+        .service-tile {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 162px;
+            background: #2a377e;              /* azul institucional plano */
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 16px 16px 14px;
+            transition: transform 0.16s ease, background-color 0.16s ease;
+        }
+        .service-tile:hover {
+            background: #212a63;
+            color: #ffffff;
+            transform: translateY(-3px);
+            text-decoration: none;
+        }
+        .service-tile-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .service-tile-ico {
+            width: 40px; height: 40px;
+            border-radius: 11px;
+            background: rgba(255, 255, 255, 0.14);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            color: #ffffff;
+        }
+        .service-tile-arrow {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 0.85rem;
+        }
+        .service-tile-name {
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #ffffff;
+            margin: 0 0 auto;                /* empuja las stats al fondo */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;           /* máx. 2 líneas */
+            -webkit-box-orient: vertical;
             overflow: hidden;
         }
-        .service-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 22px -10px rgba(42, 55, 126, 0.45) !important;
+        .service-tile-stats {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 12px;
         }
-        .service-header {
-            cursor: pointer;
-            background: #2a377e;   /* azul institucional plano */
-            color: #fff;
-            padding: 16px 18px;
-            border-radius: 14px 14px 0 0;
-            transition: background-color 0.18s ease;
-        }
-        .service-header:hover {
-            background: #212a63;
-            text-decoration: none !important;
-        }
-        .service-icon {
-            font-size: 1.6rem;
-            color: #ffffff;
-        }
-        .service-info h6 {
-            font-size: 0.95rem;
-            color: #ffffff;
-            margin-bottom: 3px;
-            font-weight: 700;
-        }
-        .service-info small {
+        .service-tile-pac {
+            font-size: 0.76rem;
             color: rgba(255, 255, 255, 0.82);
-            font-size: 0.8rem;
+            white-space: nowrap;
         }
-        .text-light-muted {
-            color: rgba(255, 255, 255, 0.82) !important;
+        .service-tile-proa {
+            font-size: 0.72rem;
+            font-weight: 700;
+            background: #2fbf71;
+            color: #ffffff;
+            padding: 2px 9px;
+            border-radius: 999px;
+            white-space: nowrap;
         }
 
         /* Tarjetas de paciente — planas y minimalistas */
@@ -1526,6 +1940,54 @@
             background-color: #f1f3f5 !important;
         }
 
+        /* Dosis dentro de un mismo día (cuando hay más de una) */
+        .dosis-tag {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #2e7d5b;
+            background: #eef6f1;
+            border-radius: 8px;
+            padding: 4px 10px;
+            display: inline-block;
+            margin: 4px 0 8px;
+        }
+        .proa-dose {
+            padding: 2px 4px;
+        }
+
+        /* ── Semaforización de estados (registrado / falta por registrar) ── */
+        /* Recuadro blanco de fondo para que el color resalte en cualquier encabezado */
+        .estado-dot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: #ffffff;
+            border-radius: 5px;
+            vertical-align: middle;
+            border: 1px solid rgba(16, 24, 40, 0.12);
+        }
+        .estado-dot::before {
+            content: '';
+            display: block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        /* El color va en el círculo interior; el mismo verde/rojo sirve sobre
+           cualquier fondo gracias al recuadro blanco. */
+        .estado-ok::before,
+        .estado-ok-light::before   { background: #2e9e5b; }
+        .estado-pend::before,
+        .estado-pend-light::before { background: #d64545; }
+
+        /* Fondo del bloque global de PROA según su estado */
+        .bg-proa-ok   { background: #2e7d5b; }   /* verde: todo registrado */
+        .bg-proa-pend { background: #b23b46; }   /* rojo: falta por registrar */
+
         /* Iconos de colapso */
         .collapse-icon {
             transition: transform 0.25s ease;
@@ -1591,6 +2053,147 @@
         .text-sm {
             font-size: 0.82rem;
         }
+
+        /* ============================================================
+           REFRESCO MINIMALISTA — estilo de la página de login
+           (blanco limpio, azul institucional #2a377e, bordes suaves)
+           ============================================================ */
+        /* Fondo neutro y limpio SOLO en esta página (como el login),
+           sin la imagen del hospital que resta minimalismo. */
+        body, .wrapper {
+            background: #f4f6fb !important;
+        }
+        .content-wrapper, .content-wrapper .content { background: transparent !important; }
+        /* Todas las tarjetas: blanco nítido con borde limpio (sin efecto "vidrio") */
+        .content-wrapper .card {
+            background: #ffffff !important;
+            border: 1px solid #e7e9f2 !important;
+        }
+
+        /* Tarjetas contenedoras (buscador, etc.): blanco, redondeado, SIN sombra */
+        .content-wrapper .card.card-outline,
+        .content-wrapper .card.card-primary {
+            border: 1px solid #e7e9f2 !important;
+            border-top: 1px solid #e7e9f2 !important;
+            border-radius: 16px !important;
+            box-shadow: none !important;
+        }
+        /* Encabezado claro solo para tarjetas contenedoras, NO para las de servicio
+           (esas conservan su encabezado azul con texto blanco). */
+        .content-wrapper .card.card-outline:not(.service-card) > .card-header {
+            border-bottom: 1px solid #eef0f5;
+            background: #fbfcfe;
+            border-radius: 16px 16px 0 0;
+        }
+
+        /* Inputs y selects — como el login (borde suave, foco azul) */
+        .form-control {
+            border: 1px solid #dfe2ec;
+            border-radius: 10px;
+        }
+        .form-control:focus {
+            border-color: #2f6fed;
+            box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12);
+        }
+        select.form-control { border-radius: 10px; }
+
+        /* Buscador: ícono e input integrados y limpios */
+        .input-group-text.bg-primary {
+            background: #2a377e !important;
+            border-color: #2a377e !important;
+            border-radius: 10px 0 0 10px;
+        }
+        .input-group .form-control { border-radius: 0; }
+        .input-group > .input-group-prepend > .input-group-text { border-radius: 10px 0 0 10px; }
+        .input-group > .input-group-append > .btn:last-child,
+        .input-group > .input-group-append > .btn { border-radius: 0 10px 10px 0; }
+
+        /* Botones primarios — azul institucional, redondeados como login */
+        .btn-primary {
+            background: #2a377e !important;
+            border-color: #2a377e !important;
+            border-radius: 10px;
+        }
+        .btn-primary:hover { background: #212a63 !important; border-color: #212a63 !important; }
+        .btn { border-radius: 10px; }
+        .btn-sm { border-radius: 9px; }
+        .btn-outline-primary { color: #2a377e; border-color: #c9d1ea; }
+        .btn-outline-primary:hover { background: #2a377e; border-color: #2a377e; }
+
+        /* Tarjetas de servicio — más suaves y elegantes; encabezado AZUL con
+           texto blanco (se refuerza para que no lo pise ninguna regla). */
+        .service-card { border-radius: 16px; border-color: #e7e9f2 !important; overflow: hidden; }
+        .content-wrapper .service-card > .card-header.service-header {
+            background: #2a377e !important;
+            color: #fff !important;
+            border-radius: 16px 16px 0 0;
+        }
+        .content-wrapper .service-card > .card-header.service-header:hover {
+            background: #212a63 !important;
+        }
+        .service-card .service-info h6,
+        .service-card .service-icon i,
+        .service-card .service-header i { color: #ffffff !important; }
+
+        /* Tarjeta de paciente — cabecera BLANCA limpia (como login) */
+        .patient-card {
+            border-radius: 16px;
+            border-color: #e7e9f2;
+            box-shadow: none;
+        }
+        .patient-card > .card-header {
+            background: #ffffff !important;
+            border-left: 4px solid #2a377e;
+            border-radius: 16px 16px 0 0;
+        }
+        .patient-header:hover { background: #f7f9fd !important; }
+
+        /* Bloques internos: bordes suaves y esquinas parejas */
+        .med-card, .reg-card { border-radius: 12px; border-color: #ecedf4; }
+        .med-card > .card-header, .reg-card > .card-header { background: #fbfcfe; }
+
+        /* Barra de scroll de pacientes — discreta */
+        .pacientes-scroll-container::-webkit-scrollbar-thumb { background: #cbd3ea; }
+        .pacientes-scroll-container::-webkit-scrollbar-thumb:hover { background: #2a377e; }
+        .pacientes-scroll-container::-webkit-scrollbar-track { background: transparent; }
+
+        /* ── Paginación rediseñada (minimalista, píldoras) ── */
+        .pagination { gap: 0; flex-wrap: wrap; }
+        .pagination .page-item { margin: 0 3px; }
+        .pagination .page-item .page-link {
+            border: 1px solid #e5e7f0;
+            border-radius: 10px;
+            color: #454b56;
+            min-width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            font-weight: 600;
+            background: #ffffff;
+            margin: 0;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+        .pagination .page-item .page-link:hover {
+            background: #eef1fa;
+            color: #2a377e;
+            border-color: #dbe1f3;
+            transform: translateY(-1px);
+        }
+        .pagination .page-item.active .page-link {
+            background: #2a377e;
+            border-color: #2a377e;
+            color: #ffffff;
+            box-shadow: none;
+        }
+        .pagination .page-item.disabled .page-link {
+            color: #c3c9d4;
+            background: #ffffff;
+            border-color: #eef0f5;
+            box-shadow: none;
+        }
+        .pagination .page-link:focus { box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15); }
     </style>
 @stop
 
@@ -1606,10 +2209,92 @@
                 header.attr('aria-expanded', 'false');
             });
 
+            // Inputs solo numéricos: entero (tiempo quirúrgico) y decimal (peso).
+            $(document).on('input', '.solo-entero', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            $(document).on('input', '.solo-numero', function () {
+                this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            });
+
+            // ── Semáforo en vivo (sin recargar) ─────────────────────────────
+            // El recuadro blanco hace que 'estado-ok' se vea bien en cualquier fondo.
+            function ponerVerde($dot, titulo) {
+                $dot.removeClass('estado-pend estado-pend-light estado-ok-light')
+                    .addClass('estado-ok')
+                    .attr('title', titulo || 'Registrado');
+            }
+            function badgeVerde($badge, texto) {
+                $badge.removeClass('badge-danger').addClass('badge-success').text(texto || 'Registrado');
+            }
+
+            // Píldora PROA del encabezado del paciente: verde cuando ya no queda
+            // ninguna intervención PROA pendiente.
+            function actualizarEstadoPaciente($patient) {
+                if (!$patient || !$patient.length) { return; }
+                var proaPend = $patient.find('.proa-form[data-registrado="0"]').length;
+                if (proaPend === 0) {
+                    $patient.find('.js-badge-proa-pill')
+                        .removeClass('badge-danger').addClass('badge-success')
+                        .attr('title', 'PROA completo');
+                }
+            }
+
+            // Epidemiología: al guardar un bloque de microorganismo se pone verde;
+            // si ya no queda ninguno pendiente, el bloque global también.
+            function marcarEpiRegistrado($form) {
+                var $micro = $form.closest('.micro-card');
+                var $mh = $micro.children('.card-header');
+                ponerVerde($mh.find('.estado-dot'), 'Registrado');
+                badgeVerde($mh.find('.badge-danger'), 'Registrado');
+
+                var $epi = $form.closest('.epi-card');
+                if ($epi.find('.micro-card > .card-header .estado-dot.estado-pend').length === 0) {
+                    ponerVerde($epi.children('.card-header').find('.estado-dot'), 'Todos los microorganismos registrados');
+                }
+            }
+
+            // PROA: al guardar una intervención, esa dosis queda registrada; el
+            // antibiótico se pone verde si todas sus dosis mostradas lo están, y
+            // el bloque global (fondo) si ya no queda ninguna pendiente.
+            function marcarProaRegistrado($form) {
+                $form.attr('data-registrado', '1');
+
+                var $med = $form.closest('.med-card');
+                if ($med.find('.proa-form[data-registrado="0"]').length === 0) {
+                    var $mh = $med.children('.card-header');
+                    ponerVerde($mh.find('.estado-dot'), 'Registrado');
+                    badgeVerde($mh.find('.badge-danger'), 'Registrado');
+                }
+
+                var $proa = $form.closest('.proa-card');
+                if ($proa.find('.proa-form[data-registrado="0"]').length === 0) {
+                    var $ph = $proa.children('.card-header');
+                    $ph.removeClass('bg-proa-pend').addClass('bg-proa-ok');
+                    ponerVerde($ph.find('.estado-dot'), 'Todos los antibióticos registrados');
+                    $ph.find('.badge-light').text('Completo');
+                }
+                actualizarEstadoPaciente($form.closest('.patient-card'));
+            }
+
             // Guardar formulario "Información adicional de (microorganismo)" via AJAX
             $(document).on('click', '.btn-registrar-info', function () {
                 var $btn = $(this);
                 var $form = $btn.closest('.microorganismo-info-form');
+
+                // FECHA DE REPORTE es obligatoria en cada registro de la muestra (req. 9).
+                var $faltantes = $form.find('.fecha-reporte').filter(function () { return !this.value; });
+                if ($faltantes.length) {
+                    if (window.Swal) {
+                        Swal.fire({ icon: 'warning', title: 'Falta la Fecha de Reporte',
+                            text: 'La Fecha de Reporte es obligatoria en todos los registros de la muestra.' });
+                    } else {
+                        alert('La Fecha de Reporte es obligatoria en todos los registros de la muestra.');
+                    }
+                    $faltantes.first().focus();
+                    return;
+                }
+
                 var $msg  = $form.find('.info-save-msg');
                 var token = $('meta[name="csrf-token"]').attr('content') || $form.find('[name="_token"]').val();
 
@@ -1625,6 +2310,7 @@
                         if (resp.success) {
                             $msg.removeClass('d-none');
                             setTimeout(function () { $msg.addClass('d-none'); }, 4000);
+                            marcarEpiRegistrado($form);   // semáforo en vivo
                         } else {
                             alert('Error al registrar: ' + (resp.message || 'Error desconocido'));
                         }
@@ -1667,6 +2353,7 @@
                         if (resp.success) {
                             $msg.removeClass('d-none');
                             setTimeout(function () { $msg.addClass('d-none'); }, 4000);
+                            marcarProaRegistrado($form);   // semáforo en vivo
                         } else {
                             alert('Error al guardar: ' + (resp.message || 'Error desconocido'));
                         }
@@ -1768,23 +2455,27 @@
                 return $depto.find('option:selected').attr('data-cod') || '';
             }
 
-            // Carga inicial: llenar departamentos y, si hay valor guardado, sus municipios.
-            getDeptos().then(function (deptos) {
-                $('select.dane-depto').each(function () {
-                    var $d = $(this);
-                    llenarDeptos($d, deptos);
+            // Llenar departamentos y, si hay valor guardado, sus municipios.
+            // Se puede re-ejecutar tras un intercambio de contenido por AJAX.
+            function inicializarDane() {
+                getDeptos().then(function (deptos) {
+                    $('select.dane-depto').each(function () {
+                        var $d = $(this);
+                        llenarDeptos($d, deptos);
 
-                    var cod = codSeleccionado($d);
-                    if (!cod) { return; }
-                    var $m = mpioDe($d);
-                    var guardado = $m.attr('data-selected') || '';
-                    getMpios(cod).then(function (mpios) {
-                        llenarMpios($m, mpios, guardado);
-                    }).catch(function (e) { console.warn('DANE municipios:', e); });
+                        var cod = codSeleccionado($d);
+                        if (!cod) { return; }
+                        var $m = mpioDe($d);
+                        var guardado = $m.attr('data-selected') || '';
+                        getMpios(cod).then(function (mpios) {
+                            llenarMpios($m, mpios, guardado);
+                        }).catch(function (e) { console.warn('DANE municipios:', e); });
+                    });
+                }).catch(function (e) {
+                    console.warn('No se pudo cargar la lista de departamentos del DANE:', e);
                 });
-            }).catch(function (e) {
-                console.warn('No se pudo cargar la lista de departamentos del DANE:', e);
-            });
+            }
+            inicializarDane();
 
             // Al cambiar el departamento: replicar en todos los bloques del paciente
             // y recargar la lista de municipios correspondiente.
@@ -1815,6 +2506,7 @@
             // Recalcular clasificación en texto y días entre qx e infección en cambio de campos
             $(document).on('change', '.microorganismo-info-form select[name="sitio"], .microorganismo-info-form select[name="tipo"], .microorganismo-info-form select[name="clasificacion"]', function () {
                 var $form = $(this).closest('.microorganismo-info-form');
+                aplicarLogicaSitio($form);
                 var sitio = $form.find('[name="sitio"]').val();
                 var tipo = $form.find('[name="tipo"]').val();
                 var clasificacion = $form.find('[name="clasificacion"]').val();
@@ -1862,9 +2554,60 @@
                 $clasificacionTexto.val(texto);
             });
 
-            // Resaltar la sección de campos cuyo checkbox está marcado
+            // Resaltar la sección de campos cuyo checkbox está marcado y
+            // actualizar el estado de la barra "Agrupar seleccionadas".
             $(document).on('change', '.registro-check', function () {
                 $(this).closest('.registro-muestra').toggleClass('is-selected', this.checked);
+                actualizarBarraAgrupar($(this).closest('.patient-card'));
+            });
+
+            function actualizarBarraAgrupar($scope) {
+                if (!$scope || !$scope.length) { return; }
+                var n = $scope.find('.registro-check:checked').length;
+                var $bar = $scope.find('.agrupar-bar');
+                $bar.find('.agrupar-conteo').text(n > 0 ? '(' + n + ' seleccionada' + (n === 1 ? '' : 's') + ')' : '');
+                // Se necesita al menos 2 muestras para formar/mover un caso.
+                $bar.find('.btn-agrupar-casos').prop('disabled', n < 2);
+            }
+
+            // Agrupar en un mismo caso todas las muestras marcadas del paciente.
+            $(document).on('click', '.btn-agrupar-casos', function () {
+                var $btn   = $(this);
+                var $scope = $btn.closest('.patient-card');
+                var ids = $scope.find('.registro-check:checked').map(function () {
+                    return this.value;
+                }).get();
+
+                if (ids.length < 2) { return; }
+
+                if (!confirm('Se agruparán ' + ids.length + ' muestra(s) como un mismo caso de microorganismo. ¿Continuar?')) {
+                    return;
+                }
+
+                var token = $('meta[name="csrf-token"]').attr('content')
+                          || $scope.find('[name="_token"]').first().val();
+
+                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Agrupando...');
+
+                $.ajax({
+                    url: '{{ route("epidemiologia.casos.agrupar") }}',
+                    method: 'POST',
+                    data: { muestra_ids: ids },
+                    headers: { 'X-CSRF-TOKEN': token },
+                    success: function (resp) {
+                        if (resp && resp.success) {
+                            location.reload();
+                        } else {
+                            alert('No se pudo agrupar: ' + ((resp && resp.message) || 'error desconocido'));
+                            $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas');
+                        }
+                    },
+                    error: function (xhr) {
+                        var m = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al agrupar las muestras.';
+                        alert(m);
+                        $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas');
+                    }
+                });
             });
 
             $(document).on('change', '.microorganismo-info-form [name="fecha_quirurgica_previa"], .microorganismo-info-form .fecha-muestra', function () {
@@ -1890,14 +2633,161 @@
                 $diasInput.val(isNaN(diffDays) ? '' : diffDays);
             });
 
+            // Días de estancia previos a la infección (req. 3):
+            // (fecha de Dx. de infección) − (fecha de ingreso hospitalario).
+            $(document).on('change', '.microorganismo-info-form .fecha-dx-infeccion, .microorganismo-info-form [name="fecha_ingreso_hosp"]', function () {
+                var $form = $(this).closest('.microorganismo-info-form');
+                var fechaDxVal = $form.find('[name="fecha_dx_infeccion"]').val();
+                var fechaIngresoVal = $form.find('[name="fecha_ingreso_hosp"]').val();
+                var $diasInput = $form.find('[name="dias_estancia_previos_infeccion"]');
+
+                if (!fechaDxVal || !fechaIngresoVal) {
+                    $diasInput.val('');
+                    return;
+                }
+                var diff = Math.round((new Date(fechaDxVal) - new Date(fechaIngresoVal)) / 86400000);
+                $diasInput.val(isNaN(diff) ? '' : diff);
+            });
+
+            // Lógica condicional del campo SITIO (req. 2.2 / 2.3):
+            // cuando SITIO = "50. No aplica" solo quedan habilitados TIPO,
+            // CLASIFICACIÓN (+ texto), REVISIÓN CON EQUIPO, INTERCONSULTA y
+            // COMENTARIOS. Los datos del paciente (const-field) y los de la
+            // muestra siguen habilitados siempre. Los campos quirúrgicos y de
+            // desenlace se inhabilitan para evitar errores de captura.
+            var CAMPOS_QX_SITIO = [
+                'fecha_quirurgica_previa', 'dias_entre_qx_e_infeccion', 'categoria_quirurgica', 'egreso',
+                'especialidad_cirugia', 'procedimiento_quirurgico', 'tiempo_quirurgico', 'bano_quirurgico',
+                'asepsia_quirurgica', 'profilaxis', 'antibioticos_usados', 'asa_preoperatoria',
+                'tipo_cirugia', 'clasificacion_cirugia', 'puntaje_nnis'
+            ];
+            function aplicarLogicaSitio($form) {
+                if (!$form || !$form.length) { return; }
+                var sitio = ($form.find('[name="sitio"]').val() || '').trim();
+                var noAplica = (sitio === '50. No aplica');
+                CAMPOS_QX_SITIO.forEach(function (name) {
+                    var $campo = $form.find('[name="' + name + '"]');
+                    if (!$campo.length) { return; }
+                    $campo.prop('disabled', noAplica);
+                    $campo.closest('[class*="col-md-"]').toggleClass('campo-inhabilitado', noAplica);
+                });
+
+                // Req. 11: los campos de enfermería (Duda/Estado/Modificado/Fecha
+                // reporte hospital seguro) solo se muestran cuando SITIO ≠ "No aplica".
+                var mostrarSitioEnf = (sitio !== '' && !noAplica);
+                $form.find('.bloque-sitio-enfermero').toggle(mostrarSitioEnf);
+            }
+
+            // Req. 7: las fechas de inserción/retiro solo aparecen si el dispositivo
+            // de notificación obligatoria = "SI".
+            function aplicarLogicaDispositivo($form) {
+                if (!$form || !$form.length) { return; }
+                var val = ($form.find('.select-dispositivo').val() || '').trim().toUpperCase();
+                $form.find('.bloque-dispositivo').toggle(val === 'SI');
+            }
+            $(document).on('change', '.microorganismo-info-form .select-dispositivo', function () {
+                aplicarLogicaDispositivo($(this).closest('.microorganismo-info-form'));
+            });
+
             // Disparar cálculos para registros que ya tienen valores
-            setTimeout(function() {
+            function dispararCalculos() {
                 $('.microorganismo-info-form').each(function () {
                     var $form = $(this);
                     $form.find('select[name="tipo"]').trigger('change');
                     $form.find('[name="fecha_quirurgica_previa"]').trigger('change');
+                    $form.find('.fecha-dx-infeccion').trigger('change');
+                    aplicarLogicaSitio($form);
+                    aplicarLogicaDispositivo($form);
                 });
-            }, 500);
+            }
+            setTimeout(dispararCalculos, 500);
+
+            // ============================================================
+            // NAVEGACIÓN EN TIEMPO REAL (sin recargar la página)
+            // Búsquedas, filtros, paginación y tarjetas de servicio se cargan
+            // por AJAX intercambiando solo el contenedor de resultados.
+            // ============================================================
+            function reinitDinamico() {
+                inicializarDane();
+                actualizarContadoresTratamiento();
+                setTimeout(dispararCalculos, 200);
+            }
+
+            // Contador de tratamiento en vivo: "Día X de 7" en el bloque del curso
+            // y el número de días en el campo "Tiempo de tratamiento".
+            function actualizarContadoresTratamiento() {
+                var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+                function diasDesde(ini) {
+                    if (!ini) { return null; }
+                    var d = new Date(ini + 'T00:00:00');
+                    if (isNaN(d.getTime())) { return null; }
+                    var n = Math.floor((hoy - d) / 86400000) + 1;
+                    return n < 1 ? 1 : n;
+                }
+                $('.curso-contador').each(function () {
+                    var n = diasDesde($(this).data('inicio'));
+                    if (n === null) { return; }
+                    $(this).text('Día ' + n + ' de 7')
+                           .removeClass('badge-info badge-warning')
+                           .addClass(n > 7 ? 'badge-warning' : 'badge-info');
+                });
+                $('.tiempo-tratamiento-auto').each(function () {
+                    var n = diasDesde($(this).data('inicio'));
+                    if (n === null) { return; }
+                    this.value = n + (n === 1 ? ' día' : ' días');
+                });
+            }
+            actualizarContadoresTratamiento();
+
+            function cargarResultados(url, push) {
+                var $cont = $('#registros-resultados');
+                if (!$cont.length) { window.location = url; return; }
+                $cont.css({ opacity: 0.45, 'pointer-events': 'none' });
+
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    success: function (html) {
+                        var doc = new DOMParser().parseFromString(html, 'text/html');
+                        var nuevo = doc.getElementById('registros-resultados');
+                        if (nuevo) {
+                            $cont.html(nuevo.innerHTML).css({ opacity: '', 'pointer-events': '' });
+                            if (push) { try { history.pushState({ url: url }, '', url); } catch (e) {} }
+                            reinitDinamico();
+                            $('html, body').animate({ scrollTop: $cont.offset().top - 80 }, 200);
+                        } else {
+                            window.location = url; // respaldo
+                        }
+                    },
+                    error: function () {
+                        window.location = url; // respaldo: recarga normal
+                    }
+                });
+            }
+
+            // Buscador y filtros (mismo formulario GET)
+            $(document).on('submit', 'form[action="{{ route('registros.index') }}"]', function (e) {
+                e.preventDefault();
+                var base = '{{ route('registros.index') }}';
+                var qs = $(this).serialize();
+                cargarResultados(base + (qs ? '?' + qs : ''), true);
+            });
+
+            // Enlaces de navegación de la misma página (paginación, tarjetas de
+            // servicio, "Volver a Servicios", limpiar filtros).
+            $(document).on('click', '#registros-resultados a[href], a.js-nav[href]', function (e) {
+                var href = $(this).attr('href') || '';
+                if (!href || href.charAt(0) === '#' || $(this).attr('target')) { return; }
+                if (href.indexOf('{{ route('registros.index') }}') === -1 && href.indexOf('?') === -1) { return; }
+                e.preventDefault();
+                cargarResultados(href, true);
+            });
+
+            // Botón atrás/adelante del navegador
+            $(window).on('popstate', function () {
+                cargarResultados(window.location.href, false);
+            });
         });
     </script>
 @stop

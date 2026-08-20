@@ -26,7 +26,13 @@ class IntervencionProaController extends Controller
     {
         $request->validate([
             'id_deta_procedimiento' => 'required|integer|exists:deta_procedimientos,id',
+            'via_aplicacion'        => 'nullable|string|max:100',
         ]);
+
+        // La vía de administración vive en deta_procedimientos (no en
+        // intervenciones_proa). Se persiste aparte para no romper el
+        // updateOrCreate de la intervención.
+        $viaAplicacion = $request->input('via_aplicacion');
 
         $datos = $request->only([
             'id_deta_procedimiento',
@@ -58,21 +64,30 @@ class IntervencionProaController extends Controller
             }
         }
 
-        // Control de edición: un usuario básico solo puede llenar una vez.
+        // Control de edición. Un básico queda bloqueado tras registrar, salvo
+        // que tenga el permiso "puede editar registros" (o sea admin).
         $esAdmin = optional($request->user())->esAdmin();
+        $puedeEditar = (bool) optional($request->user())->puedeEditarProa();
         $existente = IntervencionProa::where('id_deta_procedimiento', $datos['id_deta_procedimiento'])->first();
-        if (!$esAdmin && $existente && $existente->edicion_bloqueada) {
+        if (!$puedeEditar && $existente && $existente->edicion_bloqueada) {
             return response()->json([
                 'success' => false,
-                'message' => 'Esta intervención PROA ya fue registrada. Solo un administrador puede modificarla.',
+                'message' => 'Esta intervención PROA ya fue registrada. No tienes permiso para modificarla.',
             ], 403);
         }
 
-        $intervencion = DB::transaction(function () use ($datos) {
+        $intervencion = DB::transaction(function () use ($datos, $viaAplicacion, $request) {
             $interv = IntervencionProa::updateOrCreate(
                 ['id_deta_procedimiento' => $datos['id_deta_procedimiento']],
                 $datos
             );
+
+            // Guardar la vía de administración en la dosis (deta_procedimientos),
+            // para que persista y se refleje en el seguimiento.
+            if ($request->has('via_aplicacion')) {
+                Procedimiento::where('id', $datos['id_deta_procedimiento'])
+                    ->update(['Via_Aplicacion' => $viaAplicacion]);
+            }
 
             $this->reflejarEnSeguimiento($datos['id_deta_procedimiento'], $interv);
 

@@ -3,118 +3,147 @@
 @section('title', 'Gestión de Usuarios')
 
 @section('content_header')
-    <h1>Usuarios</h1>
+    <div class="u-head">
+        <div>
+            <h1 class="u-title"><i class="fas fa-users mr-2"></i>Usuarios</h1>
+            <p class="u-sub">Gestiona las cuentas, roles y permisos del sistema.</p>
+        </div>
+        <a href="{{ route('users.create') }}" class="btn btn-primary">
+            <i class="fas fa-user-plus mr-1"></i> Nuevo usuario
+        </a>
+    </div>
 @stop
 
 @section('content')
-    <div class="card">
-        <div class="card-header">
-            <div class="d-flex justify-content-between">
-                <h3 class="card-title">Listado de usuarios del sistema</h3>
-                <a href="{{ route('users.create') }}" class="btn btn-primary">
-                    <i class="fas fa-user-plus"></i> Nuevo Usuario
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
 
-            <div class="table-responsive">
-                <table id="users-table" class="table table-striped table-hover table-bordered responsive nowrap" width="100%">
-                    <thead class="bg-primary text-white">
-                        <tr>
-                            <th>ID</th>
-                            <th>Usuario</th>
-                            <th>Rol</th>
-                            <th>Email</th>
-                            <th>Registro</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($users as $user)
-                            <tr>
-                                <td>{{ $user->id }}</td>
-                                <td>
-                                    <div class="d-flex align-items-center user-info-cell" data-user-id="{{ $user->id }}">
-                                        <div class="position-relative photo-container">
-                                            <img src="{{ $user->small_avatar }}"
-                                                 class="img-circle elevation-1 mr-2 {{ $user->hasProfileImage() ? 'real-profile-photo' : 'generated-avatar' }}"
-                                                 style="width: 40px; height: 40px; object-fit: cover; transition: all 0.2s ease-in-out; cursor: pointer;"
-                                                 title="{{ $user->hasProfileImage() ? 'Foto de perfil personalizada - Click para ampliar' : 'Avatar generado automáticamente' }}"
-                                                 alt="Foto de {{ $user->full_name }}"
-                                                 data-user-name="{{ $user->full_name }}"
-                                                 data-has-custom-image="{{ $user->hasProfileImage() ? 'true' : 'false' }}"
-                                                 onclick="showImageModal('{{ $user->profile_image_url }}', '{{ $user->full_name }}')">
-                                            @if($user->hasProfileImage())
-                                                <span class="photo-badge"
-                                                      style="position: absolute; top: -3px; right: 5px; width: 14px; height: 14px;
-                                                             background: #28a745; border: 2px solid #fff; border-radius: 50%;
-                                                             box-shadow: 0 1px 3px rgba(0,0,0,0.3);"
-                                                      title="Foto personalizada">
-                                                </span>
-                                            @endif
-                                        </div>
-                                        <div class="user-details">
-                                            <div class="user-name">
-                                                <strong>{{ $user->usuario ?? $user->name }}</strong>
-                                                @if($user->hasProfileImage())
-                                                    <i class="fas fa-camera text-success ml-1" style="font-size: 10px;" title="Tiene foto personalizada"></i>
-                                                @endif
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    @if($user->esAdmin())
-                                        <span class="badge badge-danger"><i class="fas fa-user-shield"></i> Administrador</span>
-                                    @else
-                                        <span class="badge badge-secondary">Usuario básico</span>
-                                    @endif
-                                </td>
-                                <td>{{ $user->email }}</td>
-                                <td>{{ $user->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="text-center">
-                                    <div class="btn-group" role="group">
-                                        <a href="{{ route('users.show', $user->id) }}" class="btn btn-info btn-sm" title="Ver">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="{{ route('users.edit', $user->id) }}" class="btn btn-warning btn-sm" title="Editar">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </a>
-                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm delete-btn" title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+    @if (session('success'))
+        <div class="u-flash u-flash--ok">
+            <i class="fas fa-check-circle"></i><span>{{ session('success') }}</span>
+        </div>
+    @endif
+
+    {{-- Métricas --}}
+    <div class="u-stats">
+        <div class="u-stat">
+            <span class="u-stat-num">{{ $totalUsuarios }}</span>
+            <span class="u-stat-lbl">Usuarios en total</span>
+        </div>
+        <div class="u-stat">
+            <span class="u-stat-num">{{ $totalAdmins }}</span>
+            <span class="u-stat-lbl">Administradores</span>
+        </div>
+        <div class="u-stat">
+            <span class="u-stat-num">{{ $totalBasicos }}</span>
+            <span class="u-stat-lbl">Usuarios básicos</span>
         </div>
     </div>
 
-    <!-- Modal para ver imagen completa -->
-    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    {{-- Tabla --}}
+    <div class="u-card">
+        <div class="u-card-head">
+            <span class="u-ico"><i class="fas fa-list-ul"></i></span>
+            <div>
+                <h3>Listado de usuarios</h3>
+                <p class="u-card-sub">Rol, permisos por área y acceso.</p>
+            </div>
+            <div class="u-search">
+                <i class="fas fa-search"></i>
+                <input type="text" id="u-buscar" placeholder="Buscar usuario o correo…" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="u-tabla-wrap">
+            <table class="u-tabla">
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Rol</th>
+                        <th>Permisos</th>
+                        <th>Correo</th>
+                        <th style="white-space:nowrap;">Registro</th>
+                        <th class="text-right">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="u-tbody">
+                    @forelse($users as $user)
+                        <tr class="u-row" data-buscar="{{ Str::lower(($user->usuario ?? $user->name) . ' ' . $user->email) }}">
+                            <td>
+                                <div class="u-usercell">
+                                    <img src="{{ $user->small_avatar }}"
+                                         class="u-avatar {{ $user->hasProfileImage() ? 'u-avatar--real' : '' }}"
+                                         alt="Foto de {{ $user->full_name }}"
+                                         title="{{ $user->hasProfileImage() ? 'Foto personalizada — clic para ampliar' : 'Avatar generado' }}"
+                                         onclick="showImageModal('{{ $user->profile_image_url }}', '{{ $user->full_name }}')">
+                                    <div>
+                                        <strong>{{ $user->usuario ?? $user->name }}</strong>
+                                        @if($user->hasProfileImage())
+                                            <i class="fas fa-camera text-success ml-1" style="font-size:10px;" title="Tiene foto"></i>
+                                        @endif
+                                        <span class="u-id">#{{ $user->id }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if($user->esAdmin())
+                                    <span class="u-badge u-badge--admin"><i class="fas fa-user-shield mr-1"></i>Administrador</span>
+                                @else
+                                    <span class="u-badge u-badge--basic">Usuario básico</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($user->esAdmin())
+                                    <span class="u-chip u-chip--all">Acceso total</span>
+                                @else
+                                    @if($user->puede_editar_epidemiologia)
+                                        <span class="u-chip u-chip--epi"><i class="fas fa-vial mr-1"></i>Epidemiología</span>
+                                    @endif
+                                    @if($user->puede_editar_proa)
+                                        <span class="u-chip u-chip--proa"><i class="fas fa-capsules mr-1"></i>PROA</span>
+                                    @endif
+                                    @if(!$user->puede_editar_epidemiologia && !$user->puede_editar_proa)
+                                        <span class="u-chip u-chip--none">Solo lectura</span>
+                                    @endif
+                                @endif
+                            </td>
+                            <td class="u-email">{{ $user->email ?: '—' }}</td>
+                            <td class="u-fecha">{{ $user->created_at?->format('d/m/Y H:i') ?? '—' }}</td>
+                            <td class="text-right">
+                                <a href="{{ route('users.show', $user->id) }}" class="btn btn-sm btn-outline-secondary" title="Ver"><i class="fas fa-eye"></i></a>
+                                <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="fas fa-pencil-alt"></i></a>
+                                <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline delete-form">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6"><div class="u-vacio"><i class="fas fa-user-slash"></i><p>No hay usuarios registrados.</p></div></td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+            <div id="u-sin-resultados" class="u-vacio" style="display:none;">
+                <i class="fas fa-search"></i><p>Ningún usuario coincide con la búsqueda.</p>
+            </div>
+        </div>
+
+        @if($users->hasPages())
+            <div class="u-pagina">
+                <span class="u-pagina-info">
+                    Mostrando {{ $users->firstItem() }}–{{ $users->lastItem() }} de {{ $users->total() }} usuarios
+                </span>
+                {{ $users->onEachSide(1)->links('pagination::bootstrap-4') }}
+            </div>
+        @endif
+    </div>
+
+    {{-- Modal ver imagen --}}
+    <div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="imageModalLabel">Imagen de Perfil</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <h5 class="modal-title" id="imageModalLabel">Imagen de perfil</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body text-center">
                     <img id="modalImage" src="" alt="" class="img-fluid" style="max-height: 500px;">
@@ -125,365 +154,140 @@
 @stop
 
 @section('extra_css')
-    <link rel="stylesheet" href="/css/admin_custom.css">
-    <style>
-        /* Estilos para fotos de perfil reales */
-        .real-profile-photo {
-            border: 2px solid #28a745 !important;
-            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.2) !important;
-        }
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .u-head { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+    .u-title { font-size:1.6rem; font-weight:700; color:#262b34; margin:0; }
+    .u-sub   { margin:.3rem 0 0; color:#6b7280; font-size:.9rem; }
 
-        .real-profile-photo:hover {
-            transform: scale(1.05);
-            border-color: #20c997 !important;
-            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3) !important;
-            cursor: pointer;
-        }
+    .u-flash {
+        display:flex; align-items:center; gap:10px;
+        background:#edf7f1; border:1px solid #cfe8db; color:#1f6146;
+        border-radius:14px; padding:12px 18px; margin-bottom:16px; font-size:.9rem;
+    }
+    .u-flash i { font-size:1.05rem; }
 
-        /* Estilos para avatares generados */
-        .generated-avatar {
-            border: 2px solid #6c757d !important;
-            opacity: 0.9;
-            box-shadow: 0 2px 4px rgba(108, 117, 125, 0.2) !important;
-        }
+    /* Métricas */
+    .u-stats { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:14px; margin-bottom:18px; }
+    @media (max-width: 575.98px){ .u-stats{ grid-template-columns:1fr; } }
+    .u-stat {
+        background:rgba(255,255,255,0.97); border:1px solid #e5e7f0; border-radius:14px;
+        padding:16px 18px; box-shadow:none;
+        border-top:3px solid #2a377e;
+    }
+    .u-stat-num { display:block; font-size:1.9rem; font-weight:700; color:#262b34; line-height:1; }
+    .u-stat-lbl { display:block; margin-top:5px; font-size:.74rem; text-transform:uppercase; letter-spacing:.05em; color:#8b93a5; font-weight:600; }
 
-        .generated-avatar:hover {
-            transform: scale(1.02);
-            border-color: #5a6268 !important;
-            opacity: 1;
-            cursor: pointer;
-        }
+    /* Tarjeta principal */
+    .u-card {
+        background:rgba(255,255,255,0.97); border:1px solid #e5e7f0; border-radius:16px;
+        box-shadow:none; overflow:hidden;
+    }
+    .u-card-head { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid #eef0f5; flex-wrap:wrap; }
+    .u-ico { width:38px; height:38px; border-radius:11px; display:inline-flex; align-items:center; justify-content:center; background:#eef1fa; color:#2a377e; font-size:1rem; flex:0 0 auto; }
+    .u-card-head h3 { font-size:1rem; font-weight:700; color:#262b34; margin:0; }
+    .u-card-sub { margin:.15rem 0 0; font-size:.82rem; color:#6b7280; }
+    .u-search { margin-left:auto; position:relative; }
+    .u-search i { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9aa2b1; font-size:.85rem; }
+    .u-search input {
+        border:1px solid #e0e3ee; border-radius:10px; padding:8px 12px 8px 32px;
+        font-size:.86rem; width:240px; max-width:60vw; background:#fff; color:#454b56;
+    }
+    .u-search input:focus { outline:none; border-color:#2f6fed; box-shadow:0 0 0 3px rgba(47,111,237,.12); }
 
-        /* Contenedor de foto con efectos */
-        .photo-container {
-            transition: all 0.2s ease-in-out;
-        }
+    /* Tabla */
+    .u-tabla-wrap { overflow-x:auto; }
+    .u-tabla { width:100%; border-collapse:separate; border-spacing:0; }
+    .u-tabla thead th {
+        background:#f5f6fa; color:#5a6172; font-size:.72rem; font-weight:700;
+        text-transform:uppercase; letter-spacing:.05em; text-align:left;
+        padding:11px 18px; border-bottom:1px solid #e5e7f0; white-space:nowrap;
+    }
+    .u-tabla tbody td { padding:12px 18px; border-bottom:1px solid #f2f3f8; vertical-align:middle; font-size:.87rem; color:#454b56; }
+    .u-tabla tbody tr:last-child td { border-bottom:0; }
+    .u-tabla tbody tr.u-row:hover { background:#f9fafd; }
 
-        .photo-container:hover {
-            filter: brightness(1.05);
-        }
+    .u-usercell { display:flex; align-items:center; gap:10px; }
+    .u-avatar { width:38px; height:38px; border-radius:50%; object-fit:cover; border:2px solid #dde3f5; cursor:pointer; transition:transform .15s ease, border-color .15s ease; }
+    .u-avatar:hover { transform:scale(1.08); border-color:#2f6fed; }
+    .u-avatar--real { border-color:#2e9e5b; }
+    .u-usercell strong { color:#262b34; font-weight:600; }
+    .u-id { color:#b3b9c5; font-size:.75rem; margin-left:4px; font-variant-numeric:tabular-nums; }
 
-        /* Badge indicador de foto personalizada */
-        .photo-badge {
-            animation: pulse-success 2s infinite;
-        }
+    .u-badge { display:inline-flex; align-items:center; font-size:.74rem; font-weight:600; padding:3px 10px; border-radius:999px; }
+    .u-badge--admin { background:#eef1fa; color:#2a377e; }
+    .u-badge--basic { background:#f2f3f6; color:#6b7280; }
 
-        @keyframes pulse-success {
-            0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
-            70% { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
-        }
+    .u-chip { display:inline-flex; align-items:center; font-size:.72rem; font-weight:600; padding:3px 9px; border-radius:8px; margin:2px 4px 2px 0; }
+    .u-chip--all  { background:#eef1fa; color:#2a377e; }
+    .u-chip--epi  { background:#eaf0fb; color:#1f4fa0; }
+    .u-chip--proa { background:#e9f3ee; color:#256a49; }
+    .u-chip--none { background:#f4f5f7; color:#9aa2b1; }
 
-        /* Estilos para información del usuario */
-        .user-info-cell {
-            min-height: 50px;
-            align-items: center;
-        }
+    .u-email { color:#6b7280; }
+    .u-fecha { color:#8b93a5; white-space:nowrap; font-variant-numeric:tabular-nums; }
 
-        .user-details {
-            flex: 1;
-            min-width: 0; /* Para permitir text-overflow */
-        }
+    .u-vacio { text-align:center; padding:40px 20px; color:#8b93a5; }
+    .u-vacio i { font-size:2rem; opacity:.45; }
+    .u-vacio p { margin:10px 0 0; font-weight:600; color:#6b7280; }
 
-        .user-name {
-            font-weight: 500;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            margin-bottom: 2px;
-        }
+    .modal-content { border:0; border-radius:16px; overflow:hidden; }
+    .modal-header { background:#2a377e; color:#fff; border-bottom:0; }
+    .modal-header .close { color:#fff; opacity:.85; text-shadow:none; }
 
-        .user-surnames {
-            line-height: 1.2;
-            margin-bottom: 1px;
-        }
-
-        /* Efectos de hover para toda la celda */
-        .user-info-cell:hover .user-name {
-            color: #007bff;
-        }
-
-        .user-info-cell:hover .real-profile-photo {
-            border-color: #007bff !important;
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3) !important;
-        }
-
-        /* Asegurar visibilidad de imágenes */
-        .img-circle {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: inline-block !important;
-        }
-
-        .img-circle[src] {
-            opacity: 1 !important;
-            visibility: visible !important;
-            display: inline-block !important;
-        }
-
-        /* Indicador de carga solo cuando sea necesario */
-        .img-circle.loading {
-            background: linear-gradient(90deg, #f8f9fa 25%, #e9ecef 50%, #f8f9fa 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .user-info-cell {
-                min-height: 45px;
-            }
-
-            .photo-container img {
-                width: 35px !important;
-                height: 35px !important;
-            }
-
-            .photo-badge {
-                width: 12px !important;
-                height: 12px !important;
-                top: -2px !important;
-                right: 3px !important;
-            }
-
-            .user-name {
-                font-size: 14px;
-            }
-
-            .user-surnames {
-                font-size: 11px;
-            }
-        }
-
-        /* Animación de entrada para las filas */
-        .dataTables_wrapper tbody tr {
-            animation: fadeInUp 0.3s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-    </style>
+    /* Paginación */
+    .u-pagina { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding:14px 22px 6px; }
+    .u-pagina-info { font-size:.8rem; color:#8b93a5; }
+    .u-pagina nav { margin-left:auto; }
+    .u-pagina .pagination { display:flex; margin:0; gap:6px; flex-wrap:wrap; list-style:none; padding:0; }
+    .u-pagina .page-item .page-link {
+        border:1px solid #e5e7f0; border-radius:10px; color:#454b56; min-width:36px; height:36px;
+        display:flex; align-items:center; justify-content:center; font-size:.85rem; font-weight:600;
+        background:#fff; margin:0; transition:background-color .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .u-pagina .page-item .page-link:hover { background:#eef1fa; color:#2a377e; border-color:#dbe1f3; }
+    .u-pagina .page-item.active .page-link { background:#2a377e; border-color:#2a377e; color:#fff; box-shadow:none; }
+    .u-pagina .page-item.disabled .page-link { color:#c3c9d4; background:#fff; border-color:#eef0f5; }
+    .u-pagina .page-link:focus { outline:none; box-shadow:0 0 0 3px rgba(47,111,237,.15); }
+</style>
 @stop
 
 @section('js')
     <script>
-        $(document).ready(function() {
-            $('#users-table').DataTable({
-                responsive: true,
-                autoWidth: false,
-                dom: '<"row"<"col-sm-12 col-md-4"B><"col-sm-12 col-md-4"p><"col-sm-12 col-md-4"f>>rt<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"i>>',
-                buttons: [
-                    {
-                        extend: 'copy',
-                        text: '<i class="fas fa-copy"></i> Copiar',
-                        className: 'btn btn-secondary',
-                        exportOptions: {
-                            columns: [1, 2, 3, 4]
-                        }
-                    },
-                    {
-                        extend: 'excel',
-                        text: '<i class="fas fa-file-excel"></i> Excel',
-                        className: 'btn btn-success',
-                        exportOptions: {
-                            columns: [1, 2, 3, 4]
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="fas fa-file-pdf"></i> PDF',
-                        className: 'btn btn-danger',
-                        exportOptions: {
-                            columns: [1, 2, 3, 4]
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="fas fa-print"></i> Imprimir',
-                        className: 'btn btn-info',
-                        exportOptions: {
-                            columns: [1, 2, 3, 4]
-                        }
-                    },
-                    {
-                        extend: 'colvis',
-                        text: '<i class="fas fa-columns"></i> Columnas',
-                        className: 'btn btn-primary'
-                    }
-                ],
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json'
-                },
-                pageLength: 10,
-                lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
-                stateSave: true,
-                ordering: true,
-                fixedHeader: true,
-                scrollCollapse: true,
-                columnDefs: [
-                    { targets: 0, visible: false }, // Ocultar columna ID
-                    { responsivePriority: 1, targets: 1 }, // Usuario
-                    { responsivePriority: 2, targets: 2 }, // Rol
-                    { responsivePriority: 3, targets: 3 }, // Email
-                    { responsivePriority: 4, targets: 5 }, // Acciones
-                    { width: '120px', targets: 5 } // Ancho para columna Acciones
-                ]
+        $(document).ready(function () {
+            // Búsqueda en vivo (cliente)
+            $('#u-buscar').on('input', function () {
+                var q = $(this).val().toLowerCase().trim();
+                var visibles = 0;
+                $('#u-tbody .u-row').each(function () {
+                    var match = $(this).data('buscar').indexOf(q) !== -1;
+                    $(this).toggle(match);
+                    if (match) visibles++;
+                });
+                $('#u-sin-resultados').toggle(visibles === 0);
             });
 
-            // Confirmación para eliminar
-            $('.delete-form').submit(function(e) {
+            // Confirmación al eliminar
+            $('.delete-form').on('submit', function (e) {
                 e.preventDefault();
+                var form = this;
                 Swal.fire({
-                    title: '¿Estás seguro?',
-                    text: "¡No podrás revertir esto!",
+                    title: '¿Eliminar usuario?',
+                    text: 'Esta acción no se puede deshacer.',
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
                     confirmButtonText: 'Sí, eliminar',
                     cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        this.submit();
-                    }
-                });
-            });
-
-            // Ajustar tabla cuando cambia el tamaño de la ventana
-            $(window).on('resize', function() {
-                $('#users-table').DataTable().columns.adjust().responsive.recalc();
+                }).then(function (r) { if (r.isConfirmed) form.submit(); });
             });
         });
 
-        // Función para mostrar imagen en modal
         function showImageModal(imageUrl, userName) {
-            $('#modalImage').attr('src', imageUrl);
-            $('#modalImage').attr('alt', userName);
-            $('#imageModalLabel').text('Imagen de Perfil - ' + userName);
+            $('#modalImage').attr('src', imageUrl).attr('alt', userName);
+            $('#imageModalLabel').text('Imagen de perfil — ' + userName);
             $('#imageModal').modal('show');
         }
-
-        // Función simplificada para manejar imágenes
-        function setupImageHandling() {
-            const images = document.querySelectorAll('.user-info-cell img');
-
-            images.forEach(img => {
-                // Asegurar que todas las imágenes sean visibles
-                img.style.opacity = '1';
-                img.style.visibility = 'visible';
-
-                const userName = img.getAttribute('data-user-name');
-                const hasCustomImage = img.getAttribute('data-has-custom-image') === 'true';
-
-                // Solo configurar manejo de errores para imágenes personalizadas
-                if (hasCustomImage) {
-                    img.onerror = function() {
-                        console.log('Error cargando imagen personalizada para:', userName);
-
-                        // Generar avatar de respaldo
-                        const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=6c757d&color=fff&size=40&rounded=true&bold=true`;
-
-                        this.src = fallbackUrl;
-                        this.className = 'img-circle elevation-1 mr-2 generated-avatar error-fallback';
-                        this.title = 'Avatar generado automáticamente';
-                        this.onerror = null; // Evitar bucles infinitos
-
-                        // Remover indicadores de foto personalizada
-                        const badge = this.parentElement.querySelector('.photo-badge');
-                        if (badge) badge.remove();
-
-                        const cameraIcon = this.parentElement.parentElement.querySelector('.fa-camera');
-                        if (cameraIcon) cameraIcon.remove();
-                    };
-                }
-            });
-        }
-
-        // Función para verificar y cargar imágenes correctamente
-        function optimizeImageLoading() {
-            // Configurar manejo de imágenes
-            setupImageHandling();
-
-            const images = document.querySelectorAll('.user-info-cell img');
-
-            images.forEach(img => {
-                // Asegurar visibilidad inmediata
-                img.style.opacity = '1';
-                img.style.visibility = 'visible';
-                img.style.display = 'inline-block';
-
-                // Marcar como procesada
-                img.setAttribute('data-loaded', 'true');
-            });
-        }
-
-        // Función para verificar el estado de las imágenes
-        function checkImageStatus() {
-            const images = document.querySelectorAll('.user-info-cell img');
-            images.forEach(img => {
-                if (img.src.includes('ui-avatars.com')) {
-                    console.log('Avatar generado para:', img.alt);
-                } else if (img.src.includes('storage/profile_images')) {
-                    console.log('Imagen personalizada:', img.src, 'Estado:', img.complete ? 'Cargada' : 'Cargando');
-                }
-            });
-        }
-
-        // Función para agregar efectos de hover mejorados
-        function addHoverEffects() {
-            $(document).on('mouseenter', '.user-info-cell', function() {
-                const $cell = $(this);
-                const $photo = $cell.find('.photo-container img');
-                const $badge = $cell.find('.photo-badge');
-
-                // Efecto de hover en la foto
-                $photo.addClass('hover-effect');
-
-                // Animación del badge si existe
-                if ($badge.length) {
-                    $badge.css('animation', 'pulse-success 1s infinite');
-                }
-
-                // Efecto en el texto
-                $cell.find('.user-name').addClass('text-primary');
-            });
-
-            $(document).on('mouseleave', '.user-info-cell', function() {
-                const $cell = $(this);
-                const $photo = $cell.find('.photo-container img');
-                const $badge = $cell.find('.photo-badge');
-
-                $photo.removeClass('hover-effect');
-                $badge.css('animation', 'pulse-success 2s infinite');
-                $cell.find('.user-name').removeClass('text-primary');
-            });
-        }
-
-        // Inicializar optimizaciones cuando la tabla esté lista
-        $(document).ready(function() {
-            // Inicializar optimizaciones después de que DataTable se cargue
-            setTimeout(() => {
-                optimizeImageLoading();
-                addHoverEffects();
-
-                // Verificar estado de imágenes después de la carga
-                setTimeout(() => {
-                    checkImageStatus();
-                }, 1000);
-            }, 500);
-        });
     </script>
 @stop

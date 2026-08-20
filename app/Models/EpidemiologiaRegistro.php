@@ -8,13 +8,24 @@ class EpidemiologiaRegistro extends Model
 {
     protected $table = 'seguimiento_microbiologico';
 
+    /**
+     * Campos propios de la muestra/cultivo. Son los que se repiten una vez por
+     * cada sección "Registro #n" dentro de un mismo caso de microorganismo.
+     */
+    public const CAMPOS_MUESTRA = [
+        'tipo_muestra', 'n_reporte', 'cultivo_num', 'sede', 'ubicacion',
+        'fecha_toma_muestra', 'fecha_reporte', 'microorganismo', 'sensibles', 'intermedios',
+        'resistentes', 'marcadores_resistencia',
+    ];
+
     protected $fillable = [
         'paciente_id',
+        'caso_id',
         'tipo_id',
         // Sección 1 — Paciente
         'nombre', 'id_historia', 'fecha_nacimiento', 'sexo', 'identificador_unico',
         // Sección 2 — Microbiología
-        'tipo_muestra', 'n_reporte', 'sede', 'ubicacion', 'fecha_toma_muestra',
+        'tipo_muestra', 'n_reporte', 'sede', 'ubicacion', 'fecha_toma_muestra', 'fecha_reporte',
         'microorganismo', 'cultivo_num', 'sensibles', 'intermedios', 'resistentes', 'marcadores_resistencia',
         // Sección 3 — Booleans
         'tiene_procedimiento', 'tiene_intervencion_proa', 'caso_cerrado', 'mortalidad',
@@ -36,19 +47,26 @@ class EpidemiologiaRegistro extends Model
         'pais_origen', 'departamento', 'municipio',
         'diagnostico_ingreso', 'asegurador', 'peso', 'fecha_ingreso_hosp',
         'microorganismo_2', 'microorganismo_3', 'fecha_quirurgica_previa', 'dias_entre_qx_e_infeccion',
-        'categoria_quirurgica', 'egreso', 'sitio', 'tipo', 'clasificacion', 'clasificacion_texto',
+        'categoria_quirurgica', 'egreso', 'egreso_fuente', 'sitio', 'tipo', 'clasificacion', 'clasificacion_texto',
         'especialidad_cirugia', 'procedimiento_quirurgico', 'bano_quirurgico', 'asepsia_quirurgica',
         'profilaxis', 'antibioticos_usados', 'asa_preoperatoria', 'tiempo_quirurgico', 'tipo_cirugia',
         'clasificacion_cirugia', 'puntaje_nnis', 'revision_equipo', 'interconsulta_infectologia',
         'comentarios', 'fecha_insercion', 'fecha_retiro',
+        // Fechas de infección (req. 3)
+        'fecha_dx_infeccion', 'dias_estancia_previos_infeccion',
+        // Campos del perfil enfermero (req. 7, 8, 11)
+        'dispositivo_notificacion', 'es_iso', 'duda', 'estado', 'modificado', 'fecha_reporte_hospital_seguro',
 
         // Control de edición (bloqueo tras primer guardado de usuario básico)
         'edicion_bloqueada',
+        // Semaforización: ¿ya fue registrado/revisado por el usuario?
+        'registrado',
     ];
 
     protected $casts = [
         'fecha_nacimiento'        => 'date',
         'fecha_toma_muestra'      => 'date',
+        'fecha_reporte'           => 'date',
         'fecha_ingreso'           => 'datetime',
         'fecha_suministro'        => 'date',
         'fecha_intervencion'      => 'date',
@@ -64,13 +82,25 @@ class EpidemiologiaRegistro extends Model
         // Fechas de Datos Complementarios
         'fecha_ingreso_hosp'      => 'date',
         'fecha_quirurgica_previa' => 'date',
+        'fecha_dx_infeccion'      => 'date',
         'fecha_insercion'         => 'date',
         'fecha_retiro'            => 'date',
+        'fecha_reporte_hospital_seguro' => 'date',
         'edicion_bloqueada'       => 'boolean',
+        'registrado'              => 'boolean',
     ];
 
     public function paciente()
     {
         return $this->belongsTo(Paciente::class, 'paciente_id');
+    }
+
+    /**
+     * Caso de microorganismo al que pertenece esta muestra.
+     * Los datos complementarios viven allí (ver CasoMicroorganismo).
+     */
+    public function caso()
+    {
+        return $this->belongsTo(CasoMicroorganismo::class, 'caso_id');
     }
 }

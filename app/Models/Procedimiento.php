@@ -103,9 +103,10 @@ class Procedimiento extends Model
      *
      * @param  array  $campos  Campos en el orden del formato pipe
      * @param  int|null  $idProcedi  ID del encabezado de procedimiento
+     * @param  array|null  $recortados  Se llena con los campos que hubo que recortar.
      * @return Procedimiento
      */
-    public static function insertarDesdeCampos(array $campos, $idProcedi = null)
+    public static function insertarDesdeCampos(array $campos, $idProcedi = null, ?array &$recortados = null)
     {
         // Formato de campos según la imagen:
         // 0: Cod_Episodio (1093707)
@@ -227,9 +228,63 @@ class Procedimiento extends Model
         $datos = array_filter($datos, function($value) {
             return $value !== null && $value !== '';
         });
-        
+
+        // El Excel de origen a veces trae observaciones clínicas en la columna
+        // del medicamento. Sin este recorte una sola celda aborta la
+        // importación completa; los campos recortados quedan reportados.
+        $datos = self::recortarACapacidad($datos, $recortados);
+
         // Crear y devolver el nuevo registro
         return self::create($datos);
+    }
+
+    /**
+     * Ancho máximo de las columnas de texto de deta_procedimientos.
+     */
+    private const LIMITES = [
+        'Cod_Sala'          => 20,
+        'Nom_Sala'          => 255,
+        'Num_Cama'          => 20,
+        'Cod_Eps'           => 30,
+        'Nom_Eps'           => 255,
+        'Tipo_Ident'        => 5,
+        'Num_Ident'         => 20,
+        'Servicio'          => 100,
+        'Estado'            => 50,
+        'Medico_Trata'      => 255,
+        'Cod_Diag'          => 10,
+        'CIE10'             => 10,
+        'Diagnostico'       => 500,
+        'Antimicrobiano'    => 100,
+        'Cantidad'          => 100,
+        'Presentacion'      => 500,
+        'Via_Aplicacion'    => 100,
+        'Tiem_Horas'        => 100,
+        'Dias_Antibioticos' => 100,
+    ];
+
+    /**
+     * Recorta los valores que exceden el ancho de su columna.
+     *
+     * @param  array  $datos
+     * @param  array|null  $recortados  Se llena con [campo => longitud original].
+     * @return array
+     */
+    public static function recortarACapacidad(array $datos, ?array &$recortados = null): array
+    {
+        foreach (self::LIMITES as $campo => $max) {
+            if (!isset($datos[$campo]) || !is_string($datos[$campo])) {
+                continue;
+            }
+
+            $largo = mb_strlen($datos[$campo]);
+            if ($largo > $max) {
+                $recortados[$campo] = $largo;
+                $datos[$campo] = mb_substr($datos[$campo], 0, $max);
+            }
+        }
+
+        return $datos;
     }
 
     /**
@@ -268,7 +323,9 @@ class Procedimiento extends Model
         $nombre = preg_replace('/\s*\/\s*/', '/', $nombre);
         $nombre = preg_replace('/\s+\-\s+/', '/', $nombre);
 
-        return trim($nombre);
+        // Estandarizar en MAYÚSCULA para que un mismo antibiótico no se
+        // divida en varios grupos por diferencias de capitalización.
+        return mb_strtoupper(trim($nombre), 'UTF-8');
     }
 
     public static function normalizarSexo(?string $valor): ?string

@@ -1,0 +1,180 @@
+/* ============================================================
+   PROAHUV — Estilo moderno / minimalista / shadowless para los
+   módulos CRUD (catálogos con DataTables + formularios).
+   Reestiliza los elementos genéricos de Bootstrap / AdminLTE /
+   DataTables sin tocar la lógica de datos ni cada vista.
+   Paleta: navy #2a377e · acento #2f6fed · borde #e5e7f0.
+   ============================================================ */
+
+/* ---------- Encabezado de página ---------- */
+.content-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #262b34;
+    letter-spacing: -0.01em;
+}
+.content-header h1 > .fa,
+.content-header h1 > .fas,
+.content-header h1 > i { color: #2a377e; margin-right: .4rem; }
+
+/* ---------- Tarjetas ---------- */
+.content-wrapper .card {
+    background: #ffffff !important;
+    border: 1px solid #e5e7f0 !important;
+    border-radius: 16px !important;
+    box-shadow: none !important;
+    overflow: hidden;
+}
+.content-wrapper .card > .card-header {
+    background: #fbfcfe !important;
+    border-bottom: 1px solid #eef0f5 !important;
+    padding: 15px 20px;
+}
+.content-wrapper .card > .card-header .card-title {
+    font-weight: 700;
+    color: #262b34;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+.content-wrapper .card > .card-footer {
+    background: #fbfcfe !important;
+    border-top: 1px solid #eef0f5 !important;
+    padding: 14px 20px;
+}
+
+/* ---------- Botones ---------- */
+.content-wrapper .btn { border-radius: 10px; font-weight: 600; }
+.content-wrapper .btn-primary,
+.content-header .btn-primary {
+    background-color: #2a377e !important;
+    border-color: #2a377e !important;
+}
+.content-wrapper .btn-primary:hover, .content-wrapper .btn-primary:focus,
+.content-header .btn-primary:hover, .content-header .btn-primary:focus {
+    background-color: #212a63 !important;
+    border-color: #212a63 !important;
+}
+.content-wrapper .btn-secondary,
+.content-header .btn-secondary {
+    background-color: #eef0f5 !important;
+    border-color: #e2e5ee !important;
+    color: #4b5262 !important;
+}
+.content-wrapper .btn-secondary:hover,
+.content-header .btn-secondary:hover {
+    background-color: #e2e5ee !important;
+    color: #2a377e !important;
+}
+.content-wrapper .btn-outline-primary { color: #2a377e !important; border-color: #c9d1ea !important; }
+.content-wrapper .btn-outline-primary:hover { background-color: #2a377e !important; border-color: #2a377e !important; color: #fff !important; }
+
+/* ---------- Formularios ---------- */
+.content-wrapper .form-control {
+    border: 1px solid #dfe2ec;
+    border-radius: 10px;
+}
+.content-wrapper .form-control:focus {
+    border-color: #2f6fed !important;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12) !important;
+}
+.content-wrapper label.form-label,
+.content-wrapper .form-group > label {
+    font-weight: 600;
+    color: #3b4250;
+    font-size: .88rem;
+}
+.required::after { content: " *"; color: #d64545; }
+.content-wrapper .alert-info {
+    background: #eef4ff !important;
+    border: 1px solid #d6e4ff !important;
+    color: #2a4a86 !important;
+    border-radius: 12px !important;
+    border-left: 4px solid #2f6fed !important;
+}
+
+/* ---------- Tablas (DataTables) ---------- */
+.content-wrapper .table { margin-bottom: 0; }
+.content-wrapper .table thead th,
+.content-wrapper .table thead.thead-dark th,
+.content-wrapper .table th {
+    background-color: #f5f6fa !important;
+    color: #5a6172 !important;
+    border: none !important;
+    border-bottom: 1px solid #e5e7f0 !important;
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 12px 16px;
+    white-space: nowrap;
+}
+.content-wrapper .table.table-bordered,
+.content-wrapper .table.table-bordered td,
+.content-wrapper .table.table-bordered th { border-color: #eef0f5 !important; }
+.content-wrapper .table td {
+    padding: 12px 16px;
+    border-top: 1px solid #f2f3f8 !important;
+    vertical-align: middle;
+    color: #454b56;
+    font-size: 0.88rem;
+}
+.content-wrapper .table.table-striped tbody tr:nth-of-type(odd) { background-color: #fbfcfe; }
+.content-wrapper .table.table-hover tbody tr:hover { background-color: #f2f5fd; }
+
+/* ---------- Controles de DataTables ---------- */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+    border: 1px solid #dfe2ec !important;
+    border-radius: 10px !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem;
+    outline: none;
+    background: #fff;
+}
+.dataTables_wrapper .dataTables_filter input:focus,
+.dataTables_wrapper .dataTables_length select:focus {
+    border-color: #2f6fed !important;
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.12) !important;
+}
+.dataTables_wrapper .dataTables_filter label,
+.dataTables_wrapper .dataTables_length label { font-weight: 600; color: #5a6172; font-size: .85rem; }
+.dataTables_wrapper .dataTables_info { color: #8b93a5; font-size: 0.82rem; padding-top: 14px; }
+
+/* Botones de exportación (Excel/PDF/CSV/Imprimir) */
+.dt-buttons .btn,
+.dataTables_wrapper .dt-buttons .btn {
+    border-radius: 9px !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0 5px 6px 0 !important;
+}
+
+/* Paginación (solo dentro de DataTables) */
+.dataTables_wrapper .pagination { gap: 5px; margin-top: 6px; flex-wrap: wrap; }
+.dataTables_wrapper .pagination .page-item .page-link {
+    border: 1px solid #e5e7f0 !important;
+    border-radius: 9px !important;
+    color: #454b56 !important;
+    min-width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.84rem;
+    font-weight: 600;
+    margin: 0;
+    background: #fff;
+}
+.dataTables_wrapper .pagination .page-item .page-link:hover { background: #eef1fa !important; color: #2a377e !important; border-color: #dbe1f3 !important; }
+.dataTables_wrapper .pagination .page-item.active .page-link {
+    background: #2a377e !important;
+    border-color: #2a377e !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+.dataTables_wrapper .pagination .page-item.disabled .page-link { color: #c3c9d4; background: #fff; border-color: #eef0f5; }
+
+/* ---------- Detalle (show) ---------- */
+.content-wrapper .table.table-sm th { background: #f5f6fa !important; }
+.content-wrapper dl.row dt { color: #5a6172; font-weight: 700; }
+.content-wrapper .badge { border-radius: 8px; font-weight: 600; padding: .38em .7em; }

@@ -25,6 +25,18 @@ Route::middleware('auth')->group(function () {
     
     // Rutas de usuarios
     Route::resource('users', UserController::class)->middleware('can:admin');
+
+    // Módulo "Base de datos": diccionario de datos (documentación de tablas)
+    Route::get('base-datos', [App\Http\Controllers\BaseDatosController::class, 'index'])->name('base-datos.index');
+
+    // Conteo de IAAS por rango de fechas personalizable (req. 12)
+    Route::get('iaas/conteo', [App\Http\Controllers\IaasController::class, 'conteo'])->name('iaas.conteo');
+
+    // Notificaciones (campana de la barra superior)
+    Route::post('notificaciones/leer-todas', [App\Http\Controllers\NotificacionController::class, 'leerTodas'])->name('notificaciones.leerTodas');
+    Route::get('notificaciones/{notificacion}/leer', [App\Http\Controllers\NotificacionController::class, 'leer'])->name('notificaciones.leer');
+    Route::delete('notificaciones/{notificacion}', [App\Http\Controllers\NotificacionController::class, 'eliminar'])->name('notificaciones.eliminar');
+    Route::delete('notificaciones', [App\Http\Controllers\NotificacionController::class, 'vaciar'])->name('notificaciones.vaciar');
     
     // Rutas de procedimientos (solo lectura)
     Route::resource('procedimientos', ProcedimientoController::class)->except(['create', 'store']);
@@ -62,6 +74,9 @@ Route::middleware('auth')->group(function () {
         // Rutas de categoría quirúrgica
         Route::resource('categoria-quirurgica', App\Http\Controllers\CategoriaQuirurgicaController::class)
             ->parameters(['categoria-quirurgica' => 'categoriaQuirurgica']);
+
+        // Rutas de diagnósticos (catálogo CIE-10)
+        Route::resource('diagnosticos', App\Http\Controllers\DiagnosticoController::class);
 
         // Rutas de tipo de muestra
         Route::resource('tip-muestra', App\Http\Controllers\TipMuestraController::class);
@@ -104,6 +119,7 @@ Route::middleware('auth')->group(function () {
     // Rutas de epidemiología
     Route::get('epidemiologia', [App\Http\Controllers\EpidemiologiaController::class, 'index'])->name('epidemiologia.index');
     Route::post('epidemiologia/guardar', [App\Http\Controllers\EpidemiologiaController::class, 'guardar'])->name('epidemiologia.guardar');
+    Route::post('epidemiologia/casos/agrupar', [App\Http\Controllers\EpidemiologiaController::class, 'agruparCasos'])->name('epidemiologia.casos.agrupar');
     Route::get('epidemiologia/obtener/{idProcedimiento}', [App\Http\Controllers\EpidemiologiaController::class, 'obtener'])->name('epidemiologia.obtener');
 
     // Vaciado de bases (acciones destructivas): solo administradores
