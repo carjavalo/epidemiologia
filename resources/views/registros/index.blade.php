@@ -270,9 +270,21 @@
 
             @empty
                 <div class="col-12">
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle mr-2"></i>No se encontraron servicios.
-                    </div>
+                    @if(!empty($avisoSoloProa))
+                        <div class="alert alert-warning">
+                            <h6 class="mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Paciente sin microbiología</h6>
+                            <p class="mb-1">
+                                El paciente <strong>{{ $avisoSoloProa['nombre'] ?: ('documento ' . $avisoSoloProa['documento']) }}</strong>
+                                (doc. {{ $avisoSoloProa['documento'] }}@if(!empty($avisoSoloProa['sala'])) · {{ $avisoSoloProa['sala'] }}@endif)
+                                tiene <strong>tratamiento PROA</strong> pero <strong>no tiene registros de microbiología / epidemiología</strong>.
+                            </p>
+                            <small class="text-muted">Por eso no aparece en la vista por servicios. Su información de tratamiento está en la base de PROA.</small>
+                        </div>
+                    @else
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle mr-2"></i>No se encontraron servicios.
+                        </div>
+                    @endif
                 </div>
             @endforelse
 

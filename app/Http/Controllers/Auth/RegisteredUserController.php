@@ -35,12 +35,14 @@ class RegisteredUserController extends Controller
         // activa la pestaña de registro y no la de inicio de sesión.
         Validator::make($request->all(), [
             'usuario'  => ['required', 'string', 'max:100', 'unique:'.User::class],
+            'email'    => ['required', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::min(6)],
         ])->validateWithBag('registro');
 
         $user = User::create([
             'usuario'  => $request->usuario,
             'name'     => $request->usuario, // se mantiene para compatibilidad (avatar/nombre AdminLTE)
+            'email'    => $request->email,   // el correo es ahora la llave de acceso
             'password' => Hash::make($request->password),
             'rol'      => User::ROL_BASICO,   // todo registro nuevo entra como usuario básico
         ]);

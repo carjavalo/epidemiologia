@@ -61,11 +61,11 @@
                     </div>
 
                     <div class="uf-group">
-                        <label class="uf-label" for="email">Correo electrónico <span class="opt">(opcional)</span></label>
+                        <label class="uf-label" for="email">Correo electrónico <span class="text-danger">*</span></label>
                         <div class="uf-field">
                             <i class="fas fa-envelope uf-lead"></i>
                             <input type="email" class="uf-input @error('email') is-invalid @enderror"
-                                   id="email" name="email" value="{{ old('email') }}" placeholder="correo@ejemplo.com">
+                                   id="email" name="email" value="{{ old('email') }}" placeholder="correo@ejemplo.com" required>
                         </div>
                         @error('email') <span class="uf-error">{{ $message }}</span> @enderror
                     </div>

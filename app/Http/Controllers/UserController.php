@@ -41,7 +41,7 @@ class UserController extends Controller
     {
         $request->validate([
             'usuario' => ['required', 'string', 'max:100', 'unique:users,usuario'],
-            'email' => ['nullable', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'rol' => ['required', 'in:basico,administrador'],
             'perfil' => ['nullable', Rule::in(array_keys(User::PERFILES))],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
@@ -51,7 +51,7 @@ class UserController extends Controller
         $data = [
             'usuario' => $request->usuario,
             'name' => $request->usuario,
-            'email' => $request->email ?: null,
+            'email' => $request->email,
             'rol' => $request->rol,
             'perfil' => $request->perfil ?: null,
             'password' => Hash::make($request->password),
@@ -95,7 +95,7 @@ class UserController extends Controller
 
         $request->validate([
             'usuario' => ['required', 'string', 'max:100', Rule::unique('users', 'usuario')->ignore($user->id)],
-            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'rol' => ['required', 'in:basico,administrador'],
             'perfil' => ['nullable', Rule::in(array_keys(User::PERFILES))],
             'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
@@ -104,7 +104,7 @@ class UserController extends Controller
         $data = [
             'usuario' => $request->usuario,
             'name' => $request->usuario,
-            'email' => $request->email ?: null,
+            'email' => $request->email,
             'rol' => $request->rol,
             'perfil' => $request->perfil ?: null,
             'puede_editar_epidemiologia' => $request->boolean('puede_editar_epidemiologia'),

@@ -5,7 +5,7 @@
    ============================================================ */
 
 :root {
-    --pa-bg:          #f7f8fa;
+    --pa-bg:          #E8F0FE;
     --pa-card:        #ffffff;
     --pa-border:      #e7e9ef;
     --pa-sidebar:     #2a377e;
@@ -21,19 +21,29 @@
     --pa-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-/* ---------- Base: se CONSERVA el fondo de imagen del hospital ---------- */
+/* ---------- Base: fondo plano claro (igual que la página de Registros) ---------- */
 body,
 .wrapper {
     font-family: var(--pa-font);
     color: var(--pa-text);
-    background: url('/images/huv2.jpg') no-repeat center center fixed !important;
-    background-size: cover !important;
+    background: #f4f6fb !important;
 }
-/* El contenedor deja ver la imagen (tarjetas tipo "vidrio" encima). */
 .content-wrapper,
 .content-wrapper .content {
-    background: transparent !important;
+    background: #f4f6fb !important;
 }
+
+/* ---------- Scrollbar personalizada acorde al tema ---------- */
+* { scrollbar-width: thin; scrollbar-color: #c3cbe2 transparent; }   /* Firefox */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: #c3cbe2;
+    border-radius: 8px;
+    border: 2px solid #f4f6fb;   /* “aire” alrededor del thumb, se funde con el fondo */
+}
+::-webkit-scrollbar-thumb:hover { background: #2a377e; }
+::-webkit-scrollbar-corner { background: transparent; }
 
 /* ---------- Navbar superior: TRANSPARENTE, los controles "flotan" ---------- */
 .main-header.navbar {
@@ -145,7 +155,9 @@ body.sidebar-mini-xs .main-sidebar {
 .main-sidebar .sidebar::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .main-sidebar { overflow: hidden !important; }
 .main-sidebar .brand-link { padding: .9rem 1rem; margin-bottom: .25rem; }
-.main-sidebar .user-panel { padding: .25rem .55rem; }
+/* El panel de usuario del sidebar se oculta: es redundante (el avatar/usuario
+   ya está arriba en la barra superior). */
+.main-sidebar .user-panel { display: none !important; }
 .nav-sidebar { padding: 0 2px; }
 
 /* El margen del contenido lo maneja AdminLTE (según el ancho del sidebar),
@@ -160,11 +172,27 @@ body.sidebar-mini-xs .main-sidebar {
 .main-sidebar .brand-link,
 .main-sidebar .brand-link .brand-text,
 .main-sidebar .brand-link span { color: #fff !important; }
-/* Logo temporal: se oculta la foto/imagen de marca; queda solo el texto ProAHUV.
-   Cuando esté el logo nuevo, se reemplaza la imagen y se quita esta regla. */
-.main-sidebar .brand-link .brand-image,
-.main-sidebar .brand-link img { display: none !important; }
-.main-sidebar .brand-link .brand-text { margin-left: 0 !important; }
+/* Logo institucional MICRO/PROA: badge circular blanco + texto al lado. */
+.main-sidebar .brand-link { display: flex; align-items: center; }
+.main-sidebar .brand-link .brand-image {
+    display: inline-block !important;
+    opacity: 1 !important;
+    float: none;
+    width: 40px;
+    height: 40px;
+    margin: 0 10px 0 0;
+    padding: 3px;
+    border-radius: 50%;
+    background: #ffffff;
+    object-fit: contain;
+    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
+    line-height: 1;
+}
+.main-sidebar .brand-link .brand-text {
+    margin-left: 0 !important;
+    font-weight: 800;
+    font-size: 1.05rem;
+}
 /* Panel de usuario */
 .main-sidebar .user-panel { border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important; }
 .main-sidebar .user-panel .info a,

@@ -30,22 +30,11 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
-            background: #f4f6fb;
+            background: #F4F6FB;
             color: #333;
         }
 
-        .auth-card {
-            width: 100%;
-            max-width: 900px;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: none;
-            border: 1px solid #e5e7f0;
-            overflow: hidden;
-        }
-        .auth-row { display: flex; flex-wrap: wrap; }
-
-        /* Panel izquierdo (marca) — placeholder simple sin foto */
+        c izquierdo (marca) — placeholder simple sin foto */
         .brand-side {
             flex: 0 0 38%;
             max-width: 38%;
@@ -57,13 +46,15 @@
             justify-content: center;
         }
         .brand-logo {
-            width: 68px; height: 68px;
-            border-radius: 18px;
-            background: rgba(255, 255, 255, 0.12);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 92px; height: 92px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.9rem; color: #fff; margin-bottom: 18px;
+            padding: 6px; margin-bottom: 18px; overflow: hidden;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
         }
+        .brand-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
         .brand-name { font-size: 1.5rem; font-weight: 700; margin: 0; letter-spacing: .01em; }
         .brand-name span { opacity: .85; font-weight: 400; }
         .brand-desc { margin: 8px 0 24px; font-size: .9rem; color: rgba(255, 255, 255, 0.82); line-height: 1.5; }
@@ -109,10 +100,10 @@
 <body>
     <div class="auth-card">
         <div class="auth-row">
-            <!-- Marca (placeholder simple, sin foto — se reemplazará por el logo nuevo) -->
+            <!-- Marca con el logo institucional MICRO/PROA -->
             <div class="brand-side">
-                <div class="brand-logo"><i class="fas fa-shield-virus"></i></div>
-                <h1 class="brand-name">Pro<span>AHUV</span></h1>
+                <div class="brand-logo"><img src="{{ asset('images/logo-microproa.png') }}" alt="Logo MICRO/PROA"></div>
+                <h1 class="brand-name">MICRO<span>/PROA</span></h1>
                 <p class="brand-desc">Programa de Uso Optimizado de Antimicrobianos — Hospital Universitario del Valle.</p>
                 <ul class="brand-features">
                     <li><i class="fas fa-user-md"></i> Gestión de pacientes</li>
@@ -142,9 +133,9 @@
                             @csrf
 
                             <div class="mb-3">
-                                <label for="login_usuario" class="form-label">Usuario</label>
-                                <input type="text" class="form-control @error('usuario') is-invalid @enderror" id="login_usuario" name="usuario" value="{{ old('usuario') }}" required autocomplete="username" autofocus>
-                                @error('usuario')
+                                <label for="login_email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control @error('email') is-invalid @enderror" id="login_email" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
+                                @error('email')
                                     <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                                 @enderror
                             </div>
@@ -181,6 +172,14 @@
                                 <label for="register_usuario" class="form-label">Usuario</label>
                                 <input type="text" class="form-control @error('usuario', 'registro') is-invalid @enderror" id="register_usuario" name="usuario" value="{{ old('usuario') }}" required autocomplete="username">
                                 @error('usuario', 'registro')
+                                    <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="register_email" class="form-label">Correo electrónico</label>
+                                <input type="email" class="form-control @error('email', 'registro') is-invalid @enderror" id="register_email" name="email" value="{{ old('email') }}" required autocomplete="email">
+                                @error('email', 'registro')
                                     <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                                 @enderror
                             </div>

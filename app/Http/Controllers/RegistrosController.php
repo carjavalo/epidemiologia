@@ -89,6 +89,23 @@ class RegistrosController extends Controller
 
         $serviciosNombres = $serviciosPaginados->pluck('ubicacion');
 
+        // ── Aviso "paciente solo-PROA": si se busca un documento/historia que NO
+        // tiene registros de microbiología pero SÍ tiene tratamiento en PROA,
+        // se avisa (evita el desconcertante "No se encontraron servicios"). ──
+        $avisoSoloProa = null;
+        if ($search !== '' && $serviciosPaginados->total() === 0) {
+            $proc = Procedimiento::where('Num_Ident', $search)
+                ->orWhere('Hist_Clinica', $search)
+                ->first(['Num_Ident', 'Hist_Clinica', 'Medico_Trata', 'Nom_Sala']);
+            if ($proc) {
+                $avisoSoloProa = [
+                    'documento' => $proc->Num_Ident ?: $search,
+                    'nombre'    => trim((string) $proc->Medico_Trata),
+                    'sala'      => $proc->Nom_Sala,
+                ];
+            }
+        }
+
         // ── PROA count por servicio (para píldora en las tarjetas) ─────────
         $proaCountPorServicio = EpidemiologiaRegistro::query()
             ->whereIn('ubicacion', $serviciosNombres)
@@ -308,6 +325,7 @@ class RegistrosController extends Controller
             'intervenciones'        => $intervenciones,
             'catalogos'             => $catalogos,
             'servicioSeleccionado'  => $servicioSeleccionado,
+            'avisoSoloProa'         => $avisoSoloProa,
             'anio'                  => $anio,
             'mes'                   => $mes,
             'tipo'                  => $tipo,
