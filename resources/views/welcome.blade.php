@@ -34,7 +34,18 @@
             color: #333;
         }
 
-        c izquierdo (marca) — placeholder simple sin foto */
+        .auth-card {
+            width: 100%;
+            max-width: 900px;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: none;
+            border: 1px solid #e5e7f0;
+            overflow: hidden;
+        }
+        .auth-row { display: flex; flex-wrap: wrap; }
+
+        /* Panel izquierdo (marca) */
         .brand-side {
             flex: 0 0 38%;
             max-width: 38%;
