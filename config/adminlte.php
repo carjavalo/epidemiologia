@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'title' => 'ProAHUV',
+    'title' => 'Epidemiología Hospitalaria',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -63,12 +63,12 @@ return [
     |
     */
 
-    'logo' => '<b>MICRO</b>/PROA',
+    'logo' => '<b>Epidemiología</b> Hospitalaria',
     'logo_img' => 'images/logo-microproa.png',
     'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
-    'logo_img_alt' => 'ProAHUV Logo',
+    'logo_img_alt' => 'Epidemiología Hospitalaria',
 
     /*
     |--------------------------------------------------------------------------
@@ -84,10 +84,10 @@ return [
     */
 
     'auth_logo' => [
-        'enabled' => true,
+        'enabled' => false,
         'img' => [
-            'path' => 'images/Image_Proa.jpeg',
-            'alt' => 'PROA Logo',
+            'path' => 'images/logo-microproa.png',
+            'alt' => 'Epidemiología Hospitalaria',
             'class' => '',
             'width' => 60,
             'height' => 60,
@@ -110,11 +110,11 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        'enabled' => false,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'images/Image_Proa.jpeg',
-            'alt' => 'PROA Preloader Image',
+            'path' => 'images/logo-microproa.png',
+            'alt' => 'Epidemiología Hospitalaria',
             'effect' => 'animation__shake',
             'width' => 80,
             'height' => 80,
@@ -302,6 +302,12 @@ return [
         // Navbar items: (se quitaron la búsqueda y el botón de pantalla completa)
 
         // Sidebar items:
+        [
+            'text' => 'Centro de aplicativos',
+            'url' => 'aplicativos',
+            'icon' => 'fas fa-fw fa-th-large',
+            'active' => ['aplicativos*'],
+        ],
         [
             'text' => 'Dashboard',
             'url' => 'dashboard',

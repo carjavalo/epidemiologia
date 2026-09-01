@@ -20,7 +20,7 @@ class CreateAdminUser extends Command
      *
      * @var string
      */
-    protected $description = 'Crear usuario administrador para ProAHUV';
+    protected $description = 'Crear usuario administrador para Epidemiología Hospitalaria';
 
     /**
      * Execute the console command.
@@ -47,7 +47,7 @@ class CreateAdminUser extends Command
         // Crear el usuario
         $user = User::create([
             'name' => 'Administrador',
-            'apellido1' => 'ProAHUV',
+            'apellido1' => 'Epidemiologia',
             'apellido2' => 'Sistema',
             'email' => $email,
             'password' => Hash::make($password),

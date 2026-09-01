@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>{{ config('app.name', 'ProAHUV') }}</title>
+    <title>{{ config('app.name', 'Epidemiología Hospitalaria') }}</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -111,10 +111,9 @@
 <body>
     <div class="auth-card">
         <div class="auth-row">
-            <!-- Marca con el logo institucional MICRO/PROA -->
+            <!-- Marca institucional -->
             <div class="brand-side">
-                <div class="brand-logo"><img src="{{ asset('images/logo-microproa.png') }}" alt="Logo MICRO/PROA"></div>
-                <h1 class="brand-name">MICRO<span>/PROA</span></h1>
+                <h1 class="brand-name">Epidemiología<span> Hospitalaria</span></h1>
                 <p class="brand-desc">Programa de Uso Optimizado de Antimicrobianos — Hospital Universitario del Valle.</p>
                 <ul class="brand-features">
                     <li><i class="fas fa-user-md"></i> Gestión de pacientes</li>

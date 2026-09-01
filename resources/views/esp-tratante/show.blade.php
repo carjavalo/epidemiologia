@@ -70,7 +70,7 @@
 
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Información:</strong> Esta especialidad tratante está registrada en el sistema ProAHUV 
+                        <strong>Información:</strong> Esta especialidad tratante está registrada en el sistema de Epidemiología Hospitalaria 
                         y puede ser utilizada para clasificar y organizar los tratamientos médicos.
                     </div>
                 </div>

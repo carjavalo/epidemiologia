@@ -1,4 +1,4 @@
-// JavaScript personalizado para ProAHUV
+// JavaScript personalizado para Epidemiología Hospitalaria
 
 document.addEventListener('DOMContentLoaded', function() {
     // Detectar cambios en el estado del sidebar

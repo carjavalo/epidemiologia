@@ -1,5 +1,5 @@
 /* ============================================================
-   ProAHUV — Tema moderno (sidebar con íconos + hover-expand)
+   Epidemiología Hospitalaria — Tema moderno (sidebar con íconos + hover-expand)
    Paleta clara, tarjetas blancas con bordes redondeados.
    Colores en HEX para máxima compatibilidad de navegador.
    ============================================================ */
@@ -118,6 +118,20 @@ body,
 
 .content-wrapper { min-height: calc(100vh - 58px) !important; }
 
+/* ---------- Anti-desborde horizontal ----------
+   Al desplegar el sidebar el area util se reduce 250px; si algun bloque es
+   mas ancho aparecia scroll horizontal y el contenido (incluida la campana y
+   el avatar del navbar) quedaba cortado a la derecha. */
+.content-wrapper { overflow-x: hidden; }
+.content-wrapper .content > .container-fluid,
+.content-header > .container-fluid { max-width: 100%; }
+/* Los textos largos parten linea en vez de estirar el bloque */
+.pa-dashboard .timeline-item .timeline-header,
+.pa-dashboard .timeline-item .timeline-body,
+.pa-dashboard .timeline-item { overflow-wrap: anywhere; word-break: break-word; }
+/* Las tablas anchas hacen su propio scroll, no el de la pagina */
+.content-wrapper .table-responsive { max-width: 100%; overflow-x: auto; }
+
 /* Sidebar OCULTO al colapsar (sin modo íconos); el contenido ocupa todo el ancho. */
 body.proahuv-theme.sidebar-collapse .content-wrapper { margin-left: 0 !important; }
 
@@ -172,26 +186,18 @@ body.sidebar-mini-xs .main-sidebar {
 .main-sidebar .brand-link,
 .main-sidebar .brand-link .brand-text,
 .main-sidebar .brand-link span { color: #fff !important; }
-/* Logo institucional MICRO/PROA: badge circular blanco + texto al lado. */
-.main-sidebar .brand-link { display: flex; align-items: center; }
-.main-sidebar .brand-link .brand-image {
-    display: inline-block !important;
-    opacity: 1 !important;
-    float: none;
-    width: 40px;
-    height: 40px;
-    margin: 0 10px 0 0;
-    padding: 3px;
-    border-radius: 50%;
-    background: #ffffff;
-    object-fit: contain;
-    box-shadow: 0 2px 7px rgba(0, 0, 0, 0.28);
-    line-height: 1;
-}
+/* Logo oculto: la imagen aun muestra el nombre anterior. Solo queda el texto.
+   Cuando exista el logo nuevo, se retira este bloque. */
+.main-sidebar .brand-link { display: flex; align-items: center; justify-content: center; }
+.main-sidebar .brand-link .brand-image,
+.main-sidebar .brand-link img { display: none !important; }
 .main-sidebar .brand-link .brand-text {
     margin-left: 0 !important;
     font-weight: 800;
-    font-size: 1.05rem;
+    font-size: 1rem;
+    line-height: 1.2;
+    white-space: normal;
+    text-align: center;
 }
 /* Panel de usuario */
 .main-sidebar .user-panel { border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important; }

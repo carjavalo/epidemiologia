@@ -45,7 +45,7 @@
                     </div>
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-info-circle"></i>
-                        <strong>Información:</strong> Esta categoría quirúrgica está registrada en el sistema ProAHUV
+                        <strong>Información:</strong> Esta categoría quirúrgica está registrada en el sistema de Epidemiología Hospitalaria
                         y alimenta el campo "Categoría Quirúrgica" del formulario de datos complementarios.
                     </div>
                 </div>

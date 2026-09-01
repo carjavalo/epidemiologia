@@ -7,7 +7,7 @@
         <meta name="google" content="notranslate">
         <meta http-equiv="Content-Language" content="es">
 
-        <title>@yield('title', 'PROAHUV')</title>
+        <title>@yield('title', 'Epidemiología Hospitalaria')</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

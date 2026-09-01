@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('dashboard');
+        return redirect()->route('aplicativos.index');
     }
     return view('welcome');
 });
@@ -25,6 +25,9 @@ Route::middleware('auth')->group(function () {
     
     // Rutas de usuarios
     Route::resource('users', UserController::class)->middleware('can:admin');
+
+    // Centro de aplicativos: primera pantalla despues del login
+    Route::get('aplicativos', fn () => view('aplicativos.index'))->name('aplicativos.index');
 
     // Módulo "Base de datos": diccionario de datos (documentación de tablas)
     Route::get('base-datos', [App\Http\Controllers\BaseDatosController::class, 'index'])->name('base-datos.index');

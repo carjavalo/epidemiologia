@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Editar Indicación Terapéutica - ProAHUV')
+@section('title', 'Editar Indicación Terapéutica - Epidemiología Hospitalaria')
 
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
