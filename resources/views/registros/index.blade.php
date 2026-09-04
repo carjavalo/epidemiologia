@@ -339,6 +339,48 @@
                                     // Estado general del paciente: completo si epidemiología está toda
                                     // registrada y (no tiene PROA o PROA también está completo).
                                     $pacienteCompleto     = $info['epi_completo'] && (!$tienePROA || $info['proa_completo']);
+
+                                    // ── Resumen del paciente (qué falta, sin abrir el bloque) ───────
+                                    // El agrupamiento por caso y el estado de cada medicamento se calculan
+                                    // aquí una sola vez y se reutilizan más abajo, en los bloques de
+                                    // epidemiología y PROA. Antes se hacían dentro de cada bloque, o sea
+                                    // después de imprimir esta cabecera, que es donde hacen falta.
+                                    $gruposMicro = collect($info['seguimientos'])->groupBy(function ($r) {
+                                        if (!empty($r->caso_id)) {
+                                            return 'caso-' . $r->caso_id;
+                                        }
+                                        $n = trim((string) ($r->microorganismo ?? ''));
+                                        return $n === '' ? '__SIN_MICROORGANISMO__' : mb_strtoupper($n, 'UTF-8');
+                                    });
+                                    $totalMicro        = $gruposMicro->count();
+                                    $microSinRegistrar = $gruposMicro->filter(
+                                        fn ($g) => ! collect($g)->every(fn ($r) => (bool) $r->registrado)
+                                    )->count();
+
+                                    // Estado de cada medicamento PROA: sus cursos de 7 días y si ya tiene
+                                    // intervención registrada en todos ellos.
+                                    $estadoMedicamentos = collect();
+                                    if ($tienePROA) {
+                                        $estadoMedicamentos = $medicamentosPorPaciente->map(function ($regs) use ($intervenciones) {
+                                            $cursos = \App\Support\ProaCursos::agrupar($regs);
+                                            return [
+                                                'cursos'     => $cursos,
+                                                'total'      => count($cursos),
+                                                'registrado' => collect($cursos)->every(
+                                                    fn ($c) => $c['representativa'] && $intervenciones->has($c['representativa']->id)
+                                                ),
+                                            ];
+                                        });
+                                    }
+                                    $medSinRegistrar = $estadoMedicamentos->filter(fn ($m) => ! $m['registrado'])->count();
+
+                                    // Texto del chip de la cabecera.
+                                    $totalPendientes = $microSinRegistrar + $medSinRegistrar;
+                                    $textoEstado     = $pacienteCompleto
+                                        ? 'Completo'
+                                        : ($totalPendientes > 0
+                                            ? $totalPendientes . ' ' . ($totalPendientes == 1 ? 'pendiente' : 'pendientes')
+                                            : 'Falta registrar');
                                 @endphp
 
                                 <div class="col-xl-9 col-lg-10 col-md-12 mb-3">
@@ -361,7 +403,7 @@
                                              actualizarEstadoPaciente() al guardar por AJAX. --}}
                                         <span class="r-chip js-chip-estado js-chip-paciente mr-2 {{ $pacienteCompleto ? 'r-chip--ok' : 'r-chip--pend' }}"
                                               title="{{ $pacienteCompleto ? 'Paciente completo' : 'Quedan registros por completar' }}">
-                                            <i class="fas {{ $pacienteCompleto ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $pacienteCompleto ? 'Completo' : 'Falta registrar' }}
+                                            <i class="fas {{ $pacienteCompleto ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $textoEstado }}
                                         </span>
                                         @if($tienePROA)
                                             <span class="r-chip r-chip--neut mr-2" title="Medicamentos con seguimiento PROA">
@@ -376,6 +418,32 @@
                                     </div>
                                 </div>
                             </div>
+
+                            {{-- Resumen de lo que falta. Siempre visible: evita abrir el paciente
+                                 solo para descubrir que ya estaba todo registrado. --}}
+                            <div class="r-resumen">
+                                <span class="r-resumen-item js-resumen-epi r-resumen-item--{{ $info['epi_completo'] ? 'ok' : 'pend' }}">
+                                    <i class="fas {{ $info['epi_completo'] ? 'fa-check-circle' : 'fa-exclamation-circle' }}"></i>
+                                    Epidemiología
+                                </span>
+                                <span class="r-resumen-sep"></span>
+                                <span class="r-resumen-item">
+                                    <i class="fas fa-vial"></i>
+                                    <b>{{ $totalMicro }}</b>&nbsp;{{ $totalMicro == 1 ? 'microorganismo' : 'microorganismos' }}<!--
+                                    --><span class="js-resumen-micro-falta"{!! $microSinRegistrar ? '' : ' style="display:none"' !!}>{{ $microSinRegistrar ? ' · ' . $microSinRegistrar . ' sin registrar' : '' }}</span>
+                                </span>
+                                <span class="r-resumen-sep"></span>
+                                @if($tienePROA)
+                                    <span class="r-resumen-item">
+                                        <i class="fas fa-capsules"></i>
+                                        PROA <b>{{ $info['total_medic'] }}</b>&nbsp;{{ $info['total_medic'] == 1 ? 'medicamento' : 'medicamentos' }}<!--
+                                        --><span class="js-resumen-proa-falta"{!! $medSinRegistrar ? '' : ' style="display:none"' !!}>{{ $medSinRegistrar ? ' · ' . $medSinRegistrar . ' sin intervención' : '' }}</span>
+                                    </span>
+                                @else
+                                    <span class="r-resumen-item"><i class="fas fa-vial"></i> Sin PROA</span>
+                                @endif
+                            </div>
+
 
                             {{-- Contenido del paciente: Epidemiología y PROA --}}
                             <div id="{{ $pacienteKey }}" class="collapse">
@@ -452,15 +520,8 @@
                                                 {{-- Acordeón: un bloque por CASO de microorganismo. El agrupamiento
                                                      lo define caso_id (que la usuaria puede rehacer con los checkboxes);
                                                      si por alguna razón falta, se agrupa por nombre de microorganismo. --}}
-                                                @php
-                                                    $gruposMicro = collect($info['seguimientos'])->groupBy(function ($r) {
-                                                        if (!empty($r->caso_id)) {
-                                                            return 'caso-' . $r->caso_id;
-                                                        }
-                                                        $n = trim((string) ($r->microorganismo ?? ''));
-                                                        return $n === '' ? '__SIN_MICROORGANISMO__' : mb_strtoupper($n, 'UTF-8');
-                                                    });
-                                                @endphp
+                                                {{-- $gruposMicro se calcula arriba, en el bloque del paciente, porque
+                                                     la cabecera necesita sus conteos antes de llegar hasta aquí. --}}
                                                 @foreach($gruposMicro as $microNombre => $grupoMicro)
                                                     @php
                                                         $microKey = $epiKey . '-m' . md5($microNombre);
@@ -1049,13 +1110,12 @@
                                     @foreach($medicamentosPorPaciente as $medicamento => $registros)
                                         @php
                                             $medKey = $pacienteKey . '-med-' . md5($medicamento);
-                                            // Se agrupa en CURSOS de tratamiento de 7 días: un bloque por curso.
-                                            // Una dosis a 7+ días del inicio del curso abre un curso nuevo.
-                                            $cursos = \App\Support\ProaCursos::agrupar($registros);
-                                            $totalDosis = count($cursos);
-                                            // Antibiótico registrado si la dosis representativa de CADA curso
-                                            // tiene intervención.
-                                            $medRegistrado = collect($cursos)->every(fn ($c) => $c['representativa'] && $intervenciones->has($c['representativa']->id));
+                                            // Los cursos de 7 días y el estado de este medicamento ya se
+                                            // calcularon en el bloque del paciente, para el resumen.
+                                            $estadoMed     = $estadoMedicamentos[$medicamento];
+                                            $cursos        = $estadoMed['cursos'];
+                                            $totalDosis    = $estadoMed['total'];
+                                            $medRegistrado = $estadoMed['registrado'];
                                         @endphp
 
                                         {{-- Tarjeta de medicamento --}}
@@ -2220,8 +2280,38 @@
 
             // El paciente queda completo cuando no queda ningún chip pendiente dentro
             // de su tarjeta (sin contar el suyo propio).
+            // Mantiene al día la línea de resumen: los conteos se releen de los
+            // propios chips, así no hay dos fuentes de verdad.
+            function pintarFalta($span, n, texto) {
+                if (!$span.length) { return; }
+                if (n === 0) { $span.hide(); }
+                else { $span.text(' · ' + n + ' ' + texto).show(); }
+            }
+            function actualizarResumen($patient) {
+                if (!$patient || !$patient.length) { return; }
+                var microPend = $patient.find('.micro-card > .card-header .js-chip-estado.r-chip--pend').length;
+                var medPend   = $patient.find('.med-card > .card-header .js-chip-estado.r-chip--pend').length;
+
+                if (microPend === 0) {
+                    $patient.find('.js-resumen-epi')
+                            .removeClass('r-resumen-item--pend').addClass('r-resumen-item--ok')
+                            .find('i').attr('class', 'fas fa-check-circle');
+                }
+                pintarFalta($patient.find('.js-resumen-micro-falta'), microPend, 'sin registrar');
+                pintarFalta($patient.find('.js-resumen-proa-falta'), medPend, 'sin intervención');
+
+                var total = microPend + medPend;
+                var $chip = $patient.find('.js-chip-paciente');
+                if (total > 0 && $chip.hasClass('r-chip--pend')) {
+                    $chip.html('<i class="fas fa-exclamation-circle mr-1"></i>' +
+                               total + (total === 1 ? ' pendiente' : ' pendientes'));
+                }
+            }
+
+
             function actualizarEstadoPaciente($patient) {
                 if (!$patient || !$patient.length) { return; }
+                actualizarResumen($patient);
                 var pendientes = $patient.find('.js-chip-estado.r-chip--pend')
                                          .not('.js-chip-paciente').length;
                 if (pendientes === 0) {
