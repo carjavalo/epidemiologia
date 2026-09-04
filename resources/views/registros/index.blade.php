@@ -517,45 +517,48 @@
                                             </div>
                                         </div>
                                         <div id="{{ $epiKey }}" class="collapse">
-                                            <div class="card-body bg-light p-3">
-                                                {{-- Identidad del paciente (solo lectura, una sola vez) --}}
-                                                <div class="row mb-3">
-                                                    <div class="col-md-4">
-                                                        <label class="proa-label">Nombre</label>
-                                                        <input type="text" class="form-control form-control-sm bg-white" readonly
-                                                               value="{{ $paciente?->nombre ?? '' }}">
+                                            <div class="card-body p-3">
+                                                {{-- Identidad del paciente. Antes eran cinco campos de formulario que no
+                                                     se pueden editar: si un dato no se edita, no debe parecer editable.
+                                                     Se añade la edad, que había que calcular mentalmente. --}}
+                                                @php $edadPaciente = $paciente?->fecha_nacimiento?->age; @endphp
+                                                <dl class="r-ficha">
+                                                    <div class="r-ficha-dato">
+                                                        <dt>Paciente</dt>
+                                                        <dd>{{ $paciente?->nombre ?: '—' }}</dd>
                                                     </div>
-                                                    <div class="col-md-3">
-                                                        <label class="proa-label">ID (Número Identificación)</label>
-                                                        <input type="text" class="form-control form-control-sm bg-white" readonly
-                                                               value="{{ $paciente?->identificador_unico ?? '' }}">
+                                                    <div class="r-ficha-dato">
+                                                        <dt>Identificación</dt>
+                                                        <dd>{{ $paciente?->identificador_unico ?: '—' }}</dd>
                                                     </div>
-                                                    <div class="col-md-2">
-                                                        <label class="proa-label">Fecha Nacimiento</label>
-                                                        <input type="text" class="form-control form-control-sm bg-white" readonly
-                                                               value="{{ $paciente?->fecha_nacimiento ? $paciente->fecha_nacimiento->format('d/m/Y') : '' }}">
+                                                    <div class="r-ficha-dato">
+                                                        <dt>Nacimiento</dt>
+                                                        <dd>{{ $paciente?->fecha_nacimiento?->format('d/m/Y') ?: '—' }}@if($edadPaciente !== null)<span class="r-sec2"> · {{ $edadPaciente }} años</span>@endif</dd>
                                                     </div>
-                                                    <div class="col-md-1">
-                                                        <label class="proa-label">Sexo</label>
-                                                        <input type="text" class="form-control form-control-sm bg-white" readonly
-                                                               value="{{ $paciente?->sexo ?? '' }}">
+                                                    <div class="r-ficha-dato">
+                                                        <dt>Sexo</dt>
+                                                        <dd>{{ $paciente?->sexo ?: '—' }}</dd>
                                                     </div>
-                                                    <div class="col-md-2">
-                                                        <label class="proa-label">Historia Clínica</label>
-                                                        <input type="text" class="form-control form-control-sm bg-white" readonly
-                                                               value="{{ $paciente?->id_historia ?? '' }}">
+                                                    <div class="r-ficha-dato">
+                                                        <dt>Historia clínica</dt>
+                                                        <dd>{{ $paciente?->id_historia ?: '—' }}</dd>
                                                     </div>
-                                                </div>
+                                                </dl>
 
-                                                {{-- Barra de acción: agrupar las muestras seleccionadas en un mismo caso --}}
-                                                <div class="agrupar-bar" data-paciente="{{ $paciente?->identificador_unico }}">
+                                                {{-- Agrupar muestras del mismo caso. En reposo es solo una pista; se
+                                                     convierte en barra de acción cuando hay muestras marcadas. Antes
+                                                     ocupaba sitio permanentemente con un botón apagado. --}}
+                                                <p class="r-agrupar-pista js-agrupar-pista">
+                                                    <i class="fas fa-info-circle mr-1"></i>
+                                                    Marca dos o más muestras del mismo caso para agruparlas.
+                                                </p>
+                                                <div class="agrupar-bar js-agrupar-bar" data-paciente="{{ $paciente?->identificador_unico }}" style="display:none;">
                                                     <div class="agrupar-info">
                                                         <i class="fas fa-object-group mr-1"></i>
-                                                        Marca las muestras que sean del mismo caso y agrúpalas.
-                                                        <span class="agrupar-conteo text-muted"></span>
+                                                        <span class="agrupar-conteo"></span>
                                                     </div>
                                                     <button type="button" class="btn btn-sm btn-outline-primary btn-agrupar-casos" disabled>
-                                                        <i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas
+                                                        <i class="fas fa-layer-group mr-1"></i> Agrupar en un caso
                                                     </button>
                                                 </div>
 
@@ -2684,10 +2687,16 @@
             function actualizarBarraAgrupar($scope) {
                 if (!$scope || !$scope.length) { return; }
                 var n = $scope.find('.registro-check:checked').length;
-                var $bar = $scope.find('.agrupar-bar');
-                $bar.find('.agrupar-conteo').text(n > 0 ? '(' + n + ' seleccionada' + (n === 1 ? '' : 's') + ')' : '');
-                // Se necesita al menos 2 muestras para formar/mover un caso.
+                var $bar = $scope.find('.js-agrupar-bar');
+
+                $bar.find('.agrupar-conteo')
+                    .text(n + ' muestra' + (n === 1 ? '' : 's') + ' seleccionada' + (n === 1 ? '' : 's'));
+                // Se necesitan al menos 2 muestras para formar o mover un caso.
                 $bar.find('.btn-agrupar-casos').prop('disabled', n < 2);
+
+                // En reposo se muestra la pista; con algo marcado, la barra de acción.
+                $bar.toggle(n > 0);
+                $scope.find('.js-agrupar-pista').toggle(n === 0);
             }
 
             // Agrupar en un mismo caso todas las muestras marcadas del paciente.

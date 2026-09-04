@@ -259,6 +259,17 @@
     font-size: .84rem;
 }
 
+/* Pista en reposo de la barra de agrupar muestras: ocupa una línea en vez de
+   una barra con un botón permanentemente deshabilitado. */
+.r-agrupar-pista {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: .8rem;
+    color: var(--r-muted-2);
+}
+
 /* ==========================================================================
    5. BARRA DE CONTEXTO
    Dice en qué servicio y en qué paciente estás. Se ancla al desplazar. Fase 3.
