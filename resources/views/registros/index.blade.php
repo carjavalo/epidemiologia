@@ -611,408 +611,463 @@
 
                                                     {{-- ── Datos de la muestra: se repiten una vez por cada registro
                                                          duplicado de este mismo microorganismo ── --}}
-                                                    @foreach($grupoMicro as $fila)
-                                                    <div class="registro-muestra">
-                                                        <div class="registro-muestra-head">
-                                                            <div class="custom-control custom-checkbox">
-                                                                <input type="checkbox"
-                                                                       class="custom-control-input registro-check"
-                                                                       id="{{ $microKey }}-chk-{{ $fila->id }}"
-                                                                       name="registros_seleccionados[]"
-                                                                       value="{{ $fila->id }}">
-                                                                <label class="custom-control-label registro-muestra-tag"
-                                                                       for="{{ $microKey }}-chk-{{ $fila->id }}">
-                                                                    Registro #{{ $loop->iteration }}
-                                                                </label>
+                                                    <div class="r-seccion">
+                                                        <div class="r-sec-head">
+                                                            <span class="r-sec-num">1</span>
+                                                            <h4>Datos de la muestra</h4>
+                                                            <span class="r-sec-nota">uno por cada registro de este microorganismo</span>
+                                                        </div>
+                                                        <div class="r-sec-cuerpo">
+                                                        @foreach($grupoMicro as $fila)
+                                                        <div class="registro-muestra">
+                                                            <div class="registro-muestra-head">
+                                                                <div class="custom-control custom-checkbox">
+                                                                    <input type="checkbox"
+                                                                           class="custom-control-input registro-check"
+                                                                           id="{{ $microKey }}-chk-{{ $fila->id }}"
+                                                                           name="registros_seleccionados[]"
+                                                                           value="{{ $fila->id }}">
+                                                                    <label class="custom-control-label registro-muestra-tag"
+                                                                           for="{{ $microKey }}-chk-{{ $fila->id }}">
+                                                                        Registro #{{ $loop->iteration }}
+                                                                    </label>
+                                                                </div>
+                                                                @if($fila->fecha_toma_muestra)
+                                                                    <span class="registro-muestra-fecha">
+                                                                        <i class="far fa-calendar-alt mr-1"></i>{{ $fila->fecha_toma_muestra->format('d/m/Y') }}
+                                                                    </span>
+                                                                @endif
                                                             </div>
-                                                            @if($fila->fecha_toma_muestra)
-                                                                <span class="registro-muestra-fecha">
-                                                                    <i class="far fa-calendar-alt mr-1"></i>{{ $fila->fecha_toma_muestra->format('d/m/Y') }}
-                                                                </span>
-                                                            @endif
+
+                                                            {{-- Fila 2: Tipo de muestra, N. Reporte, Cultivo, Sede, Ubicación, Fecha toma muestra --}}
+                                                            <div class="row mb-2">
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Tipo de Muestra</label>
+                                                                    <select name="registros[{{ $fila->id }}][tipo_muestra]" class="form-control form-control-sm">
+                                                                        <option value="">— Seleccionar —</option>
+                                                                        @foreach($conValor($catalogos['tiposMuestra']->pluck('descripcion')->all(), $fila->tipo_muestra) as $op)
+                                                                            <option value="{{ $op }}" {{ ($fila->tipo_muestra ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                        @endforeach
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">N. Reporte</label>
+                                                                    <input type="text" name="registros[{{ $fila->id }}][n_reporte]" class="form-control form-control-sm"
+                                                                           value="{{ $fila->n_reporte ?? '' }}">
+                                                                </div>
+                                                                <div class="col-md-1">
+                                                                    <label class="proa-label">Cultivo</label>
+                                                                    <input type="text" name="registros[{{ $fila->id }}][cultivo_num]" class="form-control form-control-sm"
+                                                                           value="{{ $fila->cultivo_num ?? '' }}">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Sede</label>
+                                                                    <input type="text" name="registros[{{ $fila->id }}][sede]" class="form-control form-control-sm"
+                                                                           value="{{ $fila->sede ?? '' }}">
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Ubicación</label>
+                                                                    <input type="text" name="registros[{{ $fila->id }}][ubicacion]" class="form-control form-control-sm"
+                                                                           value="{{ $fila->ubicacion ?? '' }}">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="proa-label">Fecha Toma de Muestra</label>
+                                                                    <input type="date" name="registros[{{ $fila->id }}][fecha_toma_muestra]"
+                                                                           class="form-control form-control-sm fecha-muestra"
+                                                                           value="{{ $fila->fecha_toma_muestra?->format('Y-m-d') }}">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="proa-label">Fecha de Reporte <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="registros[{{ $fila->id }}][fecha_reporte]"
+                                                                           class="form-control form-control-sm fecha-reporte" required
+                                                                           value="{{ $fila->fecha_reporte?->format('Y-m-d') }}">
+                                                                </div>
+                                                            </div>
+
+                                                            {{-- Fila 3: Microorganismo, Sensibles, Intermedios, Resistentes, Marcadores --}}
+                                                            <div class="row mb-2">
+                                                                <div class="col-md-3">
+                                                                    <label class="proa-label">Microorganismo</label>
+                                                                    <input type="text" name="registros[{{ $fila->id }}][microorganismo]" class="form-control form-control-sm"
+                                                                           value="{{ $fila->microorganismo ?? '' }}">
+                                                                </div>
+                                                                <div class="col-md-3">
+                                                                    <label class="proa-label">Sensibles</label>
+                                                                    <textarea name="registros[{{ $fila->id }}][sensibles]" class="form-control form-control-sm" rows="2">{{ $fila->sensibles ?? '' }}</textarea>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Intermedios</label>
+                                                                    <textarea name="registros[{{ $fila->id }}][intermedios]" class="form-control form-control-sm" rows="2">{{ $fila->intermedios ?? '' }}</textarea>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Resistentes</label>
+                                                                    <textarea name="registros[{{ $fila->id }}][resistentes]" class="form-control form-control-sm" rows="2">{{ $fila->resistentes ?? '' }}</textarea>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <label class="proa-label">Marcadores</label>
+                                                                    <textarea name="registros[{{ $fila->id }}][marcadores_resistencia]" class="form-control form-control-sm" rows="2">{{ $fila->marcadores_resistencia ?? '' }}</textarea>
+                                                                </div>
+                                                            </div>
+                                                        </div>{{-- /.registro-muestra --}}
+
+                                                        @unless($loop->last)
+                                                            <hr class="registro-divider">
+                                                        @endunless
+                                                        @endforeach
+                                                        </div>
+                                                    </div>
+                                                    
+
+                                                    <div class="r-seccion">
+                                                        <div class="r-sec-head">
+                                                            <span class="r-sec-num">2</span>
+                                                            <h4>Datos del paciente</h4>
+                                                            <span class="r-sec-nota">iguales para todos los microorganismos de este paciente</span>
+                                                        </div>
+                                                        <div class="r-sec-cuerpo">
+                                                        {{-- Fila 1: Datos constantes del paciente (se replican en todos los microorganismos) --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">País de origen</label>
+                                                                <select name="pais_origen" class="form-control form-control-sm const-field">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($catalogos['paises'] as $pais)
+                                                                        <option value="{{ $pais->nombre }}" {{ ($reg->pais_origen ?? '') == $pais->nombre ? 'selected' : '' }}>{{ $pais->nombre }}</option>
+                                                                    @endforeach
+                                                                    @if(!empty($reg->pais_origen) && !$catalogos['paises']->contains('nombre', $reg->pais_origen))
+                                                                        <option value="{{ $reg->pais_origen }}" selected>{{ $reg->pais_origen }}</option>
+                                                                    @endif
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <div class="border rounded px-2 pt-1 pb-2 h-100 procedencia-box">
+                                                                    <div class="proa-label mb-1" style="font-weight: 600;">
+                                                                        <i class="fas fa-map-marker-alt mr-1"></i>Procedencia
+                                                                    </div>
+                                                                    <div class="row">
+                                                                        <div class="col-6">
+                                                                            <label class="proa-label">Departamento</label>
+                                                                            {{-- Se llena vía API DANE (Divipola). Se conserva el valor guardado como opción por si la API no responde. --}}
+                                                                            <select name="departamento" class="form-control form-control-sm dane-depto"
+                                                                                    data-selected="{{ $reg->departamento ?? '' }}">
+                                                                                <option value="">— Seleccionar —</option>
+                                                                                @if(!empty($reg->departamento))
+                                                                                    <option value="{{ $reg->departamento }}" selected>{{ $reg->departamento }}</option>
+                                                                                @endif
+                                                                            </select>
+                                                                        </div>
+                                                                        <div class="col-6">
+                                                                            <label class="proa-label">Municipio</label>
+                                                                            <select name="municipio" class="form-control form-control-sm dane-mpio"
+                                                                                    data-selected="{{ $reg->municipio ?? '' }}">
+                                                                                <option value="">— Seleccionar —</option>
+                                                                                @if(!empty($reg->municipio))
+                                                                                    <option value="{{ $reg->municipio }}" selected>{{ $reg->municipio }}</option>
+                                                                                @endif
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="proa-label">Diagnóstico de ingreso</label>
+                                                                <input type="text" name="diagnostico_ingreso" class="form-control form-control-sm const-field"
+                                                                       list="lista-diagnosticos" autocomplete="off" placeholder="Busque por código o texto…"
+                                                                       value="{{ $reg->diagnostico_ingreso ?? '' }}">
+                                                            </div>
                                                         </div>
 
-                                                        {{-- Fila 2: Tipo de muestra, N. Reporte, Cultivo, Sede, Ubicación, Fecha toma muestra --}}
+                                                        {{-- Fila 2: Tipo ID, Fecha de ingreso, Asegurador y Peso (constantes del paciente) --}}
                                                         <div class="row mb-2">
                                                             <div class="col-md-2">
-                                                                <label class="proa-label">Tipo de Muestra</label>
-                                                                <select name="registros[{{ $fila->id }}][tipo_muestra]" class="form-control form-control-sm">
+                                                                <label class="proa-label">Tipo ID</label>
+                                                                <select name="tipo_id" class="form-control form-control-sm const-field">
                                                                     <option value="">— Seleccionar —</option>
-                                                                    @foreach($conValor($catalogos['tiposMuestra']->pluck('descripcion')->all(), $fila->tipo_muestra) as $op)
-                                                                        <option value="{{ $op }}" {{ ($fila->tipo_muestra ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @foreach($conValor(['ARG', 'AS', 'BOL', 'BRA', 'CC', 'CHI', 'CN', 'ECU', 'PAR', 'PER', 'PT', 'RC', 'RN', 'SC', 'TI', 'URG', 'VEN'], $reg->tipo_id) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->tipo_id ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Fecha de ingreso</label>
+                                                                <input type="date" name="fecha_ingreso_hosp" class="form-control form-control-sm const-field"
+                                                                       value="{{ isset($reg->fecha_ingreso_hosp) ? $reg->fecha_ingreso_hosp->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="proa-label">Asegurador</label>
+                                                                <input type="text" name="asegurador" class="form-control form-control-sm const-field"
+                                                                       value="{{ $reg->asegurador ?? '' }}">
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Peso (kg)</label>
+                                                                <input type="number" step="0.1" min="0" inputmode="decimal" name="peso"
+                                                                       class="form-control form-control-sm const-field solo-numero"
+                                                                       value="{{ $reg->peso ?? '' }}">
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                                    
+
+                                                    <div class="r-seccion">
+                                                        <div class="r-sec-head">
+                                                            <span class="r-sec-num">3</span>
+                                                            <h4>Clasificación de la infección</h4>
+                                                        </div>
+                                                        <div class="r-sec-cuerpo">
+                                                        {{-- Fila 4: Sitio, TIPO, CLASIFICACIÓN, CLASIFICACIÓN EN TEXTO --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Sitio</label>
+                                                                <select name="sitio" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor($opcionesSitio, $reg->sitio) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->sitio ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
                                                                     @endforeach
                                                                 </select>
                                                             </div>
                                                             <div class="col-md-2">
-                                                                <label class="proa-label">N. Reporte</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][n_reporte]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->n_reporte ?? '' }}">
-                                                            </div>
-                                                            <div class="col-md-1">
-                                                                <label class="proa-label">Cultivo</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][cultivo_num]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->cultivo_num ?? '' }}">
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <label class="proa-label">Sede</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][sede]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->sede ?? '' }}">
+                                                                <label class="proa-label">TIPO</label>
+                                                                <select name="tipo" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['1', '2'], $reg->tipo) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->tipo ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                             <div class="col-md-2">
-                                                                <label class="proa-label">Ubicación</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][ubicacion]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->ubicacion ?? '' }}">
+                                                                <label class="proa-label">CLASIFICACIÓN</label>
+                                                                <select name="clasificacion" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['1', '2', '3', '4', '5', '6', '7'], $reg->clasificacion) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->clasificacion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
-                                                            <div class="col-md-3">
-                                                                <label class="proa-label">Fecha Toma de Muestra</label>
-                                                                <input type="date" name="registros[{{ $fila->id }}][fecha_toma_muestra]"
-                                                                       class="form-control form-control-sm fecha-muestra"
-                                                                       value="{{ $fila->fecha_toma_muestra?->format('Y-m-d') }}">
-                                                            </div>
-                                                            <div class="col-md-3">
-                                                                <label class="proa-label">Fecha de Reporte <span class="text-danger">*</span></label>
-                                                                <input type="date" name="registros[{{ $fila->id }}][fecha_reporte]"
-                                                                       class="form-control form-control-sm fecha-reporte" required
-                                                                       value="{{ $fila->fecha_reporte?->format('Y-m-d') }}">
+                                                            <div class="col-md-5">
+                                                                <label class="proa-label">CLASIFICACIÓN EN TEXTO</label>
+                                                                <input type="text" name="clasificacion_texto" class="form-control form-control-sm bg-white" readonly
+                                                                       value="{{ $reg->clasificacion_texto ?? '' }}" placeholder="Calculado automáticamente">
                                                             </div>
                                                         </div>
 
-                                                        {{-- Fila 3: Microorganismo, Sensibles, Intermedios, Resistentes, Marcadores --}}
+                                                        {{-- Fila 4b: Fechas de infección (req. 3) --}}
                                                         <div class="row mb-2">
                                                             <div class="col-md-3">
-                                                                <label class="proa-label">Microorganismo</label>
-                                                                <input type="text" name="registros[{{ $fila->id }}][microorganismo]" class="form-control form-control-sm"
-                                                                       value="{{ $fila->microorganismo ?? '' }}">
+                                                                <label class="proa-label">Fecha de Dx. de infección</label>
+                                                                <input type="date" name="fecha_dx_infeccion" class="form-control form-control-sm fecha-dx-infeccion"
+                                                                       value="{{ isset($reg->fecha_dx_infeccion) ? $reg->fecha_dx_infeccion->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label class="proa-label">DÍAS DE ESTANCIA PREVIOS A INFECCIÓN</label>
+                                                                <input type="text" name="dias_estancia_previos_infeccion" class="form-control form-control-sm bg-white" readonly
+                                                                       value="{{ $reg->dias_estancia_previos_infeccion ?? '' }}" placeholder="Calculado automáticamente">
+                                                            </div>
+                                                        </div>
+                                                    
+                                                        {{-- Egreso, revisión e interconsulta: pertenecen al manejo del caso,
+                                                             no a la cirugía, y siguen activos cuando el sitio no aplica. --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Egreso</label>
+                                                                <select name="egreso" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['VIVO', 'MUERTO', 'N/A'], $reg->egreso) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->egreso ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                             <div class="col-md-3">
-                                                                <label class="proa-label">Sensibles</label>
-                                                                <textarea name="registros[{{ $fila->id }}][sensibles]" class="form-control form-control-sm" rows="2">{{ $fila->sensibles ?? '' }}</textarea>
+                                                                <label class="proa-label">Revisión con equipo</label>
+                                                                <select name="revision_equipo" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['requiere apoyo', 'no requiere apoyo'], $reg->revision_equipo) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->revision_equipo ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
-                                                            <div class="col-md-2">
-                                                                <label class="proa-label">Intermedios</label>
-                                                                <textarea name="registros[{{ $fila->id }}][intermedios]" class="form-control form-control-sm" rows="2">{{ $fila->intermedios ?? '' }}</textarea>
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <label class="proa-label">Resistentes</label>
-                                                                <textarea name="registros[{{ $fila->id }}][resistentes]" class="form-control form-control-sm" rows="2">{{ $fila->resistentes ?? '' }}</textarea>
-                                                            </div>
-                                                            <div class="col-md-2">
-                                                                <label class="proa-label">Marcadores</label>
-                                                                <textarea name="registros[{{ $fila->id }}][marcadores_resistencia]" class="form-control form-control-sm" rows="2">{{ $fila->marcadores_resistencia ?? '' }}</textarea>
+                                                            <div class="col-md-4">
+                                                                <label class="proa-label">Interconsulta con infectología</label>
+                                                                <select name="interconsulta_infectologia" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO', 'NO APLICA'], $reg->interconsulta_infectologia) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->interconsulta_infectologia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                         </div>
-                                                    </div>{{-- /.registro-muestra --}}
-
-                                                    @unless($loop->last)
-                                                        <hr class="registro-divider">
-                                                    @endunless
-                                                    @endforeach
-
-                                                    {{-- ── Datos Complementarios de este microorganismo (se llenan
-                                                         una sola vez y aplican a todos los registros del bloque) ── --}}
-                                                    <hr class="my-3">
-
-                                                    {{-- Fila 1: Datos constantes del paciente (se replican en todos los microorganismos) --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">País de origen</label>
-                                                            <select name="pais_origen" class="form-control form-control-sm const-field">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($catalogos['paises'] as $pais)
-                                                                    <option value="{{ $pais->nombre }}" {{ ($reg->pais_origen ?? '') == $pais->nombre ? 'selected' : '' }}>{{ $pais->nombre }}</option>
-                                                                @endforeach
-                                                                @if(!empty($reg->pais_origen) && !$catalogos['paises']->contains('nombre', $reg->pais_origen))
-                                                                    <option value="{{ $reg->pais_origen }}" selected>{{ $reg->pais_origen }}</option>
-                                                                @endif
-                                                            </select>
                                                         </div>
-                                                        <div class="col-md-5">
-                                                            <div class="border rounded px-2 pt-1 pb-2 h-100 procedencia-box">
-                                                                <div class="proa-label mb-1" style="font-weight: 600;">
-                                                                    <i class="fas fa-map-marker-alt mr-1"></i>Procedencia
-                                                                </div>
-                                                                <div class="row">
-                                                                    <div class="col-6">
-                                                                        <label class="proa-label">Departamento</label>
-                                                                        {{-- Se llena vía API DANE (Divipola). Se conserva el valor guardado como opción por si la API no responde. --}}
-                                                                        <select name="departamento" class="form-control form-control-sm dane-depto"
-                                                                                data-selected="{{ $reg->departamento ?? '' }}">
-                                                                            <option value="">— Seleccionar —</option>
-                                                                            @if(!empty($reg->departamento))
-                                                                                <option value="{{ $reg->departamento }}" selected>{{ $reg->departamento }}</option>
-                                                                            @endif
-                                                                        </select>
+                                                    </div>
+                                                    
+
+                                                    <div class="r-seccion js-seccion-cirugia">
+                                                        <div class="r-sec-head">
+                                                            <span class="r-sec-num">4</span>
+                                                            <h4>Datos quirúrgicos</h4>
+                                                            <span class="r-sec-nota">solo si el sitio es quirúrgico</span>
+                                                        </div>
+                                                        <div class="r-plegado-aviso">
+                                                            <i class="fas fa-eye-slash mr-1"></i>
+                                                            <span>Sección oculta: el sitio seleccionado no es quirúrgico. <b>14 campos</b> no aplican para este caso.</span>
+                                                        </div>
+                                                        <div class="r-sec-cuerpo">
+                                                        {{-- Estos tres campos estaban en la antigua Fila 3, antes de los datos
+                                                             de infección. Bajan aquí para que la sección quirúrgica sea
+                                                             contigua y pueda plegarse entera. --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Fecha quirúrgica previa a la infección</label>
+                                                                <input type="date" name="fecha_quirurgica_previa" class="form-control form-control-sm"
+                                                                       value="{{ isset($reg->fecha_quirurgica_previa) ? $reg->fecha_quirurgica_previa->format('Y-m-d') : '' }}">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">DÍAS ENTRE Qx. PREVIA E INFECCIÓN</label>
+                                                                <input type="text" name="dias_entre_qx_e_infeccion" class="form-control form-control-sm bg-white" readonly
+                                                                       value="{{ $reg->dias_entre_qx_e_infeccion ?? '' }}" placeholder="Calculado automáticamente">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">CATEGORÍA Quirúrgica</label>
+                                                                <select name="categoria_quirurgica" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($catalogos['categoriasQuirurgicas'] as $cat)
+                                                                        <option value="{{ $cat->descripcion }}" {{ ($reg->categoria_quirurgica ?? '') == $cat->descripcion ? 'selected' : '' }}>{{ $cat->descripcion }}</option>
+                                                                    @endforeach
+                                                                    @if(!empty($reg->categoria_quirurgica) && !$catalogos['categoriasQuirurgicas']->contains('descripcion', $reg->categoria_quirurgica))
+                                                                        <option value="{{ $reg->categoria_quirurgica }}" selected>{{ $reg->categoria_quirurgica }}</option>
+                                                                    @endif
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    
+                                                        {{-- Fila 5: Especialidad que realizo cirugia, Procedimiento quirurjico, Tiempo quirurjico --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-4">
+                                                                <label class="proa-label">Especialidad que realizó cirugía</label>
+                                                                <select name="especialidad_cirugia" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor($opcionesEspecialidadQx, $reg->especialidad_cirugia) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->especialidad_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <label class="proa-label">Procedimiento quirúrgico</label>
+                                                                <input type="text" name="procedimiento_quirurgico" class="form-control form-control-sm"
+                                                                       value="{{ $reg->procedimiento_quirurgico ?? '' }}">
+                                                            </div>
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Tiempo Quirúrgico</label>
+                                                                <div class="input-group input-group-sm">
+                                                                    <input type="number" min="0" step="1" inputmode="numeric" name="tiempo_quirurgico"
+                                                                           class="form-control form-control-sm solo-entero"
+                                                                           value="{{ preg_replace('/\D/', '', (string) ($reg->tiempo_quirurgico ?? '')) }}"
+                                                                           placeholder="Ej: 120">
+                                                                    <div class="input-group-append">
+                                                                        <span class="input-group-text">minutos</span>
                                                                     </div>
-                                                                    <div class="col-6">
-                                                                        <label class="proa-label">Municipio</label>
-                                                                        <select name="municipio" class="form-control form-control-sm dane-mpio"
-                                                                                data-selected="{{ $reg->municipio ?? '' }}">
-                                                                            <option value="">— Seleccionar —</option>
-                                                                            @if(!empty($reg->municipio))
-                                                                                <option value="{{ $reg->municipio }}" selected>{{ $reg->municipio }}</option>
-                                                                            @endif
-                                                                        </select>
-                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-4">
-                                                            <label class="proa-label">Diagnóstico de ingreso</label>
-                                                            <input type="text" name="diagnostico_ingreso" class="form-control form-control-sm const-field"
-                                                                   list="lista-diagnosticos" autocomplete="off" placeholder="Busque por código o texto…"
-                                                                   value="{{ $reg->diagnostico_ingreso ?? '' }}">
-                                                        </div>
-                                                    </div>
 
-                                                    {{-- Fila 2: Tipo ID, Fecha de ingreso, Asegurador y Peso (constantes del paciente) --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Tipo ID</label>
-                                                            <select name="tipo_id" class="form-control form-control-sm const-field">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['ARG', 'AS', 'BOL', 'BRA', 'CC', 'CHI', 'CN', 'ECU', 'PAR', 'PER', 'PT', 'RC', 'RN', 'SC', 'TI', 'URG', 'VEN'], $reg->tipo_id) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->tipo_id ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Fecha de ingreso</label>
-                                                            <input type="date" name="fecha_ingreso_hosp" class="form-control form-control-sm const-field"
-                                                                   value="{{ isset($reg->fecha_ingreso_hosp) ? $reg->fecha_ingreso_hosp->format('Y-m-d') : '' }}">
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="proa-label">Asegurador</label>
-                                                            <input type="text" name="asegurador" class="form-control form-control-sm const-field"
-                                                                   value="{{ $reg->asegurador ?? '' }}">
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Peso (kg)</label>
-                                                            <input type="number" step="0.1" min="0" inputmode="decimal" name="peso"
-                                                                   class="form-control form-control-sm const-field solo-numero"
-                                                                   value="{{ $reg->peso ?? '' }}">
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Fila 3: Fecha quirurjica, Dias entre Qx e infeccion, Categoria quirurjica, Egreso --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Fecha quirúrgica previa a la infección</label>
-                                                            <input type="date" name="fecha_quirurgica_previa" class="form-control form-control-sm"
-                                                                   value="{{ isset($reg->fecha_quirurgica_previa) ? $reg->fecha_quirurgica_previa->format('Y-m-d') : '' }}">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">DÍAS ENTRE Qx. PREVIA E INFECCIÓN</label>
-                                                            <input type="text" name="dias_entre_qx_e_infeccion" class="form-control form-control-sm bg-white" readonly
-                                                                   value="{{ $reg->dias_entre_qx_e_infeccion ?? '' }}" placeholder="Calculado automáticamente">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">CATEGORÍA Quirúrgica</label>
-                                                            <select name="categoria_quirurgica" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($catalogos['categoriasQuirurgicas'] as $cat)
-                                                                    <option value="{{ $cat->descripcion }}" {{ ($reg->categoria_quirurgica ?? '') == $cat->descripcion ? 'selected' : '' }}>{{ $cat->descripcion }}</option>
-                                                                @endforeach
-                                                                @if(!empty($reg->categoria_quirurgica) && !$catalogos['categoriasQuirurgicas']->contains('descripcion', $reg->categoria_quirurgica))
-                                                                    <option value="{{ $reg->categoria_quirurgica }}" selected>{{ $reg->categoria_quirurgica }}</option>
-                                                                @endif
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Egreso</label>
-                                                            <select name="egreso" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['VIVO', 'MUERTO', 'N/A'], $reg->egreso) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->egreso ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Fila 4: Sitio, TIPO, CLASIFICACIÓN, CLASIFICACIÓN EN TEXTO --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Sitio</label>
-                                                            <select name="sitio" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor($opcionesSitio, $reg->sitio) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->sitio ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">TIPO</label>
-                                                            <select name="tipo" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['1', '2'], $reg->tipo) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->tipo ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">CLASIFICACIÓN</label>
-                                                            <select name="clasificacion" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['1', '2', '3', '4', '5', '6', '7'], $reg->clasificacion) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->clasificacion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="proa-label">CLASIFICACIÓN EN TEXTO</label>
-                                                            <input type="text" name="clasificacion_texto" class="form-control form-control-sm bg-white" readonly
-                                                                   value="{{ $reg->clasificacion_texto ?? '' }}" placeholder="Calculado automáticamente">
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Fila 4b: Fechas de infección (req. 3) --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Fecha de Dx. de infección</label>
-                                                            <input type="date" name="fecha_dx_infeccion" class="form-control form-control-sm fecha-dx-infeccion"
-                                                                   value="{{ isset($reg->fecha_dx_infeccion) ? $reg->fecha_dx_infeccion->format('Y-m-d') : '' }}">
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="proa-label">DÍAS DE ESTANCIA PREVIOS A INFECCIÓN</label>
-                                                            <input type="text" name="dias_estancia_previos_infeccion" class="form-control form-control-sm bg-white" readonly
-                                                                   value="{{ $reg->dias_estancia_previos_infeccion ?? '' }}" placeholder="Calculado automáticamente">
-                                                        </div>
-                                                    </div>
-
-                                                    {{-- Fila 5: Especialidad que realizo cirugia, Procedimiento quirurjico, Tiempo quirurjico --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-4">
-                                                            <label class="proa-label">Especialidad que realizó cirugía</label>
-                                                            <select name="especialidad_cirugia" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor($opcionesEspecialidadQx, $reg->especialidad_cirugia) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->especialidad_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-5">
-                                                            <label class="proa-label">Procedimiento quirúrgico</label>
-                                                            <input type="text" name="procedimiento_quirurgico" class="form-control form-control-sm"
-                                                                   value="{{ $reg->procedimiento_quirurgico ?? '' }}">
-                                                        </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Tiempo Quirúrgico</label>
-                                                            <div class="input-group input-group-sm">
-                                                                <input type="number" min="0" step="1" inputmode="numeric" name="tiempo_quirurgico"
-                                                                       class="form-control form-control-sm solo-entero"
-                                                                       value="{{ preg_replace('/\D/', '', (string) ($reg->tiempo_quirurgico ?? '')) }}"
-                                                                       placeholder="Ej: 120">
-                                                                <div class="input-group-append">
-                                                                    <span class="input-group-text">minutos</span>
-                                                                </div>
+                                                        {{-- Fila 6: Baño quirurjico, ASEPSIA, PROFILAXIS, ANTIBIOTICOS USADOS, ASA, TIPO CIRUGÍA --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Baño quirúrgico</label>
+                                                                <select name="bano_quirurgico" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->bano_quirurgico) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->bano_quirurgico ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Asepsia quirúrgica</label>
+                                                                <select name="asepsia_quirurgica" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->asepsia_quirurgica) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->asepsia_quirurgica ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Profilaxis</label>
+                                                                <select name="profilaxis" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['SI', 'NO'], $reg->profilaxis) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->profilaxis ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Antibióticos usados</label>
+                                                                <select name="antibioticos_usados" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor($opcionesAntibioticos, $reg->antibioticos_usados) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->antibioticos_usados ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">ASA Preoperatoria</label>
+                                                                <select name="asa_preoperatoria" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor($opcionesAsa, $reg->asa_preoperatoria) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->asa_preoperatoria ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Tipo Cirugía</label>
+                                                                <select name="tipo_cirugia" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['ELECTIVA', 'URGENCIA'], $reg->tipo_cirugia) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->tipo_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    {{-- Fila 6: Baño quirurjico, ASEPSIA, PROFILAXIS, ANTIBIOTICOS USADOS, ASA, TIPO CIRUGÍA --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Baño quirúrgico</label>
-                                                            <select name="bano_quirurgico" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->bano_quirurgico) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->bano_quirurgico ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
+                                                        {{-- Fila 7: CLASIFICACIÓN CIRUGIA, NNIS, REVISIÓN CON EQUIPO, INTERCONSULTA --}}
+                                                        <div class="row mb-2">
+                                                            <div class="col-md-3">
+                                                                <label class="proa-label">Clasificación Cirugía</label>
+                                                                <select name="clasificacion_cirugia" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['L (1)', 'LC (2)', 'C (3)', 'S (4)'], $reg->clasificacion_cirugia) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->clasificacion_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <label class="proa-label">Puntaje NNIS</label>
+                                                                <select name="puntaje_nnis" class="form-control form-control-sm">
+                                                                    <option value="">— Seleccionar —</option>
+                                                                    @foreach($conValor(['0', '1', '2', '3', 'SD'], $reg->puntaje_nnis) as $op)
+                                                                        <option value="{{ $op }}" {{ ($reg->puntaje_nnis ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Asepsia quirúrgica</label>
-                                                            <select name="asepsia_quirurgica" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->asepsia_quirurgica) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->asepsia_quirurgica ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Profilaxis</label>
-                                                            <select name="profilaxis" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO'], $reg->profilaxis) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->profilaxis ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Antibióticos usados</label>
-                                                            <select name="antibioticos_usados" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor($opcionesAntibioticos, $reg->antibioticos_usados) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->antibioticos_usados ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">ASA Preoperatoria</label>
-                                                            <select name="asa_preoperatoria" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor($opcionesAsa, $reg->asa_preoperatoria) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->asa_preoperatoria ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Tipo Cirugía</label>
-                                                            <select name="tipo_cirugia" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['ELECTIVA', 'URGENCIA'], $reg->tipo_cirugia) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->tipo_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
                                                         </div>
                                                     </div>
+                                                    
 
-                                                    {{-- Fila 7: CLASIFICACIÓN CIRUGIA, NNIS, REVISIÓN CON EQUIPO, INTERCONSULTA --}}
-                                                    <div class="row mb-2">
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Clasificación Cirugía</label>
-                                                            <select name="clasificacion_cirugia" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['L (1)', 'LC (2)', 'C (3)', 'S (4)'], $reg->clasificacion_cirugia) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->clasificacion_cirugia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
+                                                    <div class="r-seccion">
+                                                        <div class="r-sec-head">
+                                                            <span class="r-sec-num">5</span>
+                                                            <h4>Comentarios</h4>
                                                         </div>
-                                                        <div class="col-md-2">
-                                                            <label class="proa-label">Puntaje NNIS</label>
-                                                            <select name="puntaje_nnis" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['0', '1', '2', '3', 'SD'], $reg->puntaje_nnis) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->puntaje_nnis ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
+                                                        <div class="r-sec-cuerpo">
+                                                        {{-- Fila 8: Comentarios (las fechas de inserción/retiro se movieron al bloque de enfermería, req. 7) --}}
+                                                        <div class="row mb-3">
+                                                            <div class="col-md-12">
+                                                                <label class="proa-label">Comentarios</label>
+                                                                <textarea name="comentarios" class="form-control form-control-sm" rows="2" placeholder="Comentarios adicionales...">{{ $reg->comentarios ?? '' }}</textarea>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-md-3">
-                                                            <label class="proa-label">Revisión con equipo</label>
-                                                            <select name="revision_equipo" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['requiere apoyo', 'no requiere apoyo'], $reg->revision_equipo) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->revision_equipo ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-md-4">
-                                                            <label class="proa-label">Interconsulta con infectología</label>
-                                                            <select name="interconsulta_infectologia" class="form-control form-control-sm">
-                                                                <option value="">— Seleccionar —</option>
-                                                                @foreach($conValor(['SI', 'NO', 'NO APLICA'], $reg->interconsulta_infectologia) as $op)
-                                                                    <option value="{{ $op }}" {{ ($reg->interconsulta_infectologia ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
-                                                                @endforeach
-                                                            </select>
                                                         </div>
                                                     </div>
-
-                                                    {{-- Fila 8: Comentarios (las fechas de inserción/retiro se movieron al bloque de enfermería, req. 7) --}}
-                                                    <div class="row mb-3">
-                                                        <div class="col-md-12">
-                                                            <label class="proa-label">Comentarios</label>
-                                                            <textarea name="comentarios" class="form-control form-control-sm" rows="2" placeholder="Comentarios adicionales...">{{ $reg->comentarios ?? '' }}</textarea>
-                                                        </div>
-                                                    </div>
+                                                    
 
                                                     @if($esEnfermero)
                                                     {{-- ===== Datos de enfermería (req. 7, 8, 11) — solo perfil enfermero ===== --}}
@@ -2805,6 +2860,10 @@
                 // reporte hospital seguro) solo se muestran cuando SITIO ≠ "No aplica".
                 var mostrarSitioEnf = (sitio !== '' && !noAplica);
                 $form.find('.bloque-sitio-enfermero').toggle(mostrarSitioEnf);
+
+                // La sección quirúrgica entera se pliega: antes sus 14 campos se
+                // quedaban visibles en gris, ocupando media pantalla para nada.
+                $form.find('.js-seccion-cirugia').toggleClass('r-plegada', noAplica);
             }
 
             // Req. 7: las fechas de inserción/retiro solo aparecen si el dispositivo
