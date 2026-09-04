@@ -548,6 +548,7 @@
                                                 {{-- Agrupar muestras del mismo caso. En reposo es solo una pista; se
                                                      convierte en barra de acción cuando hay muestras marcadas. Antes
                                                      ocupaba sitio permanentemente con un botón apagado. --}}
+                                                <div class="js-aviso"></div>
                                                 <p class="r-agrupar-pista js-agrupar-pista">
                                                     <i class="fas fa-info-circle mr-1"></i>
                                                     Marca dos o más muestras del mismo caso para agruparlas.
@@ -1159,13 +1160,26 @@
 
                                                     {{-- Botón guardar --}}
                                                     @unless($bloqueadoInfo)
+                                                    {{-- Contenedor del aviso: éxito, advertencia y error usan el mismo
+                                                         componente, en vez de un alert() del navegador, una ventana de
+                                                         SweetAlert y un recuadro verde en línea. --}}
+                                                    <div class="js-aviso"></div>
                                                     <div class="d-flex justify-content-end align-items-center">
-                                                        <span class="info-save-msg text-success mr-3 d-none">
-                                                            <i class="fas fa-check-circle mr-1"></i> Registrado correctamente
-                                                        </span>
-                                                        <button type="button" class="btn btn-info btn-sm btn-registrar-info">
-                                                            <i class="fas fa-save mr-1"></i> Registrar
+                                                        <button type="button" class="r-btn-guardar btn-registrar-info">
+                                                            <i class="fas fa-save mr-1"></i> Guardar caso
                                                         </button>
+                                                    </div>
+                                                    {{-- Atajo que aparece al tocar cualquier campo: en un formulario tan largo
+                                                         el botón de guardar queda lejos, y salir de la página lo perdía todo. --}}
+                                                    <div class="r-guardar-bar js-guardar-bar">
+                                                        <span class="r-guardar-txt">
+                                                            <i class="fas fa-pen"></i> Tienes cambios sin guardar
+                                                        </span>
+                                                        <span class="r-guardar-acciones">
+                                                            <button type="button" class="r-btn-guardar js-guardar-atajo">
+                                                                <i class="fas fa-save mr-1"></i> Guardar caso
+                                                            </button>
+                                                        </span>
                                                     </div>
                                                     @endunless
 
@@ -1771,13 +1785,26 @@
 
                                                                 {{-- Botón guardar --}}
                                                                 @unless($bloqueadoProa)
+                                                                {{-- Contenedor del aviso: éxito, advertencia y error usan el mismo
+                                                                     componente, en vez de un alert() del navegador, una ventana de
+                                                                     SweetAlert y un recuadro verde en línea. --}}
+                                                                <div class="js-aviso"></div>
                                                                 <div class="d-flex justify-content-end align-items-center">
-                                                                    <span class="save-msg text-success mr-3 d-none">
-                                                                        <i class="fas fa-check-circle mr-1"></i> Guardado correctamente
-                                                                    </span>
-                                                                    <button type="button" class="btn btn-success btn-sm btn-guardar-proa">
-                                                                        <i class="fas fa-save mr-1"></i> Guardar Intervención
+                                                                    <button type="button" class="r-btn-guardar btn-guardar-proa">
+                                                                        <i class="fas fa-save mr-1"></i> Guardar intervención
                                                                     </button>
+                                                                </div>
+                                                                {{-- Atajo que aparece al tocar cualquier campo: en un formulario tan largo
+                                                                     el botón de guardar queda lejos, y salir de la página lo perdía todo. --}}
+                                                                <div class="r-guardar-bar js-guardar-bar">
+                                                                    <span class="r-guardar-txt">
+                                                                        <i class="fas fa-pen"></i> Tienes cambios sin guardar
+                                                                    </span>
+                                                                    <span class="r-guardar-acciones">
+                                                                        <button type="button" class="r-btn-guardar js-guardar-atajo">
+                                                                            <i class="fas fa-save mr-1"></i> Guardar intervención
+                                                                        </button>
+                                                                    </span>
                                                                 </div>
                                                                 @endunless
 
@@ -2511,29 +2538,82 @@
                 actualizarEstadoPaciente($form.closest('.patient-card'));
             }
 
-            // Guardar formulario "Información adicional de (microorganismo)" via AJAX
+            // ── Avisos: un solo componente para éxito, advertencia y error ──
+            // Sustituye a los alert() del navegador (que mostraban "127.0.0.1:8003
+            // dice:" y el SQLSTATE crudo) y a la ventana morada de SweetAlert.
+            var ICONO_AVISO = { ok: 'fa-check-circle', adv: 'fa-exclamation-circle', err: 'fa-times-circle' };
+            function mostrarAviso($ambito, tipo, titulo, texto) {
+                var $cont = $ambito.find('.js-aviso').first();
+                if (!$cont.length) { return; }
+                $cont.html(
+                    '<div class="r-aviso r-aviso--' + tipo + '">' +
+                        '<i class="fas ' + ICONO_AVISO[tipo] + '"></i>' +
+                        '<span><b>' + titulo + '</b>' + (texto || '') + '</span>' +
+                        '<button type="button" class="r-aviso-cerrar js-aviso-cerrar" aria-label="Cerrar aviso">' +
+                            '<i class="fas fa-times"></i>' +
+                        '</button>' +
+                    '</div>'
+                );
+                if (tipo === 'ok') {
+                    setTimeout(function () { $cont.empty(); }, 5000);
+                }
+            }
+            $(document).on('click', '.js-aviso-cerrar', function () {
+                $(this).closest('.js-aviso').empty();
+            });
+
+            // ── Estados del botón de guardar ────────────────────────────────────
+            function botonGuardando($btn) {
+                if (!$btn.data('html-reposo')) { $btn.data('html-reposo', $btn.html()); }
+                $btn.attr('data-estado', 'guardando').prop('disabled', true)
+                    .html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando…');
+            }
+            function botonGuardado($btn) {
+                $btn.attr('data-estado', 'listo')
+                    .html('<i class="fas fa-check mr-1"></i> Guardado');
+                setTimeout(function () { botonReposo($btn); }, 2000);
+            }
+            function botonReposo($btn) {
+                $btn.removeAttr('data-estado').prop('disabled', false)
+                    .html($btn.data('html-reposo'));
+            }
+
+            // ── Barra de cambios sin guardar ────────────────────────────────────
+            $(document).on('input change',
+                '.microorganismo-info-form :input:not([type=hidden]):not(.registro-check), ' +
+                '.proa-form :input:not([type=hidden])', function (e) {
+                // Al cargar, el propio código dispara change() sobre varios campos
+                // para recalcular fechas y días. Esos eventos sintéticos no traen
+                // originalEvent, así que no cuentan como edición del usuario.
+                if (!e.originalEvent) { return; }
+                $(this).closest('form').find('.js-guardar-bar').addClass('r-visible');
+            });
+            $(document).on('click', '.js-guardar-atajo', function () {
+                $(this).closest('form').find('.btn-registrar-info, .btn-guardar-proa').first().trigger('click');
+            });
+            function limpiarSucio($form) {
+                $form.find('.js-guardar-bar').removeClass('r-visible');
+            }
+
+            // ── Guardar el caso de microorganismo ───────────────────────────────
             $(document).on('click', '.btn-registrar-info', function () {
                 var $btn = $(this);
                 var $form = $btn.closest('.microorganismo-info-form');
 
                 // FECHA DE REPORTE es obligatoria en cada registro de la muestra (req. 9).
                 var $faltantes = $form.find('.fecha-reporte').filter(function () { return !this.value; });
+                $form.find('.fecha-reporte').closest('[class*="col-"]').removeClass('r-campo-malo');
                 if ($faltantes.length) {
-                    if (window.Swal) {
-                        Swal.fire({ icon: 'warning', title: 'Falta la Fecha de Reporte',
-                            text: 'La Fecha de Reporte es obligatoria en todos los registros de la muestra.' });
-                    } else {
-                        alert('La Fecha de Reporte es obligatoria en todos los registros de la muestra.');
-                    }
+                    $faltantes.closest('[class*="col-"]').addClass('r-campo-malo');
+                    mostrarAviso($form, 'adv', 'Falta la fecha de reporte',
+                        'Es obligatoria en ' + ($faltantes.length === 1 ? 'un registro' : 'los ' + $faltantes.length + ' registros') +
+                        ' de esta muestra. Los marcamos en rojo más abajo.');
                     $faltantes.first().focus();
                     return;
                 }
 
-                var $msg  = $form.find('.info-save-msg');
                 var token = $('meta[name="csrf-token"]').attr('content') || $form.find('[name="_token"]').val();
-
-                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...');
-                $msg.addClass('d-none');
+                botonGuardando($btn);
 
                 $.ajax({
                     url: '{{ route("epidemiologia.guardar") }}',
@@ -2542,34 +2622,30 @@
                     headers: { 'X-CSRF-TOKEN': token },
                     success: function (resp) {
                         if (resp.success) {
-                            $msg.removeClass('d-none');
-                            setTimeout(function () { $msg.addClass('d-none'); }, 4000);
+                            var nombre = ($form.closest('.micro-card').find('.card-header strong').first().text() || '').trim();
+                            mostrarAviso($form, 'ok', 'Caso guardado',
+                                nombre ? nombre + ' quedó registrado.' : 'El caso quedó registrado.');
                             marcarEpiRegistrado($form);   // semáforo en vivo
+                            limpiarSucio($form);
+                            botonGuardado($btn);
                         } else {
-                            alert('Error al registrar: ' + (resp.message || 'Error desconocido'));
+                            mostrarAviso($form, 'err', 'No se pudo guardar',
+                                (resp.message || 'Vuelve a intentarlo.') + ' El registro no se perdió, sigue en pantalla.');
+                            botonReposo($btn);
                         }
                     },
-                    error: function (xhr) {
-                        var errMsg = 'Error al registrar la información.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errMsg += '\n' + xhr.responseJSON.message;
-                        }
-                        alert(errMsg);
-                    },
-                    complete: function () {
-                        $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Registrar');
+                    error: function () {
+                        mostrarAviso($form, 'err', 'No se pudo guardar',
+                            'Vuelve a intentarlo. Si sigue fallando, avisa a sistemas: el registro no se perdió, sigue en pantalla.');
+                        botonReposo($btn);
                     }
                 });
             });
 
-            // Guardar formulario PROA via AJAX
+            // ── Guardar la intervención PROA ────────────────────────────────────
             $(document).on('click', '.btn-guardar-proa', function () {
                 var $btn = $(this);
                 var $form = $btn.closest('.proa-form');
-                var $msg  = $form.find('.save-msg');
-
-                $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Guardando...');
-                $msg.addClass('d-none');
 
                 var formData = $form.serializeArray();
                 // Incluir el token CSRF manualmente si serializeArray lo omite
@@ -2577,6 +2653,7 @@
                 if (!token) {
                     formData.push({ name: '_token', value: $form.find('[name="_token"]').val() });
                 }
+                botonGuardando($btn);
 
                 $.ajax({
                     url: '{{ route("intervenciones-proa.guardar") }}',
@@ -2585,22 +2662,22 @@
                     headers: { 'X-CSRF-TOKEN': token || $form.find('[name="_token"]').val() },
                     success: function (resp) {
                         if (resp.success) {
-                            $msg.removeClass('d-none');
-                            setTimeout(function () { $msg.addClass('d-none'); }, 4000);
+                            var med = ($form.closest('.med-card').find('.card-header strong').first().text() || '').trim();
+                            mostrarAviso($form, 'ok', 'Intervención guardada',
+                                med ? med + ' quedó registrado.' : 'La intervención quedó registrada.');
                             marcarProaRegistrado($form);   // semáforo en vivo
+                            limpiarSucio($form);
+                            botonGuardado($btn);
                         } else {
-                            alert('Error al guardar: ' + (resp.message || 'Error desconocido'));
+                            mostrarAviso($form, 'err', 'No se pudo guardar',
+                                (resp.message || 'Vuelve a intentarlo.') + ' La intervención no se perdió, sigue en pantalla.');
+                            botonReposo($btn);
                         }
                     },
-                    error: function (xhr) {
-                        var errMsg = 'Error al guardar la intervención.';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errMsg += '\n' + xhr.responseJSON.message;
-                        }
-                        alert(errMsg);
-                    },
-                    complete: function () {
-                        $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar Intervención');
+                    error: function () {
+                        mostrarAviso($form, 'err', 'No se pudo guardar',
+                            'Vuelve a intentarlo. Si sigue fallando, avisa a sistemas: la intervención no se perdió, sigue en pantalla.');
+                        botonReposo($btn);
                     }
                 });
             });
@@ -2789,7 +2866,7 @@
             });
 
             // Resaltar la sección de campos cuyo checkbox está marcado y
-            // actualizar el estado de la barra "Agrupar seleccionadas".
+            // actualizar el estado de la barra "Agrupar en un caso".
             $(document).on('change', '.registro-check', function () {
                 $(this).closest('.registro-muestra').toggleClass('is-selected', this.checked);
                 actualizarBarraAgrupar($(this).closest('.patient-card'));
@@ -2838,14 +2915,14 @@
                         if (resp && resp.success) {
                             location.reload();
                         } else {
-                            alert('No se pudo agrupar: ' + ((resp && resp.message) || 'error desconocido'));
-                            $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas');
+                            mostrarAviso($btn.closest('.epi-card'), 'err', 'No se pudo agrupar', (resp && resp.message) || 'Vuelve a intentarlo.');
+                            $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar en un caso');
                         }
                     },
                     error: function (xhr) {
                         var m = (xhr.responseJSON && xhr.responseJSON.message) || 'Error al agrupar las muestras.';
-                        alert(m);
-                        $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar seleccionadas');
+                        mostrarAviso($btn.closest('.epi-card'), 'err', 'No se pudo agrupar', m);
+                        $btn.prop('disabled', false).html('<i class="fas fa-layer-group mr-1"></i> Agrupar en un caso');
                     }
                 });
             });

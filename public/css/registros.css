@@ -612,22 +612,24 @@
 }
 
 /* Barra de cambios sin guardar, anclada al pie del bloque */
+/* Se muestra con display en vez de con transform: un elemento desplazado
+   fuera de su caja provoca desborde horizontal en contenedores anchos. */
 .r-guardar-bar {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
+    margin-top: 10px;
     padding: 11px 15px;
+    border-radius: 10px;
     background: var(--r-avi-bg);
     color: var(--r-avi-fg);
-    border-top: 1px solid #f0dfbf;
+    border: 1px solid #f0dfbf;
     position: sticky;
-    bottom: 0;
+    bottom: 8px;
     z-index: 1010;
-    transform: translateY(110%);
-    transition: transform .22s ease;
 }
-.r-guardar-bar.r-visible { transform: translateY(0); }
+.r-guardar-bar.r-visible { display: flex; }
 .r-guardar-bar .r-guardar-txt {
     display: flex;
     align-items: center;
