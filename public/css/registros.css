@@ -184,6 +184,19 @@
     color: var(--r-muted-2);
     font-style: italic;
 }
+/* Cabecera suelta: para tramos que no están envueltos en .r-seccion — trae
+   ella misma el separador. La usa el formulario PROA, cuyas seis secciones
+   eran barras de color a ancho completo. */
+.r-sec-head--suelta {
+    border-top: 1px solid var(--r-borde-2);
+    padding-top: 13px;
+    margin-top: 14px;
+}
+.r-sec-head--suelta:first-of-type {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 0;
+}
 .r-sec-cuenta {
     margin-left: auto;
     font-size: .72rem;
@@ -513,6 +526,20 @@
 }
 .r-curso-dia.r-hecho  { background: var(--r-ok-rail); }
 .r-curso-dia.r-exceso { background: var(--r-avi-rail); }
+/* Etiqueta "+N" cuando el exceso supera los 7 segmentos dibujables */
+.r-curso-mas {
+    flex: 0 0 auto;
+    align-self: center;
+    font-size: .66rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--r-avi-fg);
+    background: var(--r-avi-bg);
+    border-radius: 4px;
+    padding: 2px 5px;
+    margin-left: 3px;
+    font-variant-numeric: tabular-nums;
+}
 .r-curso-pie { font-size: .76rem; color: var(--r-muted); }
 .r-curso-pie b { color: var(--r-avi-fg); }
 

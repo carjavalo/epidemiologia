@@ -1271,14 +1271,14 @@
                                                                         <i class="fas fa-calendar-day text-info mr-1"></i>
                                                                         <strong>{{ $fechaLabel }}</strong>
                                                                         @if($inicio)
-                                                                            <span class="badge curso-contador {{ $diaActual > 7 ? 'badge-warning' : 'badge-info' }} ml-2"
+                                                                            <span class="r-chip curso-contador ml-2 {{ $diaActual > 7 ? 'r-chip--avi' : 'r-chip--info' }}"
                                                                                   data-inicio="{{ $inicio->format('Y-m-d') }}"
                                                                                   title="Día de tratamiento (lo ideal son 7 días)">
-                                                                                Día {{ $diaActual }} de 7
+                                                                                Día <b>{{ $diaActual }}</b> de 7
                                                                             </span>
                                                                         @endif
                                                                         @if($dosisCurso > 1)
-                                                                            <span class="badge badge-light border ml-1" style="font-size:0.7rem;" title="Dosis dentro de este curso">{{ $dosisCurso }} dosis</span>
+                                                                            <span class="r-chip r-chip--blanco ml-1" title="Dosis dentro de este curso"><b>{{ $dosisCurso }}</b>&nbsp;dosis</span>
                                                                         @endif
                                                                     </div>
                                                                     <i class="fas fa-chevron-down collapse-icon text-muted"></i>
@@ -1288,6 +1288,35 @@
                                                             <div id="{{ $fechaCard }}" class="collapse">
                                                                 <div class="card-body bg-white p-2">
                                                                         <div class="proa-dose">
+                                                                        @if($inicio)
+                                                                            @php $excesoCurso = max(0, $diaActual - 7); @endphp
+                                                                            {{-- El curso de 7 días dibujado: optimizar la duración del
+                                                                                 antimicrobiano es el objeto del programa, y hasta ahora ese dato
+                                                                                 vivía en una insignia pequeña. Sale de ProaCursos::diaActual(). --}}
+                                                                            <div class="r-curso">
+                                                                                <div class="r-curso-top">
+                                                                                    <span class="r-curso-rot">Curso de tratamiento</span>
+                                                                                    <span class="r-curso-val {{ $excesoCurso > 0 ? 'r-exceso' : '' }}">Día {{ $diaActual }} de 7</span>
+                                                                                </div>
+                                                                                <div class="r-curso-dias">
+                                                                                    {{-- Los 7 días previstos, y como mucho 7 segmentos de exceso: con datos
+                                                                                         reales hay cursos abiertos desde hace cientos de días y dibujarlos
+                                                                                         uno a uno llenaba la fila de rayas de un píxel. --}}
+                                                                                    @for($d = 1; $d <= 7; $d++)
+                                                                                        <span class="r-curso-dia {{ $d <= $diaActual ? 'r-hecho' : '' }}"></span>
+                                                                                    @endfor
+                                                                                    @for($d = 1; $d <= min($excesoCurso, 7); $d++)
+                                                                                        <span class="r-curso-dia r-exceso"></span>
+                                                                                    @endfor
+                                                                                    @if($excesoCurso > 7)
+                                                                                        <span class="r-curso-mas">+{{ $excesoCurso - 7 }}</span>
+                                                                                    @endif
+                                                                                </div>
+                                                                                <div class="r-curso-pie">
+                                                                                    Inicio {{ $fechaLabel }}@if($excesoCurso > 0) · <b>{{ $excesoCurso }} {{ $excesoCurso == 1 ? 'día' : 'días' }} por encima de los 7 previstos</b>@endif
+                                                                                </div>
+                                                                            </div>
+                                                                        @endif
                                                                 @php $interv = $intervenciones[$registro->id] ?? null; @endphp
 
                                                                 <form class="proa-form" data-id="{{ $registro->id }}" data-registrado="{{ $intervenciones->has($registro->id) ? '1' : '0' }}">
@@ -1303,88 +1332,111 @@
                                                                 <fieldset @disabled($bloqueadoProa)>
 
                                                                 {{-- SECCIÓN: Datos del paciente (solo lectura, automáticos) --}}
-                                                                <div class="section-title bg-primary text-white px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-user mr-1"></i> Datos del Paciente
+                                                                <div class="r-sec-head r-sec-head--suelta js-proa-sec-paciente">
+                                                                    <span class="r-sec-num">1</span>
+                                                                    <h4>Datos del Paciente</h4>
+                                                                    <span class="r-sec-nota">automáticos, solo lectura</span>
+                                                                    <button type="button" class="r-sec-ver js-ver-paciente" data-abierto="0">Ver los 14 campos</button>
                                                                 </div>
-                                                                <div class="row mb-3">
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">MES</label>
-                                                                        <input type="text" class="form-control form-control-sm"
-                                                                               name="mes" value="{{ $interv?->mes ?? ($registro->Fec_Sumistro ? \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('m') : '') }}">
+                                                                {{-- Resumen siempre visible. Es la tercera vez que este nombre aparece
+                                                                     en la misma pantalla: cabecera del paciente, epidemiología y aquí. --}}
+                                                                <dl class="r-ficha">
+                                                                    <div class="r-ficha-dato">
+                                                                        <dt>Paciente</dt>
+                                                                        <dd>{{ $paciente?->nombre ?: '—' }}</dd>
                                                                     </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">FECHA DE INTERVENCIÓN</label>
-                                                                        <input type="date" class="form-control form-control-sm"
-                                                                               name="fecha_intervencion" value="{{ $interv?->fecha_intervencion?->format('Y-m-d') ?? date('Y-m-d') }}">
+                                                                    <div class="r-ficha-dato">
+                                                                        <dt>Ubicación</dt>
+                                                                        <dd>{{ $registro->Nom_Sala ?: '—' }}{{ $registro->Num_Cama ? ' · Cama ' . $registro->Num_Cama : '' }}</dd>
                                                                     </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">SALA</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Nom_Sala ?? '' }}">
+                                                                    <div class="r-ficha-dato">
+                                                                        <dt>Historia clínica</dt>
+                                                                        <dd>{{ $paciente?->id_historia ?: '—' }}</dd>
                                                                     </div>
-                                                                    <div class="col-md-1">
-                                                                        <label class="proa-label">CAMA</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Num_Cama ?? '' }}">
+                                                                </dl>
+                                                                <div class="js-proa-paciente-campos" style="display:none;">
+                                                                    <div class="row mb-3">
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">MES</label>
+                                                                            <input type="text" class="form-control form-control-sm"
+                                                                                   name="mes" value="{{ $interv?->mes ?? ($registro->Fec_Sumistro ? \Carbon\Carbon::parse($registro->Fec_Sumistro)->format('m') : '') }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">FECHA DE INTERVENCIÓN</label>
+                                                                            <input type="date" class="form-control form-control-sm"
+                                                                                   name="fecha_intervencion" value="{{ $interv?->fecha_intervencion?->format('Y-m-d') ?? date('Y-m-d') }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">SALA</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Nom_Sala ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                            <label class="proa-label">CAMA</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Num_Cama ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">FECHA DE INGRESO</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->F_Ingreso ? \Carbon\Carbon::parse($registro->F_Ingreso)->format('d/m/Y') : '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                            <label class="proa-label">ID EPS</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Cod_Eps ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">EPS</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Nom_Eps ?? '' }}">
+                                                                        </div>
                                                                     </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">FECHA DE INGRESO</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->F_Ingreso ? \Carbon\Carbon::parse($registro->F_Ingreso)->format('d/m/Y') : '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-1">
-                                                                        <label class="proa-label">ID EPS</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Cod_Eps ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">EPS</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Nom_Eps ?? '' }}">
-                                                                    </div>
-                                                                </div>
-                                                                <div class="row mb-3">
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">HC</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Hist_Clinica ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-1">
-                                                                        <label class="proa-label">TIPO ID</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Tipo_Ident ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">ID</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Num_Ident ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">NOMBRE</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Medico_Trata ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-1">
-                                                                        <label class="proa-label">GÉNERO</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->Sexo ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">CIE-10</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               value="{{ $registro->CIE10 ?? '' }}">
-                                                                    </div>
-                                                                    <div class="col-md-2">
-                                                                        <label class="proa-label">DIAGNÓSTICOS</label>
-                                                                        <input type="text" class="form-control form-control-sm bg-light" readonly
-                                                                               title="{{ $registro->Diagnostico }}"
-                                                                               value="{{ Str::limit($registro->Diagnostico, 30) ?? '' }}">
+                                                                    <div class="row mb-3">
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">HC</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Hist_Clinica ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                            <label class="proa-label">TIPO ID</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Tipo_Ident ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">ID</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Num_Ident ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">NOMBRE</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Medico_Trata ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-1">
+                                                                            <label class="proa-label">GÉNERO</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->Sexo ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">CIE-10</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   value="{{ $registro->CIE10 ?? '' }}">
+                                                                        </div>
+                                                                        <div class="col-md-2">
+                                                                            <label class="proa-label">DIAGNÓSTICOS</label>
+                                                                            <input type="text" class="form-control form-control-sm bg-light" readonly
+                                                                                   title="{{ $registro->Diagnostico }}"
+                                                                                   value="{{ Str::limit($registro->Diagnostico, 30) ?? '' }}">
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
                                                                 {{-- SECCIÓN: Antimicrobiano (automático) --}}
-                                                                <div class="section-title bg-info text-white px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-pills mr-1"></i> Antimicrobiano
+                                                                <div class="r-sec-head r-sec-head--suelta">
+                                                                    <span class="r-sec-num">2</span>
+                                                                    <h4>Antimicrobiano</h4>
+                                                                    <span class="r-sec-nota">automático</span>
                                                                 </div>
                                                                 <div class="row mb-3">
                                                                     <div class="col-md-2">
@@ -1473,8 +1525,9 @@
                                                                 </div>
 
                                                                 {{-- SECCIÓN: Adecuación --}}
-                                                                <div class="section-title bg-warning text-dark px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-check-circle mr-1"></i> Adecuación del Tratamiento
+                                                                <div class="r-sec-head r-sec-head--suelta">
+                                                                    <span class="r-sec-num">3</span>
+                                                                    <h4>Adecuación del Tratamiento</h4>
                                                                 </div>
                                                                 <div class="row mb-3">
                                                                     <div class="col-md-2">
@@ -1535,8 +1588,9 @@
                                                                 </div>
 
                                                                 {{-- SECCIÓN: Cultivo --}}
-                                                                <div class="section-title bg-secondary text-white px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-flask mr-1"></i> Cultivo y Microbiología
+                                                                <div class="r-sec-head r-sec-head--suelta">
+                                                                    <span class="r-sec-num">4</span>
+                                                                    <h4>Cultivo y Microbiología</h4>
                                                                 </div>
                                                                 <div class="row mb-3">
                                                                     <div class="col-md-2">
@@ -1615,8 +1669,9 @@
                                                                 </div>
 
                                                                 {{-- SECCIÓN: Valoración infectología --}}
-                                                                <div class="section-title bg-danger text-white px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-user-md mr-1"></i> Valoración por Infectología
+                                                                <div class="r-sec-head r-sec-head--suelta">
+                                                                    <span class="r-sec-num">5</span>
+                                                                    <h4>Valoración por Infectología</h4>
                                                                 </div>
                                                                 <div class="row mb-3">
                                                                     <div class="col-md-3">
@@ -1655,8 +1710,9 @@
                                                                 </div>
 
                                                                 {{-- SECCIÓN: Seguimiento PROA --}}
-                                                                <div class="section-title bg-success text-white px-3 py-1 mb-2 rounded">
-                                                                    <i class="fas fa-clipboard-check mr-1"></i> Seguimiento PROA
+                                                                <div class="r-sec-head r-sec-head--suelta">
+                                                                    <span class="r-sec-num">6</span>
+                                                                    <h4>Seguimiento PROA</h4>
                                                                 </div>
                                                                 <div class="row mb-3">
                                                                     <div class="col-md-2">
@@ -2868,6 +2924,17 @@
 
             // Req. 7: las fechas de inserción/retiro solo aparecen si el dispositivo
             // de notificación obligatoria = "SI".
+            // Los 14 campos automáticos del paciente en PROA llegan plegados.
+            $(document).on('click', '.js-ver-paciente', function (e) {
+                e.stopPropagation();
+                var $btn = $(this);
+                var abierto = $btn.attr('data-abierto') === '1';
+                $btn.closest('.proa-form').find('.js-proa-paciente-campos').toggle(!abierto);
+                $btn.attr('data-abierto', abierto ? '0' : '1')
+                    .text(abierto ? 'Ver los 14 campos' : 'Ocultar los 14 campos');
+            });
+
+
             function aplicarLogicaDispositivo($form) {
                 if (!$form || !$form.length) { return; }
                 var val = ($form.find('.select-dispositivo').val() || '').trim().toUpperCase();
@@ -2915,9 +2982,9 @@
                 $('.curso-contador').each(function () {
                     var n = diasDesde($(this).data('inicio'));
                     if (n === null) { return; }
-                    $(this).text('Día ' + n + ' de 7')
-                           .removeClass('badge-info badge-warning')
-                           .addClass(n > 7 ? 'badge-warning' : 'badge-info');
+                    $(this).html('Día <b>' + n + '</b> de 7')
+                           .removeClass('r-chip--info r-chip--avi')
+                           .addClass(n > 7 ? 'r-chip--avi' : 'r-chip--info');
                 });
                 $('.tiempo-tratamiento-auto').each(function () {
                     var n = diasDesde($(this).data('inicio'));
