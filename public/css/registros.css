@@ -509,6 +509,7 @@
    8. CONTROLES: botón de guardar y estados de campo
    Fase 7.
    ========================================================================== */
+.r-btn,
 .r-btn-guardar {
     background: var(--r-navy);
     color: #fff;
@@ -524,6 +525,8 @@
     cursor: pointer;
     transition: background-color .18s ease;
 }
+.r-btn:hover,
+.r-btn:focus,
 .r-btn-guardar:hover,
 .r-btn-guardar:focus { background: var(--r-navy-2); color: #fff; }
 .r-btn-guardar[data-estado="guardando"] { background: #5b6699; cursor: progress; }

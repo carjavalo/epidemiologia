@@ -7,11 +7,10 @@
 @stop
 
 @section('content_header')
+    {{-- El conteo vive ahora en la barra de contexto, donde además es correcto:
+         aquí mostraba "1 servicio(s)" al entrar en uno, que confundía. --}}
     <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -10px;">
         <h1 style="font-size: 1.6rem; margin-bottom: 0;"><i class="fas fa-hospital mr-2"></i>Registros por Servicio</h1>
-        <span class="badge badge-info" style="font-size:0.85rem">
-            {{ $serviciosPaginados->total() }} servicio(s)
-        </span>
     </div>
 @stop
 
@@ -149,89 +148,137 @@
          (sin recargar). Incluye el botón volver, el buscador y los resultados. --}}
     <div id="registros-resultados">
 
-    {{-- Botón volver si hay servicio seleccionado --}}
-    @if($servicioSeleccionado)
-        <div class="mb-2">
-            <a href="{{ route('registros.index') }}" class="btn btn-outline-primary js-nav">
-                <i class="fas fa-arrow-left mr-1"></i>Volver a Servicios
+    @php
+        $meses = [1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio',
+                  7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'];
+
+        // ── Datos de la barra de contexto ───────────────────────────────────
+        // El nombre del servicio abierto no se imprimía en ninguna parte: la
+        // única pista de dónde estabas era el texto del botón "Volver".
+        $ctxServicio  = $servicioSeleccionado
+            ? (optional($serviciosPaginados->first())->ubicacion ?: $servicioSeleccionado)
+            : null;
+        $ctxPacientes = $ctxServicio
+            ? ($pacientesPaginados ? $pacientesPaginados->total() : ($pacientesCountPorServicio[$ctxServicio] ?? 0))
+            : 0;
+        $ctxProa      = $ctxServicio ? ($proaCountPorServicio[$ctxServicio] ?? 0) : 0;
+        $ctxServicios = method_exists($serviciosPaginados, 'total')
+            ? $serviciosPaginados->total()
+            : count($serviciosPaginados);
+
+        // ── Fichas de filtro activo ─────────────────────────────────────────
+        // Cada una lleva su propio enlace para quitarse sin tocar las demás.
+        $paramsBase = array_filter([
+            'servicio' => $servicioSeleccionado,
+            'search'   => $search,
+            'anio'     => $anio,
+            'mes'      => $mes,
+            'tipo'     => ($tipo ?? 'todos') !== 'todos' ? $tipo : null,
+        ]);
+        $sinFiltro = fn (array $claves) => route('registros.index', array_diff_key($paramsBase, array_flip($claves)));
+
+        $filtrosActivos = [];
+        if ($search) {
+            $filtrosActivos[] = ['texto' => 'Búsqueda: ' . $search, 'url' => $sinFiltro(['search'])];
+        }
+        if ($anio || $mes) {
+            $txtFecha = trim(($mes ? ($meses[(int) $mes] ?? '') . ' ' : '') . ($anio ?: ''));
+            $filtrosActivos[] = ['texto' => $txtFecha !== '' ? $txtFecha : 'Fecha', 'url' => $sinFiltro(['anio', 'mes'])];
+        }
+        if (($tipo ?? 'todos') !== 'todos') {
+            $etiquetasTipo = ['proa' => 'Solo con PROA', 'epidemiologia' => 'Solo epidemiología'];
+            $filtrosActivos[] = ['texto' => $etiquetasTipo[$tipo] ?? $tipo, 'url' => $sinFiltro(['tipo'])];
+        }
+    @endphp
+
+    {{-- Barra de contexto: dice en qué servicio estás y, al desplegar un
+         paciente, también en cuál. Se ancla arriba con position:sticky. --}}
+    <div class="r-ctx">
+        @if($servicioSeleccionado)
+            <a href="{{ route('registros.index') }}" class="r-ctx-volver js-nav" title="Volver a servicios">
+                <i class="fas fa-arrow-left"></i>
             </a>
-        </div>
-    @endif
-
-    {{-- Buscador --}}
-    <div class="card card-outline card-primary mb-2">
-        <div class="card-body py-2">
-            <form method="GET" action="{{ route('registros.index') }}">
+        @endif
+        <div class="r-ctx-tit">
+            <span class="r-ctx-ruta">
                 @if($servicioSeleccionado)
-                    <input type="hidden" name="servicio" value="{{ $servicioSeleccionado }}">
+                    <a href="{{ route('registros.index') }}" class="js-nav">Servicios</a>
+                    <i class="fas fa-chevron-right" style="font-size:.58rem"></i>
+                @else
+                    Registros por servicio
                 @endif
-                <div class="input-group">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text bg-primary text-white">
-                            <i class="fas fa-search"></i>
-                        </span>
-                    </div>
-                    <input type="text"
-                           name="search"
-                           class="form-control"
-                           placeholder="Buscar por servicio, paciente o documento..."
-                           value="{{ $search }}"
-                           autofocus>
-                    <div class="input-group-append">
-                        <button type="submit" class="btn btn-primary">Buscar</button>
-                        @if($search)
-                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'anio' => $anio, 'mes' => $mes])) }}" class="btn btn-outline-secondary js-nav" title="Limpiar búsqueda">
-                                <i class="fas fa-times"></i>
-                            </a>
-                        @endif
-                    </div>
-                </div>
+            </span>
+            <h3>{{ $ctxServicio ?? 'Servicios' }}</h3>
+        </div>
 
-                {{-- Filtro por Año y Mes (según fecha de toma de muestra) --}}
-                @php
-                    $meses = [1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril', 5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto', 9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'];
-                @endphp
-                <div class="form-row mt-2 align-items-center">
-                    <div class="col-auto">
-                        <span class="small font-weight-bold text-muted"><i class="far fa-calendar-alt mr-1"></i>Filtrar por fecha:</span>
-                    </div>
-                    <div class="col-auto">
-                        <select name="anio" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Año">
-                            <option value="">Año: todos</option>
-                            @foreach($aniosDisponibles as $a)
-                                <option value="{{ $a }}" {{ (string) $anio === (string) $a ? 'selected' : '' }}>{{ $a }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <select name="mes" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Mes">
-                            <option value="">Mes: todos</option>
-                            @foreach($meses as $num => $nombre)
-                                <option value="{{ $num }}" {{ (string) $mes === (string) $num ? 'selected' : '' }}>{{ $nombre }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <select name="tipo" class="form-control form-control-sm" onchange="$(this.form).trigger('submit')" title="Tipo de registro">
-                            <option value="todos" {{ ($tipo ?? 'todos') === 'todos' ? 'selected' : '' }}>Todos los pacientes</option>
-                            <option value="proa" {{ ($tipo ?? '') === 'proa' ? 'selected' : '' }}>Solo con PROA</option>
-                            <option value="epidemiologia" {{ ($tipo ?? '') === 'epidemiologia' ? 'selected' : '' }}>Solo epidemiología</option>
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
-                    </div>
-                    @if($anio || $mes || (($tipo ?? 'todos') !== 'todos'))
-                        <div class="col-auto">
-                            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado, 'search' => $search])) }}" class="btn btn-sm btn-outline-secondary js-nav">
-                                <i class="fas fa-times mr-1"></i>Limpiar filtros
-                            </a>
-                        </div>
-                    @endif
-                </div>
-            </form>
+        {{-- Paciente abierto. Lo rellena el JS al desplegar su tarjeta, para no
+             necesitar una segunda cabecera fija encima de la primera. --}}
+        <span class="r-ctx-paciente js-ctx-paciente">
+            <i class="fas fa-user-injured"></i> <b></b>
+        </span>
+
+        <div class="r-ctx-nums">
+            @if($servicioSeleccionado)
+                <span class="r-chip r-chip--neut">
+                    <i class="fas fa-users mr-1"></i><b>{{ $ctxPacientes }}</b>&nbsp;{{ $ctxPacientes == 1 ? 'paciente' : 'pacientes' }}
+                </span>
+                @if($ctxProa > 0)
+                    <span class="r-chip r-chip--ok" title="Pacientes con intervención PROA registrada">
+                        <i class="fas fa-capsules mr-1"></i><b>{{ $ctxProa }}</b>&nbsp;con PROA
+                    </span>
+                @endif
+            @else
+                <span class="r-chip r-chip--neut">
+                    <i class="fas fa-hospital-alt mr-1"></i><b>{{ $ctxServicios }}</b>&nbsp;{{ $ctxServicios == 1 ? 'servicio' : 'servicios' }}
+                </span>
+            @endif
         </div>
     </div>
+
+    {{-- Buscador y filtros en una sola línea. El botón "Filtrar" desapareció:
+         los selects ya recargan solos con onchange, así que no hacía nada. --}}
+    <form method="GET" action="{{ route('registros.index') }}" class="r-buscar">
+        @if($servicioSeleccionado)
+            <input type="hidden" name="servicio" value="{{ $servicioSeleccionado }}">
+        @endif
+        <label class="r-buscar-caja">
+            <i class="fas fa-search"></i>
+            <input type="text" name="search" value="{{ $search }}"
+                   placeholder="Buscar por servicio, paciente o documento…" autofocus>
+        </label>
+        <select name="anio" class="r-select" onchange="$(this.form).trigger('submit')" title="Año">
+            <option value="">Año: todos</option>
+            @foreach($aniosDisponibles as $a)
+                <option value="{{ $a }}" {{ (string) $anio === (string) $a ? 'selected' : '' }}>{{ $a }}</option>
+            @endforeach
+        </select>
+        <select name="mes" class="r-select" onchange="$(this.form).trigger('submit')" title="Mes">
+            <option value="">Mes: todos</option>
+            @foreach($meses as $num => $nombre)
+                <option value="{{ $num }}" {{ (string) $mes === (string) $num ? 'selected' : '' }}>{{ $nombre }}</option>
+            @endforeach
+        </select>
+        <select name="tipo" class="r-select" onchange="$(this.form).trigger('submit')" title="Tipo de registro">
+            <option value="todos" {{ ($tipo ?? 'todos') === 'todos' ? 'selected' : '' }}>Todos los pacientes</option>
+            <option value="proa" {{ ($tipo ?? '') === 'proa' ? 'selected' : '' }}>Solo con PROA</option>
+            <option value="epidemiologia" {{ ($tipo ?? '') === 'epidemiologia' ? 'selected' : '' }}>Solo epidemiología</option>
+        </select>
+        <button type="submit" class="r-btn">Buscar</button>
+    </form>
+
+    @if(count($filtrosActivos))
+        <div class="r-filtros">
+            <span class="r-filtros-rot">Filtros</span>
+            @foreach($filtrosActivos as $f)
+                <span class="r-filtro">
+                    {{ $f['texto'] }}
+                    <a href="{{ $f['url'] }}" class="js-nav" title="Quitar este filtro"><i class="fas fa-times"></i></a>
+                </span>
+            @endforeach
+            <a href="{{ route('registros.index', array_filter(['servicio' => $servicioSeleccionado])) }}"
+               class="js-nav r-btn-tenue" style="color:#6b7280;">Limpiar todo</a>
+        </div>
+    @endif
 
     {{-- GRID PRINCIPAL --}}
     <div class="row {{ $servicioSeleccionado ? 'justify-content-center' : '' }}">
@@ -309,11 +356,6 @@
                             Mostrando {{ $pacientesPaginados->firstItem() }}–{{ $pacientesPaginados->lastItem() }}
                             de <strong>{{ $pacientesPaginados->total() }}</strong> pacientes
                         </span>
-                        @if($totalProaServicioActual > 0)
-                            <span class="badge badge-success badge-pill px-2 py-1" style="font-size: 0.78rem;" title="Pacientes con intervención PROA en este servicio">
-                                <i class="fas fa-capsules mr-1"></i>{{ $totalProaServicioActual }} paciente(s) PROA
-                            </span>
-                        @endif
                     </div>
                 </div>
             @endif
@@ -2851,6 +2893,20 @@
                 var qs = $(this).serialize();
                 cargarResultados(base + (qs ? '?' + qs : ''), true);
             });
+
+            // La barra de contexto sigue al paciente abierto: así no hacen falta
+            // dos cabeceras fijas apiladas (la del servicio y la del paciente).
+            $(document).on('shown.bs.collapse show.bs.collapse', '.patient-card > .collapse', function () {
+                var nombre = $(this).closest('.patient-card')
+                                    .find('.patient-header strong').first().text().trim();
+                $('.js-ctx-paciente').addClass('r-visible').find('b').text(nombre);
+            });
+            $(document).on('hidden.bs.collapse', '.patient-card > .collapse', function () {
+                if ($('.patient-card > .collapse.show').length === 0) {
+                    $('.js-ctx-paciente').removeClass('r-visible').find('b').text('');
+                }
+            });
+
 
             // Enlaces de navegación de la misma página (paginación, tarjetas de
             // servicio, "Volver a Servicios", limpiar filtros).

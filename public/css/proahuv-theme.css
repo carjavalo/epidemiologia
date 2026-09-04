@@ -123,6 +123,14 @@ body,
    mas ancho aparecia scroll horizontal y el contenido (incluida la campana y
    el avatar del navbar) quedaba cortado a la derecha. */
 .content-wrapper { overflow-x: hidden; }
+/* `hidden` convierte al contenedor en un area desplazable, y eso rompe el
+   position:sticky de la barra de contexto de Registros. `clip` recorta igual
+   pero sin crear scroll, asi que el anclaje vuelve a funcionar. Donde el
+   navegador no lo soporte se queda con `hidden` y la barra simplemente no se
+   ancla: se pierde la mejora, no el recorte. */
+@supports (overflow-x: clip) {
+    .content-wrapper { overflow-x: clip; }
+}
 .content-wrapper .content > .container-fluid,
 .content-header > .container-fluid { max-width: 100%; }
 /* Los textos largos parten linea en vez de estirar el bloque */
