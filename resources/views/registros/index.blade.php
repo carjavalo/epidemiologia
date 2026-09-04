@@ -343,7 +343,7 @@
 
                                 <div class="col-xl-9 col-lg-10 col-md-12 mb-3">
                                     <div class="card patient-card shadow-lg">
-                            <div class="card-header patient-header js-patient-block" data-toggle="collapse" data-target="#{{ $pacienteKey }}" role="button">
+                            <div class="card-header patient-header js-patient-block {{ $pacienteCompleto ? 'r-rail-ok' : 'r-rail-pend' }}" data-toggle="collapse" data-target="#{{ $pacienteKey }}" role="button">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center">
                                         <span class="patient-avatar mr-3">
@@ -357,18 +357,19 @@
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center">
+                                        {{-- Chip de estado del paciente. Lo actualiza en vivo
+                                             actualizarEstadoPaciente() al guardar por AJAX. --}}
+                                        <span class="r-chip js-chip-estado js-chip-paciente mr-2 {{ $pacienteCompleto ? 'r-chip--ok' : 'r-chip--pend' }}"
+                                              title="{{ $pacienteCompleto ? 'Paciente completo' : 'Quedan registros por completar' }}">
+                                            <i class="fas {{ $pacienteCompleto ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $pacienteCompleto ? 'Completo' : 'Falta registrar' }}
+                                        </span>
                                         @if($tienePROA)
-                                            {{-- Píldora PROA: verde si todo está registrado, roja si falta --}}
-                                            <span class="badge js-badge-proa-pill {{ $info['proa_completo'] ? 'badge-success' : 'badge-danger' }} badge-pill px-2 py-1 mr-2" style="font-size: 0.75rem;"
-                                                  title="{{ $info['proa_completo'] ? 'PROA completo' : 'Falta registrar PROA' }}">
-                                                <i class="fas fa-capsules"></i> PROA
-                                            </span>
-                                            <span class="badge badge-info badge-pill px-2 py-1 mr-2" style="font-size: 0.8rem;">
-                                                {{ $info['total_medic'] }} medicamento(s)
+                                            <span class="r-chip r-chip--neut mr-2" title="Medicamentos con seguimiento PROA">
+                                                <b>{{ $info['total_medic'] }}</b>&nbsp;medicamentos
                                             </span>
                                         @else
-                                            <span class="badge badge-secondary badge-pill px-2 py-1 mr-2" style="font-size: 0.75rem;" title="Paciente solo en epidemiología">
-                                                <i class="fas fa-vial"></i> Solo epidemiología
+                                            <span class="r-chip r-chip--info mr-2" title="Paciente solo en epidemiología">
+                                                <i class="fas fa-vial mr-1"></i>Solo epidemiología
                                             </span>
                                         @endif
                                         <i class="fas fa-chevron-down collapse-icon text-muted" style="font-size: 1rem;"></i>
@@ -391,15 +392,16 @@
                                              role="button"
                                              style="cursor: pointer;">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <span class="estado-dot {{ $info['epi_completo'] ? 'estado-ok' : 'estado-pend' }} mr-2"
-                                                          title="{{ $info['epi_completo'] ? 'Todos los microorganismos registrados' : 'Faltan microorganismos por registrar' }}"></span>
+                                                <div class="d-flex align-items-center flex-wrap">
                                                     <i class="fas fa-chart-line mr-2"></i>
                                                     <strong style="font-size: 1rem;">EPIDEMIOLOGÍA</strong>
-                                                    <span class="badge badge-light text-info ml-2" style="font-size: 0.8rem;" title="Registros de microorganismos del paciente">
-                                                        <i class="fas fa-vial mr-1"></i>N. registros ({{ count($info['seguimientos']) }})
+                                                    <span class="r-chip r-chip--blanco ml-2" title="Muestras de microbiología del paciente">
+                                                        <i class="fas fa-vial mr-1"></i><b>{{ count($info['seguimientos']) }}</b>&nbsp;{{ count($info['seguimientos']) == 1 ? 'muestra' : 'muestras' }}
                                                     </span>
-                                                    <small class="ml-2">(Datos básicos del paciente)</small>
+                                                    <span class="r-chip js-chip-estado ml-2 {{ $info['epi_completo'] ? 'r-chip--ok' : 'r-chip--pend' }}"
+                                                          title="{{ $info['epi_completo'] ? 'Todos los microorganismos registrados' : 'Faltan microorganismos por registrar' }}">
+                                                        <i class="fas {{ $info['epi_completo'] ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $info['epi_completo'] ? 'Completo' : 'Falta registrar' }}
+                                                    </span>
                                                 </div>
                                                 <i class="fas fa-chevron-down collapse-icon"></i>
                                             </div>
@@ -474,16 +476,15 @@
                                                              style="cursor: pointer;">
                                                             @php $microRegistrado = collect($grupoMicro)->every(fn ($r) => (bool) $r->registrado); @endphp
                                                             <div class="d-flex justify-content-between align-items-center">
-                                                                <div>
-                                                                    <span class="estado-dot {{ $microRegistrado ? 'estado-ok' : 'estado-pend' }} mr-2"
-                                                                          title="{{ $microRegistrado ? 'Registrado' : 'Falta por registrar' }}"></span>
+                                                                <div class="d-flex align-items-center flex-wrap">
                                                                     <i class="fas fa-vial mr-2"></i>
-                                                                    <strong>Información adicional de {{ $reg->microorganismo ?: 'Sin microorganismo' }}</strong>
-                                                                    <span class="badge badge-light text-dark ml-2" style="font-size:0.75rem;" title="Registros de este microorganismo">
-                                                                        {{ $grupoMicro->count() }} registro(s)
+                                                                    <strong>{{ $reg->microorganismo ?: 'Sin microorganismo' }}</strong>
+                                                                    <span class="r-chip r-chip--blanco ml-2" title="Registros de este microorganismo">
+                                                                        <b>{{ $grupoMicro->count() }}</b>&nbsp;{{ $grupoMicro->count() == 1 ? 'registro' : 'registros' }}
                                                                     </span>
-                                                                    <span class="badge {{ $microRegistrado ? 'badge-success' : 'badge-danger' }} ml-1" style="font-size:0.7rem;">
-                                                                        {{ $microRegistrado ? 'Registrado' : 'Falta' }}
+                                                                    <span class="r-chip js-chip-estado ml-2 {{ $microRegistrado ? 'r-chip--ok' : 'r-chip--pend' }}"
+                                                                          title="{{ $microRegistrado ? 'Registrado' : 'Falta por registrar' }}">
+                                                                        <i class="fas {{ $microRegistrado ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $microRegistrado ? 'Registrado' : 'Sin registrar' }}
                                                                     </span>
                                                                 </div>
                                                                 <i class="fas fa-chevron-down collapse-icon"></i>
@@ -1027,14 +1028,15 @@
                                              role="button"
                                              style="cursor: pointer;">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <span class="estado-dot {{ $info['proa_completo'] ? 'estado-ok-light' : 'estado-pend-light' }} mr-2"
-                                                          title="{{ $info['proa_completo'] ? 'Todos los antibióticos registrados' : 'Faltan antibióticos por registrar' }}"></span>
+                                                <div class="d-flex align-items-center flex-wrap">
                                                     <i class="fas fa-capsules mr-2"></i>
                                                     <strong style="font-size: 1rem;">PROA</strong>
-                                                    <small class="ml-2">({{ $info['total_medic'] }} medicamento(s))</small>
-                                                    <span class="badge badge-light ml-2" style="font-size: 0.75rem;">
-                                                        {{ $info['proa_completo'] ? 'Completo' : 'Falta registrar' }}
+                                                    <span class="r-chip r-chip--blanco ml-2" title="Medicamentos con seguimiento">
+                                                        <b>{{ $info['total_medic'] }}</b>&nbsp;{{ $info['total_medic'] == 1 ? 'medicamento' : 'medicamentos' }}
+                                                    </span>
+                                                    <span class="r-chip js-chip-estado ml-2 {{ $info['proa_completo'] ? 'r-chip--ok' : 'r-chip--pend' }}"
+                                                          title="{{ $info['proa_completo'] ? 'Todos los antibióticos registrados' : 'Faltan antibióticos por registrar' }}">
+                                                        <i class="fas {{ $info['proa_completo'] ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $info['proa_completo'] ? 'Completo' : 'Falta registrar' }}
                                                     </span>
                                                 </div>
                                                 <i class="fas fa-chevron-down collapse-icon"></i>
@@ -1064,18 +1066,17 @@
                                                  aria-expanded="false"
                                                  role="button">
                                                 <div class="d-flex justify-content-between align-items-center">
-                                                    <div>
-                                                        <span class="estado-dot {{ $medRegistrado ? 'estado-ok' : 'estado-pend' }} mr-2"
-                                                              title="{{ $medRegistrado ? 'Registrado' : 'Falta por registrar' }}"></span>
+                                                    <div class="d-flex align-items-center">
                                                         <i class="fas fa-pills text-success mr-1"></i>
                                                         <strong>{{ $medicamento }}</strong>
                                                     </div>
                                                     <div class="d-flex align-items-center">
-                                                        <span class="badge {{ $medRegistrado ? 'badge-success' : 'badge-danger' }} badge-sm mr-2">
-                                                            {{ $medRegistrado ? 'Registrado' : 'Falta' }}
+                                                        <span class="r-chip r-chip--neut mr-2">
+                                                            <b>{{ $totalDosis }}</b>&nbsp;{{ $totalDosis == 1 ? 'curso' : 'cursos' }}
                                                         </span>
-                                                        <span class="badge badge-secondary badge-sm mr-2">
-                                                            {{ $totalDosis }} {{ $totalDosis == 1 ? 'curso' : 'cursos' }}
+                                                        <span class="r-chip js-chip-estado mr-2 {{ $medRegistrado ? 'r-chip--ok' : 'r-chip--pend' }}"
+                                                              title="{{ $medRegistrado ? 'Registrado' : 'Falta por registrar' }}">
+                                                            <i class="fas {{ $medRegistrado ? 'fa-check' : 'fa-exclamation-circle' }} mr-1"></i>{{ $medRegistrado ? 'Registrado' : 'Sin registrar' }}
                                                         </span>
                                                         <i class="fas fa-chevron-down collapse-icon text-muted"></i>
                                                     </div>
@@ -1969,32 +1970,8 @@
             padding: 2px 4px;
         }
 
-        /* ── Semaforización de estados (registrado / falta por registrar) ── */
-        /* Recuadro blanco de fondo para que el color resalte en cualquier encabezado */
-        .estado-dot {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border-radius: 5px;
-            vertical-align: middle;
-            border: 1px solid rgba(16, 24, 40, 0.12);
-        }
-        .estado-dot::before {
-            content: '';
-            display: block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-        }
-        /* El color va en el círculo interior; el mismo verde/rojo sirve sobre
-           cualquier fondo gracias al recuadro blanco. */
-        .estado-ok::before,
-        .estado-ok-light::before   { background: #2e9e5b; }
-        .estado-pend::before,
-        .estado-pend-light::before { background: #d64545; }
+        /* La semaforizacion de estados vive ahora en public/css/registros.css:
+           chips .r-chip--ok / .r-chip--pend, marcados con .js-chip-estado. */
 
         /* Fondo del bloque global de PROA según su estado */
         .bg-proa-ok   { background: #2e7d5b; }   /* verde: todo registrado */
@@ -2230,61 +2207,60 @@
             });
 
             // ── Semáforo en vivo (sin recargar) ─────────────────────────────
-            // El recuadro blanco hace que 'estado-ok' se vea bien en cualquier fondo.
-            function ponerVerde($dot, titulo) {
-                $dot.removeClass('estado-pend estado-pend-light estado-ok-light')
-                    .addClass('estado-ok')
-                    .attr('title', titulo || 'Registrado');
-            }
-            function badgeVerde($badge, texto) {
-                $badge.removeClass('badge-danger').addClass('badge-success').text(texto || 'Registrado');
+            // Cada cabecera lleva un chip de estado marcado con .js-chip-estado.
+            // Pasar de "pendiente" a "registrado" es cambiar su modificador, su
+            // icono y su texto; el conteo de pendientes se hace sobre esos chips.
+            function chipRegistrado($chip, texto, titulo) {
+                if (!$chip || !$chip.length) { return; }
+                $chip.removeClass('r-chip--pend r-chip--avi')
+                     .addClass('r-chip--ok')
+                     .attr('title', titulo || 'Registrado')
+                     .html('<i class="fas fa-check mr-1"></i>' + (texto || 'Registrado'));
             }
 
-            // Píldora PROA del encabezado del paciente: verde cuando ya no queda
-            // ninguna intervención PROA pendiente.
+            // El paciente queda completo cuando no queda ningún chip pendiente dentro
+            // de su tarjeta (sin contar el suyo propio).
             function actualizarEstadoPaciente($patient) {
                 if (!$patient || !$patient.length) { return; }
-                var proaPend = $patient.find('.proa-form[data-registrado="0"]').length;
-                if (proaPend === 0) {
-                    $patient.find('.js-badge-proa-pill')
-                        .removeClass('badge-danger').addClass('badge-success')
-                        .attr('title', 'PROA completo');
+                var pendientes = $patient.find('.js-chip-estado.r-chip--pend')
+                                         .not('.js-chip-paciente').length;
+                if (pendientes === 0) {
+                    chipRegistrado($patient.find('.js-chip-paciente'), 'Completo', 'Paciente completo');
+                    $patient.children('.card-header')
+                            .removeClass('r-rail-pend').addClass('r-rail-ok');
                 }
             }
 
-            // Epidemiología: al guardar un bloque de microorganismo se pone verde;
-            // si ya no queda ninguno pendiente, el bloque global también.
+            // Epidemiología: al guardar un bloque de microorganismo se marca como
+            // registrado; si ya no queda ninguno pendiente, el bloque global también.
             function marcarEpiRegistrado($form) {
                 var $micro = $form.closest('.micro-card');
-                var $mh = $micro.children('.card-header');
-                ponerVerde($mh.find('.estado-dot'), 'Registrado');
-                badgeVerde($mh.find('.badge-danger'), 'Registrado');
+                chipRegistrado($micro.children('.card-header').find('.js-chip-estado'), 'Registrado');
 
                 var $epi = $form.closest('.epi-card');
-                if ($epi.find('.micro-card > .card-header .estado-dot.estado-pend').length === 0) {
-                    ponerVerde($epi.children('.card-header').find('.estado-dot'), 'Todos los microorganismos registrados');
+                if ($epi.find('.micro-card > .card-header .js-chip-estado.r-chip--pend').length === 0) {
+                    chipRegistrado($epi.children('.card-header').find('.js-chip-estado'),
+                                   'Completo', 'Todos los microorganismos registrados');
                 }
+                actualizarEstadoPaciente($form.closest('.patient-card'));
             }
 
-            // PROA: al guardar una intervención, esa dosis queda registrada; el
-            // antibiótico se pone verde si todas sus dosis mostradas lo están, y
-            // el bloque global (fondo) si ya no queda ninguna pendiente.
+            // PROA: al guardar una intervención esa dosis queda registrada; el
+            // antibiótico se marca si todas sus dosis lo están, y el bloque global
+            // si ya no queda ninguna pendiente.
             function marcarProaRegistrado($form) {
                 $form.attr('data-registrado', '1');
 
                 var $med = $form.closest('.med-card');
                 if ($med.find('.proa-form[data-registrado="0"]').length === 0) {
-                    var $mh = $med.children('.card-header');
-                    ponerVerde($mh.find('.estado-dot'), 'Registrado');
-                    badgeVerde($mh.find('.badge-danger'), 'Registrado');
+                    chipRegistrado($med.children('.card-header').find('.js-chip-estado'), 'Registrado');
                 }
 
                 var $proa = $form.closest('.proa-card');
                 if ($proa.find('.proa-form[data-registrado="0"]').length === 0) {
                     var $ph = $proa.children('.card-header');
                     $ph.removeClass('bg-proa-pend').addClass('bg-proa-ok');
-                    ponerVerde($ph.find('.estado-dot'), 'Todos los antibióticos registrados');
-                    $ph.find('.badge-light').text('Completo');
+                    chipRegistrado($ph.find('.js-chip-estado'), 'Completo', 'Todos los antibióticos registrados');
                 }
                 actualizarEstadoPaciente($form.closest('.patient-card'));
             }
