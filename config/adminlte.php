@@ -485,6 +485,13 @@ return [
                     'asset' => true,
                     'location' => 'css/proahuv-crud.css',
                 ],
+                // Vocabulario visual del rediseño del formulario de registros.
+                // Va al final para poder apoyarse en los tokens anteriores.
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'css/registros.css',
+                ],
             ],
         ],
         'Datatables' => [
