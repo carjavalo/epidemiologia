@@ -472,6 +472,31 @@ return [
     */
 
     'plugins' => [
+        // Select2 da buscador a los desplegables con muchas opciones (SITIO
+        // tiene 64, ANTIBIOTICOS 37, TIPO DE MUESTRA 33...). Se sirve desde
+        // public/, no desde un CDN: el servidor del hospital no siempre tiene
+        // salida a internet. Va antes de ProahuvTheme para que registros.css
+        // pueda ajustar su aspecto al del resto del formulario.
+        'Select2' => [
+            'active' => true,
+            'files' => [
+                [
+                    'type' => 'js',
+                    'asset' => true,
+                    'location' => 'vendor/adminlte/plugins/select2/js/select2.full.min.js',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/adminlte/plugins/select2/css/select2.min.css',
+                ],
+                [
+                    'type' => 'css',
+                    'asset' => true,
+                    'location' => 'vendor/adminlte/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css',
+                ],
+            ],
+        ],
         'ProahuvTheme' => [
             'active' => true,
             'files' => [
@@ -551,21 +576,6 @@ return [
                     'type' => 'css',
                     'asset' => false,
                     'location' => '//cdn.datatables.net/buttons/2.0.1/css/buttons.bootstrap4.min.css',
-                ],
-            ],
-        ],
-        'Select2' => [
-            'active' => false,
-            'files' => [
-                [
-                    'type' => 'js',
-                    'asset' => false,
-                    'location' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js',
-                ],
-                [
-                    'type' => 'css',
-                    'asset' => false,
-                    'location' => '//cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.css',
                 ],
             ],
         ],

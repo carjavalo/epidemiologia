@@ -9,7 +9,7 @@
 @section('content_header')
     {{-- El conteo vive ahora en la barra de contexto, donde además es correcto:
          aquí mostraba "1 servicio(s)" al entrar en uno, que confundía. --}}
-    <div class="d-flex justify-content-between align-items-center" style="margin-bottom: -10px;">
+    <div class="d-flex justify-content-between align-items-center">
         <h1 style="font-size: 1.6rem; margin-bottom: 0;"><i class="fas fa-hospital mr-2"></i>Registros por Servicio</h1>
     </div>
 @stop
@@ -246,19 +246,19 @@
             <input type="text" name="search" value="{{ $search }}"
                    placeholder="Buscar por servicio, paciente o documento…" autofocus>
         </label>
-        <select name="anio" class="r-select" onchange="$(this.form).trigger('submit')" title="Año">
+        <select name="anio" class="r-select js-sin-buscador" onchange="$(this.form).trigger('submit')" title="Año">
             <option value="">Año: todos</option>
             @foreach($aniosDisponibles as $a)
                 <option value="{{ $a }}" {{ (string) $anio === (string) $a ? 'selected' : '' }}>{{ $a }}</option>
             @endforeach
         </select>
-        <select name="mes" class="r-select" onchange="$(this.form).trigger('submit')" title="Mes">
+        <select name="mes" class="r-select js-sin-buscador" onchange="$(this.form).trigger('submit')" title="Mes">
             <option value="">Mes: todos</option>
             @foreach($meses as $num => $nombre)
                 <option value="{{ $num }}" {{ (string) $mes === (string) $num ? 'selected' : '' }}>{{ $nombre }}</option>
             @endforeach
         </select>
-        <select name="tipo" class="r-select" onchange="$(this.form).trigger('submit')" title="Tipo de registro">
+        <select name="tipo" class="r-select js-sin-buscador" onchange="$(this.form).trigger('submit')" title="Tipo de registro">
             <option value="todos" {{ ($tipo ?? 'todos') === 'todos' ? 'selected' : '' }}>Todos los pacientes</option>
             <option value="proa" {{ ($tipo ?? '') === 'proa' ? 'selected' : '' }}>Solo con PROA</option>
             <option value="epidemiologia" {{ ($tipo ?? '') === 'epidemiologia' ? 'selected' : '' }}>Solo epidemiología</option>
@@ -2449,6 +2449,70 @@
                 this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
             });
 
+            // ── Desplegables buscables ──────────────────────────────────────
+            // Los selects largos (SITIO tiene 64 opciones, ANTIBIÓTICOS 37, TIPO
+            // DE MUESTRA 33) pasan a Select2 para poder escribir y filtrar.
+            //
+            // La conversión se hace al desplegar cada bloque, no al cargar: la
+            // página trae del orden de mil selects entre todos los pacientes y
+            // convertirlos de golpe la dejaba pegada varios segundos.
+            var MIN_OPCIONES_BUSCABLE = 10;
+
+            // Select2 solo trae inglés en su build completo, así que los textos van aquí.
+            var TEXTOS_SELECT2 = {
+                noResults:    function () { return 'Sin resultados'; },
+                searching:    function () { return 'Buscando…'; },
+                loadingMore:  function () { return 'Cargando más…'; },
+                errorLoading: function () { return 'No se pudieron cargar las opciones'; },
+                inputTooShort: function (args) {
+                    var n = args.minimum - args.input.length;
+                    return 'Escribe ' + n + (n === 1 ? ' carácter más' : ' caracteres más');
+                }
+            };
+
+            function hacerBuscables($ambito) {
+                if (!$.fn.select2 || !$ambito || !$ambito.length) { return; }
+                $ambito.find('select')
+                    .filter(function () {
+                        // Solo lo que está realmente a la vista: así cada apertura
+                        // cuesta poco. Se mira la visibilidad y no las clases .show
+                        // de los ancestros, que se desincronizan y dejaban campos
+                        // visibles sin convertir.
+                        return $(this).is(':visible');
+                    })
+                    .each(function () {
+                        var $s = $(this);
+                        if ($s.hasClass('js-sin-buscador') || $s.data('select2')) { return; }
+                        if (this.options.length < MIN_OPCIONES_BUSCABLE) { return; }
+                        $s.select2({
+                            theme: 'bootstrap4',
+                            width: '100%',
+                            language: TEXTOS_SELECT2,
+                            placeholder: '— Seleccionar —',
+                            // El menú se ajusta a la opción más larga, no al ancho
+                            // de la columna: en un col-md-2 los nombres de SITIO
+                            // salían partidos en tres líneas.
+                            dropdownAutoWidth: true
+                        });
+                    });
+            }
+
+            // Al desplegar cualquier bloque (paciente, microorganismo, PROA, curso)
+            // se convierten los selects que quedan a la vista.
+            $(document).on('shown.bs.collapse', function (e) {
+                hacerBuscables($(e.target));
+            });
+
+            // Select2 no se entera solo de los cambios que hace el código: ni de que
+            // el campo pasó a deshabilitado ni de un .val() puesto a mano. El evento
+            // 'change.select2' se lo dice sin disparar los manejadores de la página.
+            function avisarSelect2($campos) {
+                $campos.each(function () {
+                    if ($(this).data('select2')) { $(this).trigger('change.select2'); }
+                });
+            }
+
+
             // ── Semáforo en vivo (sin recargar) ─────────────────────────────
             // Cada cabecera lleva un chip de estado marcado con .js-chip-estado.
             // Pasar de "pendiente" a "registrado" es cambiar su modificador, su
@@ -2694,6 +2758,7 @@
                 $scope.find('.microorganismo-info-form [name="' + name + '"]').each(function () {
                     if (this !== origin) {
                         $(this).val(val);
+                        avisarSelect2($(this));
                     }
                 });
             });
@@ -2750,12 +2815,20 @@
             }
 
             function llenarMpios($sel, mpios, seleccionar) {
+                // Si ya era buscable hay que soltarlo antes de tocar sus opciones:
+                // Select2 guarda una copia del listado al inicializarse.
+                if ($sel.data('select2')) { $sel.select2('destroy'); }
+
                 $sel.empty().append($('<option>').val('').text('— Seleccionar —'));
                 mpios.forEach(function (m) {
                     var $o = $('<option>').val(m.nom_mpio).text(m.nom_mpio);
                     if (m.nom_mpio === seleccionar) { $o.prop('selected', true); }
                     $sel.append($o);
                 });
+
+                // Los municipios llegan por la API del DANE, después de que el
+                // bloque se abrió: hay que darles el buscador ahora.
+                hacerBuscables($sel.parent());
             }
 
             function mpioDe($depto) {
@@ -2986,6 +3059,7 @@
                     var $campo = $form.find('[name="' + name + '"]');
                     if (!$campo.length) { return; }
                     $campo.prop('disabled', noAplica);
+                    avisarSelect2($campo);
                     $campo.closest('[class*="col-md-"]').toggleClass('campo-inhabilitado', noAplica);
                 });
 
@@ -2997,6 +3071,8 @@
                 // La sección quirúrgica entera se pliega: antes sus 14 campos se
                 // quedaban visibles en gris, ocupando media pantalla para nada.
                 $form.find('.js-seccion-cirugia').toggleClass('r-plegada', noAplica);
+                // Al desplegarse, sus selects se hacen visibles por primera vez.
+                if (!noAplica) { hacerBuscables($form.find('.js-seccion-cirugia')); }
             }
 
             // Req. 7: las fechas de inserción/retiro solo aparecen si el dispositivo
@@ -3006,9 +3082,12 @@
                 e.stopPropagation();
                 var $btn = $(this);
                 var abierto = $btn.attr('data-abierto') === '1';
-                $btn.closest('.proa-form').find('.js-proa-paciente-campos').toggle(!abierto);
+                var $campos = $btn.closest('.proa-form').find('.js-proa-paciente-campos');
+                $campos.toggle(!abierto);
                 $btn.attr('data-abierto', abierto ? '0' : '1')
                     .text(abierto ? 'Ver los 14 campos' : 'Ocultar los 14 campos');
+                // Al mostrarlos por primera vez hay que darles el buscador.
+                if (!abierto) { hacerBuscables($campos); }
             });
 
 

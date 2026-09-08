@@ -672,3 +672,117 @@
     }
     .r-guardar-bar .r-guardar-acciones { margin-left: 0; width: 100%; }
 }
+
+/* ==========================================================================
+   11. DESPLEGABLES BUSCABLES (Select2)
+   Se aplica solo a los selects con muchas opciones — SITIO tiene 64,
+   ANTIBIÓTICOS 37, TIPO DE MUESTRA 33 — donde buscar a ojo es lento.
+   Estas reglas los dejan indistinguibles de un .form-control-sm normal.
+   ========================================================================== */
+.select2-container { max-width: 100%; }
+
+/* --- Control cerrado --- */
+.select2-container--bootstrap4 .select2-selection--single {
+    height: auto;
+    min-height: 31px;
+    padding: 3px 10px;
+    border: 1px solid #dfe2ec;
+    border-radius: 8px;
+    background: #fff;
+    font-size: .82rem;
+    font-family: inherit;
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+    padding: 0;
+    line-height: 23px;
+    color: var(--r-ink);
+}
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__placeholder {
+    color: var(--r-muted-2);
+}
+.select2-container--bootstrap4 .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    top: 0;
+    right: 6px;
+}
+
+/* --- Foco y apertura: mismo realce que un input --- */
+.select2-container--bootstrap4.select2-container--focus .select2-selection,
+.select2-container--bootstrap4.select2-container--open .select2-selection {
+    border-color: var(--r-acento);
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, .12);
+}
+
+/* --- Deshabilitado: el gris de los campos que no aplican --- */
+.select2-container--bootstrap4.select2-container--disabled .select2-selection--single {
+    background: #eef0f4;
+    border-color: #e4e7f0;
+}
+.select2-container--bootstrap4.select2-container--disabled .select2-selection__rendered {
+    color: #aeb4c0;
+}
+
+/* --- Menú desplegable --- */
+.select2-container--bootstrap4 .select2-dropdown {
+    border: 1px solid #dfe2ec;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 10px 28px rgba(16, 24, 40, .12);
+}
+.select2-container--bootstrap4 .select2-search--dropdown { padding: 8px; }
+.select2-container--bootstrap4 .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--r-borde);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: .84rem;
+    font-family: inherit;
+    outline: 0;
+}
+.select2-container--bootstrap4 .select2-search--dropdown .select2-search__field:focus {
+    border-color: var(--r-acento);
+    box-shadow: 0 0 0 3px rgba(47, 111, 237, .12);
+}
+.select2-container--bootstrap4 .select2-results__option {
+    padding: 6px 12px;
+    font-size: .84rem;
+    line-height: 1.4;
+}
+.select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
+    background: var(--r-navy);
+    color: #fff;
+}
+.select2-container--bootstrap4 .select2-results__option[aria-selected="true"] {
+    background: #eef1fa;
+    color: var(--r-navy);
+    font-weight: 600;
+}
+.select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected="true"] {
+    background: var(--r-navy);
+    color: #fff;
+}
+.select2-container--bootstrap4 .select2-results > .select2-results__options {
+    max-height: 260px;
+}
+/* Mensaje de "sin resultados" */
+.select2-container--bootstrap4 .select2-results__message {
+    padding: 10px 12px;
+    font-size: .83rem;
+    color: var(--r-muted-2);
+}
+
+/* ==========================================================================
+   12. AIRE ENTRE EL TÍTULO DE LA PÁGINA Y LOS FILTROS
+   El encabezado traía un margin-bottom negativo que pegaba la barra de
+   contexto al título; se compensa aquí para no tocar el layout de AdminLTE.
+   ========================================================================== */
+.content-wrapper .content > .container-fluid > #registros-resultados > .r-ctx:first-child {
+    margin-top: 18px;
+}
+
+/* El menu se ajusta al contenido (dropdownAutoWidth), pero nunca mas ancho
+   que la ventana ni mas estrecho de lo legible. */
+.select2-container--bootstrap4 .select2-dropdown {
+    min-width: 240px;
+    max-width: calc(100vw - 24px);
+}
