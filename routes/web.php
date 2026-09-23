@@ -84,6 +84,19 @@ Route::middleware('auth')->group(function () {
         // Rutas de tipo de muestra
         Route::resource('tip-muestra', App\Http\Controllers\TipMuestraController::class);
 
+        // Catálogo de servicios (ubicaciones estandarizadas)
+        Route::resource('servicios', App\Http\Controllers\ServicioController::class);
+
+        // Equivalencias: texto crudo de la fuente -> valor estandarizado.
+        // 'pendientes' y 'mapear' van antes del resource para que no los capture
+        // el comodín {equivalencia}.
+        Route::get('equivalencias/pendientes', [App\Http\Controllers\EquivalenciaController::class, 'pendientes'])
+            ->name('equivalencias.pendientes');
+        Route::post('equivalencias/mapear', [App\Http\Controllers\EquivalenciaController::class, 'mapear'])
+            ->name('equivalencias.mapear');
+        Route::resource('equivalencias', App\Http\Controllers\EquivalenciaController::class)
+            ->except(['show']);
+
         // Rutas de diagnóstico infeccioso
         Route::resource('diag-infeccioso', App\Http\Controllers\DiagInfecciosoController::class);
 

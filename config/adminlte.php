@@ -398,6 +398,18 @@ return [
                     'active' => ['tip-muestra*'],
                 ],
                 [
+                    'text' => 'Servicios',
+                    'url' => 'servicios',
+                    'icon' => 'fas fa-fw fa-hospital-alt',
+                    'active' => ['servicios*'],
+                ],
+                [
+                    'text' => 'Equivalencias',
+                    'url' => 'equivalencias',
+                    'icon' => 'fas fa-fw fa-exchange-alt',
+                    'active' => ['equivalencias*'],
+                ],
+                [
                     'text' => 'Diagnóstico Infeccioso',
                     'url' => 'diag-infeccioso',
                     'icon' => 'fas fa-fw fa-stethoscope',

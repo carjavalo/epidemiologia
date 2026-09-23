@@ -7,6 +7,7 @@ use App\Models\EncabezadoProcedimiento;
 use App\Models\EpidemiologiaRegistro;
 use App\Models\Paciente;
 use App\Models\Procedimiento;
+use App\Support\Estandarizador;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -493,10 +494,19 @@ class SeguimientoMicrobiologicoController extends Controller
                 'fecha_nacimiento'       => $this->normalizarFecha($f['fecha_nacimiento']),
                 'sexo'                   => $this->normalizarSexo($f['sexo']),
                 'id_historia'            => $this->limpiarValor($f['id_historia']),
-                'tipo_muestra'           => $this->limpiarValor($f['tipo_muestra']),
+                // El tipo de muestra y el servicio llegan escritos de mil maneras:
+                // se convierten al valor estandarizado si hay equivalencia, y si
+                // no, entran tal cual y aparecen en Equivalencias > Pendientes.
+                'tipo_muestra'           => Estandarizador::aplicar(
+                                                Estandarizador::MUESTRA,
+                                                $this->limpiarValor($f['tipo_muestra'])
+                                            ),
                 'n_reporte'              => $this->limpiarValor($f['n_reporte']),
                 'sede'                   => $this->limpiarValor($f['sede']),
-                'ubicacion'              => $this->limpiarValor($f['ubicacion']),
+                'ubicacion'              => Estandarizador::aplicar(
+                                                Estandarizador::SERVICIO,
+                                                $this->limpiarValor($f['ubicacion'])
+                                            ),
                 'fecha_toma_muestra'     => $this->normalizarFecha($f['fecha_toma_muestra']),
                 'microorganismo'         => $this->limpiarValor($f['microorganismo']),
                 'cultivo_num'            => $this->limpiarValor($f['cultivo_num']),

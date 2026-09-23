@@ -1,0 +1,240 @@
+catalogo,texto_crudo,valor
+servicio,CARTAGO ADMISION PARTOS,Admisión Partos CARTAGO
+servicio,CARTAGO SALA DE PARTOS,Admisión Partos CARTAGO
+servicio,ADMISION Y SALA DE PARTOS,Admision y Sala de Partos
+servicio,PUERPERIO,Puerperio
+servicio,CIRUGIA PEDIATRICA ANA FRANK,Ana Frank
+servicio,PEDIATRIA ANHELO DE VIDA,Anhelo de Vida
+servicio,ANHELO DE VIDA,Anhelo de Vida
+servicio,ALTO RIESGO OBSTETRICO2,ARO (Alto Riesgo Obstétrico)
+servicio,ALTO RIESGO OBSTETRICO,ARO (Alto Riesgo Obstétrico)
+servicio,ALTO RIESGO OBSTETRICO 2,ARO (Alto Riesgo Obstétrico)
+servicio,UCI PEDIATRIA (CIPAF),CIPAF
+servicio,CUIDADO INTERMEDIO PEDIATRICO,CIPAF UCIM
+servicio,CUIDADO INTERMEDIO,CIPAF UCIM
+servicio,UCIM PEDIATRICO,CIPAF UCIM
+servicio,CIRUGIA HOMBRES,Cirugía Hombres
+servicio,CIRUGIA MUJERES,Cirugía Mujeres
+servicio,OBSERVACION CIRUGIA,Cirugía Observación - Sala Humana
+servicio,URGENCIAS COLSULTA,Consultorios Urgencias CARTAGO
+servicio,CARTAGO CONSULTORIO URGENCIAS,Consultorios Urgencias CARTAGO
+servicio,CARTAGO CRITICOS URGENCIAS,Consultorios Urgencias CARTAGO
+servicio,CARTAGO URGENCIAS CONSULTA,Consultorios Urgencias CARTAGO
+servicio,Sin especificar,No Aplica
+servicio,OBSERVACION PEDIATRIA,Consultorios Urgencias CARTAGO
+servicio,CARTAGO OBSERVACION PEDIATTRIA,Consultorios Urgencias CARTAGO
+servicio,CARTAGO OBSERVACIÓN PEDIATRIA,Observacion pediatria CARTAGO
+servicio,URGENCIAS CONSULTA,Consultorios Urgencias CARTAGO
+servicio,ENDOSCOPIA,Endoscopia
+servicio,EXTENSION DOMICILIARIA,Extension Domicliaria
+servicio,ONCOLOGIA HOSP ADULTOS,Hematoncologia Adulto
+servicio,ONCOLOGIA HOSPIT ADULTOS,Hematoncologia Adulto
+servicio,ONCOLOGIA HOSPIT PEDIATRICA,Hematoncologia Pediatrico
+servicio,HOSPITALIZACION ADULTO,Hospitalizacion 1 CARTAGO
+servicio,CARTAGO HOSPITALIZACION 1,Hospitalizacion 1 CARTAGO
+servicio,CARTAGO HOSPITALIZACION ADULTO,Hospitalizacion 1 CARTAGO
+servicio,HOSPITALIZACION 1,Hospitalizacion 1 CARTAGO
+servicio,SEDE CARTAGO,Hospitalizacion 1 CARTAGO
+servicio,CARTAGO HOSPITALIZACION 2,Hospitalizacion 2 CARTAGO
+servicio,CARTAGO UCI 1,UCI CARTAGO
+servicio,CARTAGO HOSPITALIZACION 3,Hospitalizacion 3 CARTAGO
+servicio,CARTAGO GINECOLOGIA OBSTETRICI,Hospitalizacion GO CARTAGO
+servicio,HOSPITALIZACION PEDIATRIA,Hospitalizacion pediatrica CARTAGO
+servicio,CARTAGO HOSPITALIZACION PEDIAT,Hospitalizacion pediatrica CARTAGO
+servicio,MEDICA HOMBRES P2,Médica Hombres
+servicio,MEDICA HOMBRES,Médica Hombres
+servicio,MEDICAS HOMBRES,Médica Hombres
+servicio,MEDICA MUJERES P2,Médica Mujeres
+servicio,MEDICA MUJERES,Médica Mujeres
+servicio,MEDICAS MUJERES,Médica Mujeres
+servicio,MEDICINA INTERNA CRITICO,Medicina Interna Urgencias
+servicio,3 PISO TRASPLANTE COEX,No Aplica
+servicio,FILTRO/COSULTORIOS,No Aplica
+servicio,URGENCIAS OBSERVACION,Observacion Hombres CARTAGO
+servicio,CARTAGO URGENCIA OBSERVACION,Observacion Hombres CARTAGO
+servicio,CARTAGO OBSERVACION PEDIATRIA,Observacion pediatria CARTAGO
+servicio,PEDIATRIA GENERAL,Pediatría General
+servicio,UCI CX PEDIATRICA ANA FRANK,Pediatría General
+servicio,PEDIATRIA CLINICA URGENCIAS,Pediatría Urgencias
+servicio,PEDIATRIA OBSERVACION URGENCIA,Pediatría Urgencias
+servicio,ONCOLOGIA PEDIATRICA,Pediatría Urgencias
+servicio,PEDIATRIA URGENCIAS,Pediatría Urgencias
+servicio,UCI RECIEN NACIDOS (CIRENA),Recien Nacido / Cirena
+servicio,CIREN URGENCIAS,Recien Nacido / Cirena
+servicio,CONSULTORIO URGENCIAS,Sala de Filtro / consultorios
+servicio,OBSERVACION CONS URGENCIAS,Sala de Filtro / consultorios
+servicio,CRITICOS CONS URGENCIAS,Sala de Filtro / consultorios
+servicio,UCI CARDIO 3 PISO,UCI Coronario / UCI Cardio
+servicio,TRANSICION CONS URGENCIAS,Sala de Filtro / consultorios
+servicio,FILTRO URGENCIAS,Sala de Filtro / consultorios
+servicio,CAMILLA CONS CRITICOS,Sala de Filtro / consultorios
+servicio,CONSULTORIOS URGENCIAS,Sala de Filtro / consultorios
+servicio,RECUPERACION QUIROFANOS,Sala de Filtro / consultorios
+servicio,URGENCIAS,Sala de Filtro / consultorios
+servicio,CONSULTORIOS DE URGENCIAS,Sala de Filtro / consultorios
+servicio,NEUROCIRUGIA 4 PISO ALA NORTE,Sala de Neurocirugía
+servicio,QUIROFANO CENTRAL,Sala de operaciones
+servicio,SALA DE OPERACIONES,Sala de operaciones
+servicio,CARTAGO QUIROFANO GRAL,Sala de operaciones CARTAGO
+servicio,ORTOPEDIA,Sala de Ortopedia
+servicio,1 PISO URGENCIAS SOAT,SOAT
+servicio,4 PISO HOSP TRASPLANTES,Trasplantes hospitalizacion
+servicio,HOSPITALIZACION TRASPLANTE HPB,Trasplantes hospitalizacion
+servicio,4 PISO OBSERVACION TRASPLANTES,Trasplantes hospitalizacion
+servicio,TRANSPLANTES,Trasplantes hospitalizacion
+servicio,4 PISO URGENCIAS TRASPLANTES,Trasplantes hospitalizacion
+servicio,UCI CARDIO TRANSPLANTES,Trasplantes hospitalizacion
+servicio,UNIDAD CUIDADO ESPECIAL PISO 2,UCE
+servicio,UNIDAD CUIDADO ESPECIAL,UCE
+servicio,UNIDAD DE CUIDADO ESPECIAL,UCE
+servicio,UCI 2,UCI 2
+servicio,UNIDAD DIAGNOSTICA PERINATAL,UCI 2
+servicio,UNIDAD DE CUIDADO INTENSIVO 2,UCI 2
+servicio,UCI 3,UCI 3
+servicio,UNIDAD DE CUIDADO INTENSIVO 3,UCI 3
+servicio,UCI 4,UCI 4
+servicio,UNIDAD DE CUIDADO INTENSIVO 4,UCI 4
+servicio,UCI TRASPLANTE,UCI 4
+servicio,UCI 5,UCI 5
+servicio,UCI ADULTO,UCI CARTAGO
+servicio,CARTAGO UCI 01,UCI CARTAGO
+servicio,UCI CARTAGO,UCI CARTAGO
+servicio,UCI CARTAGO 1,UCI CARTAGO
+servicio,UCIN CARTAGO,UCI CARTAGO
+servicio,UCI 3 PISO,UCI Coronario / UCI Cardio
+servicio,UCI CRITICO QUIRURGICO,UCI Critico QX
+servicio,UCIM,UCI Critico QX
+servicio,UCI NEUROCIRUGIA,UCI Neurocirugía
+servicio,NEURO UCI,UCI Neurocirugía
+servicio,4 PISO UCI TRASPLANTES,UCI Trasplantes
+servicio,UCI TRASPLANTES,UCI Trasplantes
+servicio,UNIDAD DE CUIDADO INTERMEDIO,UCIM ADULTO
+servicio,UNIDAD CUIDADO INTERMEDIO,UCIM ADULTO
+servicio,UNIDAD DE QUEMADOS,Unidad de Quemados
+servicio,UNIDAD SALUD MENTAL,Unidad de Salud Mental
+servicio,UNIDAD DE SALUD MENTAL,Unidad de Salud Mental
+servicio,OBSERVACION TRAUMA,Unidad de Trauma / Reanimación
+servicio,CRITICOS TRAUMA,Unidad de Trauma / Reanimación
+servicio,TRAUMA Y REANIMACION,Unidad de Trauma / Reanimación
+servicio,REANIMACION TRAUMA,Unidad de Trauma / Reanimación
+servicio,UNIDAD DE TRAUMA,Unidad de Trauma / Reanimación
+muestra,ABSCESO TEJIDOS Y ORGANOS,1. Absceso tejidos organos
+muestra,COLECCION ABDOMINAL,1. Absceso tejidos organos
+muestra,Absceso,1. Absceso tejidos organos
+muestra,Pus,1. Absceso tejidos organos
+muestra,LAVADO BRONCOALVEOLAR,2. Cepillado o LBA
+muestra,PANEL NEUMONIA,2. Cepillado o LBA
+muestra,LAVADO ALVEOLAR LOBULO,2. Cepillado o LBA
+muestra,Lavado Boncroalveolar,2. Cepillado o LBA
+muestra,PNAEL NEUMONIA,2. Cepillado o LBA
+muestra,PANEL RESPIRATORIO,2. Cepillado o LBA
+muestra,Respiratorio,2. Cepillado o LBA
+muestra,COLECCION PIEL Y TEJIDOS BLAND,3. Coleccion piel y tejidps blandos
+muestra,HEMOCULTIVO BARRIDO CATETER,4. Hemocultivo barrido cateter
+muestra,HEMOCULTIVO POR CVC,4. Hemocultivo barrido cateter
+muestra,LIQUIDO CEFALORRAQUIDEO,5. Liquido cefalorraquideo
+muestra,PANEL MENINGEO,5. Liquido cefalorraquideo
+muestra,LIQUIDO PERITONEAL,6. Liquido peritoneal
+muestra,LIQUIDO ABDOMINAL,6. Liquido peritoneal
+muestra,LIQUIDO ASCITICO,6. Liquido peritoneal
+muestra,LIQUIDO PLEURAL,7. Liquido pleural
+muestra,MATERIA FECAL,8. Materia fecal
+muestra,Heces,8. Materia fecal
+muestra,COPROCULTIVO,8. Materia fecal
+muestra,CLOSTRIDIUM POSITIVO,8. Materia fecal
+muestra,COPROSCOPICO,8. Materia fecal
+muestra,MATERIAL FECAL,8. Materia fecal
+muestra,PANEL GASTROINTESTINAL,8. Materia fecal
+muestra,CLOSTRIDIUM TOXINA,8. Materia fecal
+muestra,COPROLOGICO,8. Materia fecal
+muestra,PANEL GASTROINTESTINA,8. Materia fecal
+muestra,Orina,9. Orina
+muestra,ORINA POR NEFROSTOMIA,9. Orina
+muestra,ORINA POR PUNCION SUPRAPUBICA,9. Orina
+muestra,Orina.,9. Orina
+muestra,NEFROSTOMIA,9. Orina
+muestra,Orina obtencion desconocida,9. Orina
+muestra,ORINA CATETERISMO VESICAL,10. Orina por cateterismo vesical
+muestra,Orina por cateter,10. Orina por cateterismo vesical
+muestra,ORINA POR MICCION ESPONTANEA,11. Orina por miccion expontanea
+muestra,Orina por micción espontanea,11. Orina por miccion expontanea
+muestra,ORINA POR SONDA VESICAL,12. Orina por sonda vesical
+muestra,PANEL POSITIVO,13. Otro tipo de muestra
+muestra,OTRO TIPO DE MUESTRA,13. Otro tipo de muestra
+muestra,Liquido corpral,13. Otro tipo de muestra
+muestra,Liquido corporal,13. Otro tipo de muestra
+muestra,PANEL POSITIVA,13. Otro tipo de muestra
+muestra,LIQUIDO AMNIOTICO,13. Otro tipo de muestra
+muestra,PUNTA DE STENT,14. Punta de cateter (VP)
+muestra,Cateter,14. Punta de cateter (VP)
+muestra,PUNTA DE CATETER,14. Punta de cateter (VP)
+muestra,PUNTA DE CATETER DVP,14. Punta de cateter (VP)
+muestra,Cateter central,15. Punta de cateter (CVC - PICC)
+muestra,HEMOCULTIVO PUNCION PERIFERICA,16. Sangre - puncion periferica
+muestra,Sangre,16. Sangre - puncion periferica
+muestra,SANGRE TOTAL,16. Sangre - puncion periferica
+muestra,SANGRE TOTAL HEMO,16. Sangre - puncion periferica
+muestra,Sangre.,16. Sangre - puncion periferica
+muestra,HEMOCULTIVO,16. Sangre - puncion periferica
+muestra,SANDRE,16. Sangre - puncion periferica
+muestra,PANEL SEPSIS,16. Sangre - puncion periferica
+muestra,HEMOCULTIVO MIEBRO SUPERIOR IZQUIERDO,16. Sangre - puncion periferica
+muestra,HEMOCULTIVO MIEMBRO SUPERIOR DERECHO,16. Sangre - puncion periferica
+muestra,PANEL DE SEPSIS,16. Sangre - puncion periferica
+muestra,SECRECION ASPIRADO TRAQUEAL,17. Secrecion aspirado traqueal
+muestra,SECRECION DE TRAQUEOSTOMIA,17. Secrecion aspirado traqueal
+muestra,SECRECION OROTRAQUEAL,17. Secrecion aspirado traqueal
+muestra,Traqueal,17. Secrecion aspirado traqueal
+muestra,SECRECION UROTRAQUEAL,17. Secrecion aspirado traqueal
+muestra,Aspirado traqueal,17. Secrecion aspirado traqueal
+muestra,SEC. PIEL Y TEJIDOS BLANDOS,18. Secrecion de piel y tejidos blandos
+muestra,HERIDA,18. Secrecion de piel y tejidos blandos
+muestra,Ulcera,18. Secrecion de piel y tejidos blandos
+muestra,SECRECION TEJIDO,18. Secrecion de piel y tejidos blandos
+muestra,SECRECION ULCERA,18. Secrecion de piel y tejidos blandos
+muestra,Fistula,18. Secrecion de piel y tejidos blandos
+muestra,HERIDA DE PIEL Y TEJIDO BLANDO,18. Secrecion de piel y tejidos blandos
+muestra,Secreciones PIE IZQUIERDO,18. Secrecion de piel y tejidos blandos
+muestra,SECRECION MANO IZQUIERDA,18. Secrecion de piel y tejidos blandos
+muestra,Cultivo de ulcera en miembro,18. Secrecion de piel y tejidos blandos
+muestra,SECRECION PIE IZQUIERDO,18. Secrecion de piel y tejidos blandos
+muestra,SEC HERIDA QUIRURGICA,19. Secrecion herida quirurgica
+muestra,HERIDA QUIRURGICA,19. Secrecion herida quirurgica
+muestra,Herida quirugica,19. Secrecion herida quirurgica
+muestra,SEGMENTO DE TEJIDO,21. Segmento tejido
+muestra,Cadera,21. Segmento tejido
+muestra,Tejido,21. Segmento tejido
+muestra,Hueso,21. Segmento tejido
+muestra,Tejido MUSLO DERECHO,21. Segmento tejido
+muestra,HUESO DE TIBIA DERECHA,21. Segmento tejido
+muestra,CULTIVO DE TENDON PERONE IZQUI,21. Segmento tejido
+muestra,Hueso MIEMBRO SUPERIOR DERECHO,21. Segmento tejido
+muestra,CULTIVO DE MUSLO DERECHO,21. Segmento tejido
+muestra,HUESO SACRO,21. Segmento tejido
+muestra,LIQUIDO SINOVIAL,22. Liquido sinovial
+muestra,LIQUIDO SINOVIAL O ARTICULAR,22. Liquido sinovial
+muestra,LIQUIDO PERICARDICO,23. Liquido pericardio
+muestra,Esputo,24. Esputo
+muestra,Ojo,25. Secrecion ocular
+muestra,SECRECION OCULAR,25. Secrecion ocular
+muestra,HISOPADO RECTAL,26. Hisopado rectal
+muestra,HISOPADO NASAL,27. Hisopado nasal
+muestra,ASPIRADO NASOFARINGEO,27. Hisopado nasal
+muestra,SECRECION NASAL,27. Hisopado nasal
+muestra,HISOPADO RECTO-VAGINAL,28. Hisopado rectovaginal
+muestra,Vagina,28. Hisopado rectovaginal
+muestra,HEMOCULTIVO PUNCIÓN ARTERIAL,29. Hemocultivo puncion arterial
+muestra,ASPIRADO MEDULA OSEA,30. Aspirado medula osea
+muestra,BIOPSIA,31. Biopsia
+muestra,SECRECION URETRAL MASCULINA,32. Otros
+muestra,SECRECION VAGINAL,32. Otros
+muestra,SECRECION,32. Otros
+muestra,Secreciones,32. Otros
+muestra,Uretra,32. Otros
+muestra,Abdomen,32. Otros
+muestra,Pie,32. Otros
+muestra,Mano,32. Otros
+muestra,SEMEN,32. Otros
+muestra,SECRECION URETRAL,32. Otros
+muestra,Sin especificar,99. No Aplica
+muestra,`Sin especificar,99. No Aplica
