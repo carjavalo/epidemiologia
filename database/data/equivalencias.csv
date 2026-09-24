@@ -238,3 +238,20 @@ muestra,SEMEN,32. Otros
 muestra,SECRECION URETRAL,32. Otros
 muestra,Sin especificar,99. No Aplica
 muestra,`Sin especificar,99. No Aplica
+servicio,UCI CARDIOVASCULAR,UCI Cardiovascular
+servicio,MEDICA HOMBRES PISO 2 CENTRO,Médica Hombres
+servicio,MEDICA MUJERES PISO2 CENTRO,Médica Mujeres
+servicio,CARTAGO OBSERVACION HOMBRES,Observacion Hombres CARTAGO
+servicio,SALA HUMANA,Sala Humana
+servicio,CARTAGO OBSERVACION MUJERES,Observacion Mujeres CARTAGO
+servicio,ISO CARTAGO,ISO CARTAGO
+servicio,Dialisis,Diálisis
+servicio,Expansion domiciliaria,Expansión Domiciliaria
+servicio,CARTAGO QUIROFA 02,Quirófano 2 CARTAGO
+servicio,Radiologia intervencionista,Radiología Intervencionista
+servicio,PICC consulta Externa,PICC Consulta Externa
+servicio,CARTAGO UCIN ADULTO,UCIN Adulto CARTAGO
+servicio,Unidad de Quemados (UCI),Unidad de Quemados
+servicio,Hemodinamia,Hemodinamia
+servicio,UCEP UNID CUIDADO ESPECIAL PED,UCEP (Unidad Cuidado Especial Pediátrico)
+servicio,Sala de Recién Nacidos UCIM,Sala de Recién Nacidos UCIM
