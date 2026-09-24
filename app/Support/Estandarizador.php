@@ -18,9 +18,55 @@ class Estandarizador
 {
     public const SERVICIO = 'servicio';
     public const MUESTRA  = 'muestra';
+    public const SITIO    = 'sitio';
+
+    /**
+     * Columna de seguimiento_microbiologico que alimenta cada catálogo. Es de
+     * ahí de donde salen los términos nuevos que llegan por importación.
+     */
+    public const COLUMNAS = [
+        self::MUESTRA  => 'tipo_muestra',
+        self::SERVICIO => 'ubicacion',
+        self::SITIO    => 'sitio',
+    ];
 
     /** Mapas clave => valor, cargados una sola vez por catálogo. */
     protected static array $cache = [];
+
+    /**
+     * Términos que aparecen en los datos y todavía no tienen equivalencia,
+     * con cuántos registros usa cada uno, de mayor a menor.
+     *
+     * Es lo que alimenta el aviso de los CRUD y la pantalla de pendientes.
+     *
+     * @return array<string, int>
+     */
+    public static function pendientes(string $catalogo): array
+    {
+        $columna = self::COLUMNAS[$catalogo] ?? null;
+
+        if ($columna === null) {
+            return [];
+        }
+
+        $filas = \Illuminate\Support\Facades\DB::table('seguimiento_microbiologico')
+            ->select($columna . ' as texto', \Illuminate\Support\Facades\DB::raw('COUNT(*) as registros'))
+            ->whereNotNull($columna)
+            ->where($columna, '<>', '')
+            ->groupBy($columna)
+            ->orderByDesc('registros')
+            ->get();
+
+        $sinMapear = [];
+
+        foreach ($filas as $fila) {
+            if (static::estandarizar($catalogo, $fila->texto) === null) {
+                $sinMapear[(string) $fila->texto] = (int) $fila->registros;
+            }
+        }
+
+        return $sinMapear;
+    }
 
     /**
      * Normaliza un texto hasta su "clave": lo que se compara realmente.

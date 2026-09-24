@@ -12,6 +12,10 @@
 @stop
 
 @section('content')
+
+    {{-- Términos nuevos que llegaron por importación y no están en el catálogo --}}
+    @include('partials.aviso-pendientes', ['catalogo' => 'muestra'])
+
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">Listado de Tipos de Muestra</h3>

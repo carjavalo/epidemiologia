@@ -529,7 +529,10 @@ class SeguimientoMicrobiologicoController extends Controller
                 'fecha_quirurgica_previa'    => $this->normalizarFecha($f['fecha_quirurgica_previa']),
                 'categoria_quirurgica'       => $this->limpiarValor($f['categoria_quirurgica']),
                 'egreso'                     => $this->limpiarValor($f['egreso']),
-                'sitio'                      => $this->limpiarValor($f['sitio']),
+                'sitio'                      => Estandarizador::aplicar(
+                                                    Estandarizador::SITIO,
+                                                    $this->limpiarValor($f['sitio'])
+                                                ),
                 'tipo'                       => $this->limpiarValor($f['tipo']),
                 'clasificacion'              => $this->limpiarValor($f['clasificacion']),
                 'especialidad_cirugia'       => $this->limpiarValor($f['especialidad_cirugia']),

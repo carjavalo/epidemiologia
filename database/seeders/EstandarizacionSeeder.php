@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Equivalencia;
 use App\Models\Servicio;
+use App\Models\Sitio;
 use App\Models\TipMuestra;
 use App\Support\Estandarizador;
 use Illuminate\Database\Seeder;
@@ -19,6 +20,7 @@ class EstandarizacionSeeder extends Seeder
     public function run(): void
     {
         $this->cargarServicios();
+        $this->cargarSitios();
         $this->cargarEquivalencias();
         $this->autoEquivalencias();
 
@@ -37,6 +39,7 @@ class EstandarizacionSeeder extends Seeder
         $catalogos = [
             Equivalencia::CATALOGO_SERVICIO => Servicio::pluck('nombre'),
             Equivalencia::CATALOGO_MUESTRA  => TipMuestra::pluck('descripcion'),
+            Equivalencia::CATALOGO_SITIO    => Sitio::pluck('nombre'),
         ];
 
         $nuevas = 0;
@@ -87,6 +90,34 @@ class EstandarizacionSeeder extends Seeder
         }
 
         $this->command?->info("Servicios: {$nuevos} nuevos, " . Servicio::count() . ' en total.');
+    }
+
+    protected function cargarSitios(): void
+    {
+        $ruta = database_path('data/sitios.csv');
+
+        if (! is_file($ruta)) {
+            $this->command?->error("No se encontró {$ruta}");
+            return;
+        }
+
+        $nuevos = 0;
+
+        foreach ($this->leerCsv($ruta) as $fila) {
+            $nombre = trim($fila['nombre'] ?? '');
+
+            if ($nombre === '') {
+                continue;
+            }
+
+            $sitio = Sitio::firstOrCreate(['nombre' => $nombre]);
+
+            if ($sitio->wasRecentlyCreated) {
+                $nuevos++;
+            }
+        }
+
+        $this->command?->info("Sitios: {$nuevos} nuevos, " . Sitio::count() . ' en total.');
     }
 
     protected function cargarEquivalencias(): void

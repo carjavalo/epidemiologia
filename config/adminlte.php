@@ -404,6 +404,12 @@ return [
                     'active' => ['servicios*'],
                 ],
                 [
+                    'text' => 'Sitios',
+                    'url' => 'sitios',
+                    'icon' => 'fas fa-fw fa-crosshairs',
+                    'active' => ['sitios*'],
+                ],
+                [
                     'text' => 'Equivalencias',
                     'url' => 'equivalencias',
                     'icon' => 'fas fa-fw fa-exchange-alt',

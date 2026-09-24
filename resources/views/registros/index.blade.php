@@ -32,74 +32,10 @@
         // Enfermero sí; auxiliar no. Los administradores también (supervisión).
         $esEnfermero = auth()->check() && (auth()->user()->esEnfermero() || auth()->user()->esAdmin());
 
-        // Listado oficial del campo SITIO (req. 2.1). Transcrito del documento de
-        // requerimientos; la fuente de verdad es la columna SITIO de Camilo.xlsx.
-        $opcionesSitio = [
-            '1. Absceso Espinal sin Meningitis',
-            '2. Absceso Mamariomastitis',
-            '3. Conjuntivitis',
-            '4. Cicuncision en Recien Nacidos',
-            '5. Endocarditis',
-            '6. Endometritis',
-            '7. Enterocolitis Necrotizante',
-            '8. Gastroenteritis',
-            '9. Herida Quirúrgica Incisional Superficial',
-            '10. Herida Quirúrgica Incisional Superficial Secundaria',
-            '11. Herida Quirúrgica Incisional Profunda',
-            '12. Herida Quirurgica Organo/Espacio',
-            '13. Infeccion de Cavidad (Boca, Lengua, Encias)',
-            '14. Infección de la Articulacion o Bursa',
-            '15. Infeccion de la Cúpula Vaginal',
-            '15. Infección de la Episiotomia',
-            '16. Infección de Tracto Respiratorio Superior',
-            '17. Infección del Espacio Intervertebral',
-            '18. Infección del Oido/mastoides',
-            '19. Infeccion del Torrente Sanguineo - Cateter Mahurkar',
-            '19. Infeccion del Torrente Sanguineo - Cateter implantable',
-            '19. Infeccion del Torrente Sanguineo - Cateter umbilical',
-            '19. Infeccion del Torrente Sanguineo Linea Vascular - CVC',
-            '19. Infeccion del otros Torrente Sanguineo Linea Vascular - PICC',
-            '20. Infeccion del Torrente Sanguineo Linea Vascular con otro foco',
-            '21. Infeccion del Tracto Gastrointestinal',
-            '22. Infeccion Intraabdominal',
-            '23. Infeccion Intracraneal',
-            '24. Infeccion Sintomática del Tracto Urinario',
-            '25. Infeccion Sintomática del Tracto Urinario con Sonda',
-            '26. Infeccion Sistémica/Disemiada',
-            '27. Infección Venosa o Arterial',
-            '27. Infección arte',
-            '28. Mediastinitis',
-            '29. Meningitis o Ventriculitis',
-            '30. Miocarditis o Pericarditis',
-            '31. Neumonia 1 - 2 - 3',
-            '32. Neumonia Asociada Intubación 1 - 2 - 3',
-            '33. Neumonia Asociada a Ventilador 1 - 2 - 3',
-            '34. Ojo Exepto Conjuntivitis',
-            '35. Onfalitis',
-            '36. Osteomielitis',
-            '37. Otras Infecciones del Tracto Reproductivo',
-            '38. Otras Infecciones del Tracto Respiratorio Inferior',
-            '39. Otras Infecciones del Tracto Urinario',
-            '40. Otros',
-            '41. Piel',
-            '41. Piel - Flebitis',
-            '42. Pustulosis Infantil',
-            '43. Quemadura',
-            '44. Sepsis Clinica',
-            '45. Sinusitis',
-            '46. Tejidos Blandos',
-            '47. Traquea-Bronquios-Bronquiolos (Sin neumonia)',
-            '48. Ulcera por Decúbito',
-            '49. Bacteriuria Asintomatica Bacteremica',
-            '50. No aplica',
-            '51. Infeccion Previa',
-            '52. No cumple criterios',
-            '53. LA - Infeccion del Torrente Sanguineo sin Linea Vascular - Arterial',
-            '54. Herida Quirúrgica Incisional Profunda Primaria',
-            '55. Herida Quirúrgica Incisional Profunda Secundaria',
-            '56. Herida Quirúrgica Incisional Superficial Primaria',
-            '57. Covid-19',
-        ];
+        // Listado oficial del campo SITIO (req. 2.1). Vive en el catálogo de
+        // Sitios, administrable desde Configuración › Sitios; antes eran 64
+        // opciones escritas a mano justo aquí.
+        $opcionesSitio = $catalogos['sitios'] ?? [];
 
         // Opciones oficiales tomadas de Camilo.xlsx.
         $opcionesEspecialidadQx = [
@@ -340,12 +276,32 @@
             {{-- VISTA PACIENTES: Grid expandido de pacientes del servicio --}}
             {{-- ============================================ --}}
             @php
+                // El servicio pedido puede no existir: un enlace guardado con el
+                // nombre viejo deja de encontrarlo cuando el catálogo se
+                // estandariza ("1 PISO URGENCIAS SOAT" pasó a ser "SOAT").
                 $servicioActual = $serviciosPaginados->first();
-                $servicioNombre = $servicioActual->ubicacion;
+                $servicioNombre = $servicioActual?->ubicacion ?? $servicioSeleccionado;
                 $pacientesPorServicio = $dataPorServicio[$servicioNombre] ?? collect();
-                $servicioKey = 'servicio-' . md5($servicioNombre);
+                $servicioKey = 'servicio-' . md5((string) $servicioNombre);
                 $totalProaServicioActual = $proaCountPorServicio[$servicioNombre] ?? 0;
             @endphp
+
+            @if($servicioActual === null)
+                <div class="col-12">
+                    <div class="r-aviso r-aviso--adv">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <span>
+                            <b>No se encontró el servicio «{{ $servicioSeleccionado }}»</b>
+                            Puede que el enlace sea antiguo: al estandarizar los servicios, varios
+                            cambiaron de nombre. Vuelve a la lista y elígelo de nuevo.
+                        </span>
+                        <a href="{{ route('registros.index') }}" class="r-btn js-nav"
+                           style="margin-left:auto;flex:0 0 auto;white-space:nowrap;">
+                            <i class="fas fa-arrow-left mr-1"></i> Ver los servicios
+                        </a>
+                    </div>
+                </div>
+            @endif
 
             {{-- Info de paginación de pacientes --}}
             @if($pacientesPaginados)
@@ -668,8 +624,14 @@
                                                                 </div>
                                                                 <div class="col-md-2">
                                                                     <label class="proa-label">Ubicación</label>
-                                                                    <input type="text" name="registros[{{ $fila->id }}][ubicacion]" class="form-control form-control-sm"
-                                                                           value="{{ $fila->ubicacion ?? '' }}">
+                                                                    {{-- Sale del catálogo de Servicios. $conValor conserva el valor guardado si
+                                                                         todavía no está estandarizado, para no perderlo al abrir el formulario. --}}
+                                                                    <select name="registros[{{ $fila->id }}][ubicacion]" class="form-control form-control-sm">
+                                                                        <option value="">— Seleccionar —</option>
+                                                                        @foreach($conValor($catalogos['servicios'] ?? [], $fila->ubicacion) as $op)
+                                                                            <option value="{{ $op }}" {{ ($fila->ubicacion ?? '') == $op ? 'selected' : '' }}>{{ $op }}</option>
+                                                                        @endforeach
+                                                                    </select>
                                                                 </div>
                                                                 <div class="col-md-3">
                                                                     <label class="proa-label">Fecha Toma de Muestra</label>

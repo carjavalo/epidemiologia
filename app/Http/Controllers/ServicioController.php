@@ -19,7 +19,9 @@ class ServicioController extends Controller
     public function index(Request $request): View
     {
         $servicios = Servicio::query()
-            ->withCount('equivalencias')
+            // El valor se registra como equivalencia de si mismo; esa no cuenta
+            // como "variante que lo alimenta".
+            ->withCount(['equivalencias' => fn ($q) => $q->whereColumn('texto_crudo', '<>', 'servicios.nombre')])
             ->when($request->filled('q'), fn ($q) => $q->search($request->input('q')))
             ->orderBy('nombre')
             ->paginate(25)

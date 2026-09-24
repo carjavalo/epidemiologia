@@ -311,6 +311,10 @@ class RegistrosController extends Controller
             'tratamientos'        => Tratamiento::orderBy('descripcion')->get(),
             'paises'              => Pais::orderBy('nombre')->get(),
             'categoriasQuirurgicas' => CategoriaQuirurgica::orderBy('descripcion')->get(),
+            // Servicios y sitios salen de su catálogo; antes la ubicación era
+            // texto libre y el sitio un array escrito a mano en la vista.
+            'servicios'           => \App\Models\Servicio::orderBy('nombre')->pluck('nombre')->all(),
+            'sitios'              => \App\Models\Sitio::ordenNatural()->pluck('nombre')->all(),
             // Catálogo CIE-10 para el buscador de diagnóstico (solo en la vista de
             // pacientes, que es donde se muestran los formularios).
             'diagnosticos'        => $servicioSeleccionado

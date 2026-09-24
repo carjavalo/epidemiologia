@@ -15,10 +15,12 @@ class Equivalencia extends Model
 
     public const CATALOGO_SERVICIO = Estandarizador::SERVICIO;
     public const CATALOGO_MUESTRA  = Estandarizador::MUESTRA;
+    public const CATALOGO_SITIO    = Estandarizador::SITIO;
 
     public const CATALOGOS = [
         self::CATALOGO_SERVICIO => 'Servicio',
         self::CATALOGO_MUESTRA  => 'Tipo de muestra',
+        self::CATALOGO_SITIO    => 'Sitio',
     ];
 
     protected $fillable = [

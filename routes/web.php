@@ -87,6 +87,9 @@ Route::middleware('auth')->group(function () {
         // Catálogo de servicios (ubicaciones estandarizadas)
         Route::resource('servicios', App\Http\Controllers\ServicioController::class);
 
+        // Catálogo del campo SITIO del formulario de epidemiología
+        Route::resource('sitios', App\Http\Controllers\SitioController::class);
+
         // Equivalencias: texto crudo de la fuente -> valor estandarizado.
         // 'pendientes' y 'mapear' van antes del resource para que no los capture
         // el comodín {equivalencia}.

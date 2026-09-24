@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Equivalencia;
 use App\Models\Servicio;
+use App\Models\Sitio;
 use App\Models\TipMuestra;
 use App\Support\Estandarizador;
 use Exception;
@@ -21,12 +22,6 @@ use Illuminate\View\View;
  */
 class EquivalenciaController extends Controller
 {
-    /** Columna de seguimiento_microbiologico que alimenta cada catálogo. */
-    protected const COLUMNAS = [
-        Equivalencia::CATALOGO_MUESTRA  => 'tipo_muestra',
-        Equivalencia::CATALOGO_SERVICIO => 'ubicacion',
-    ];
-
     public function index(Request $request): View
     {
         $equivalencias = Equivalencia::query()
@@ -120,10 +115,17 @@ class EquivalenciaController extends Controller
     /**
      * Textos que aparecen en los datos cargados y todavía no tienen equivalencia.
      */
-    public function pendientes(): View
+    public function pendientes(Request $request): View
     {
+        $soloCatalogo = $request->input('catalogo');
+
+        if (! array_key_exists((string) $soloCatalogo, Equivalencia::CATALOGOS)) {
+            $soloCatalogo = null;
+        }
+
         return view('equivalencias.pendientes', $this->opciones() + [
-            'pendientes' => $this->calcularPendientes(),
+            'pendientes' => $this->calcularPendientes($soloCatalogo),
+            'soloCatalogo' => $soloCatalogo,
         ]);
     }
 
@@ -174,28 +176,27 @@ class EquivalenciaController extends Controller
      *
      * @return array<string, array<int, array{texto: string, registros: int}>>
      */
-    protected function calcularPendientes(): array
+    /**
+     * Términos sin equivalencia por catálogo, listos para la pantalla.
+     *
+     * @return array<string, array<int, array{texto: string, registros: int}>>
+     */
+    protected function calcularPendientes(?string $soloCatalogo = null): array
     {
         $resultado = [];
 
-        foreach (self::COLUMNAS as $catalogo => $columna) {
-            $filas = DB::table('seguimiento_microbiologico')
-                ->select($columna . ' as texto', DB::raw('COUNT(*) as registros'))
-                ->whereNotNull($columna)
-                ->where($columna, '<>', '')
-                ->groupBy($columna)
-                ->orderByDesc('registros')
-                ->get();
-
-            $sinMapear = [];
-
-            foreach ($filas as $fila) {
-                if (Estandarizador::estandarizar($catalogo, $fila->texto) === null) {
-                    $sinMapear[] = ['texto' => $fila->texto, 'registros' => (int) $fila->registros];
-                }
+        foreach (array_keys(Equivalencia::CATALOGOS) as $catalogo) {
+            if ($soloCatalogo !== null && $catalogo !== $soloCatalogo) {
+                continue;
             }
 
-            $resultado[$catalogo] = $sinMapear;
+            $sinMapear = Estandarizador::pendientes($catalogo);
+
+            $resultado[$catalogo] = array_map(
+                fn ($texto, $registros) => ['texto' => $texto, 'registros' => $registros],
+                array_keys($sinMapear),
+                array_values($sinMapear)
+            );
         }
 
         return $resultado;
@@ -216,6 +217,7 @@ class EquivalenciaController extends Controller
             'valores' => [
                 Equivalencia::CATALOGO_SERVICIO => Servicio::orderBy('nombre')->pluck('nombre')->all(),
                 Equivalencia::CATALOGO_MUESTRA  => TipMuestra::orderBy('descripcion')->pluck('descripcion')->all(),
+                Equivalencia::CATALOGO_SITIO    => Sitio::ordenNatural()->pluck('nombre')->all(),
             ],
         ];
     }
